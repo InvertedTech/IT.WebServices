@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
+using IT.WebServices.Fragments.Generic;
 
 namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 {
