@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Comment/CommentRecord.proto";
 import "Protos/IT/WebServices/Fragments/Comment/SharedTypes.proto";
+import "Protos/IT/WebServices/Fragments/Comment/CommentError.proto";
 
 // Service for Asset fragment interface
 service CommentInterface {
@@ -130,7 +131,7 @@ message CreateCommentForCommentRequest {
 
 message CreateCommentResponse {
   CommentPublicRecord Record = 1;
-  string Error = 2;
+  CommentError Error = 2;
 }
 
 message DeleteOwnCommentRequest {
@@ -148,7 +149,7 @@ message EditCommentRequest {
 
 message EditCommentResponse {
   CommentPublicRecord Record = 1;
-  string Error = 2;
+  CommentError Error = 2;
 }
 
 message GetCommentsForContentRequest {

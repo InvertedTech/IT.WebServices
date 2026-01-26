@@ -80,7 +80,7 @@ message GetOwnTicketRequest {
 
 message GetOwnTicketResponse {
 	EventTicketPublicRecord Record = 1;
-	TicketError Error = 2;
+	EventError Error = 2;
 }
 
 message GetOwnTicketsRequest {
@@ -92,7 +92,7 @@ message GetOwnTicketsRequest {
 
 message GetOwnTicketsResponse {
 	repeated EventTicketPublicRecord Records = 1;
-	TicketError Error = 2;
+	EventError Error = 2;
 }
 
 message CancelOwnTicketRequest {
@@ -102,7 +102,7 @@ message CancelOwnTicketRequest {
 }
 
 message CancelOwnTicketResponse {
-	TicketError Error = 1;
+	EventError Error = 1;
 }
 
 message ReserveTicketForEventRequest {
@@ -112,7 +112,7 @@ message ReserveTicketForEventRequest {
 }
 
 message ReserveTicketForEventResponse {
-	TicketError Error = 1; // Error information if reservation failed
+	EventError Error = 1; // Error information if reservation failed
 	repeated EventTicketRecord Tickets = 2; // The reserved ticket record if successful
 }
 
@@ -121,5 +121,5 @@ message UseTicketRequest {
 }
 
 message UseTicketResponse {
-	TicketError Error = 1; // Error information if using the ticket failed
+	EventError Error = 1; // Error information if using the ticket failed
 }

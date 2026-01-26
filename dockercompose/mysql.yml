@@ -1,14 +1,15 @@
 version: '3'
 services:
-  mysql:
-    image: mariadb:11.5.2
-    restart: always
-    ports:
-      - 3306:3306
-    environment:
-      MARIADB_ROOT_PASSWORD: password
-    logging:
-      options:
-        max-size: "10m"
-    volumes:
-      - ${DATA_LOC}/mysql:/var/lib/mysql
+    mysql:
+        image: mariadb:11.5.2
+        restart: always
+        ports:
+            - 3306:3306
+        environment:
+            MARIADB_ROOT_PASSWORD: password
+        logging:
+            options:
+                max-size: '10m'
+        volumes:
+            - ${DATA_LOC}/mysql:/var/lib/mysql
+            - ./initdb/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro

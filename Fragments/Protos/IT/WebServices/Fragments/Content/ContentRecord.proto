@@ -3,15 +3,18 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Content;
 
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 
 // Content record data
 message ContentRecord {
-  ContentPublicRecord Public = 1;
-  ContentPrivateRecord Private = 2;
+  ContentPublicRecord Public = 1 [(buf.validate.field).required = true];
+  ContentPrivateRecord Private = 2 [(buf.validate.field).required = true];
 }
 
 message ContentPublicRecord {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [
+    (buf.validate.field).string.uuid = true
+  ];   // Guid for the content record
   google.protobuf.Timestamp CreatedOnUTC = 2;  // UTC timestamp when content was created
   google.protobuf.Timestamp ModifiedOnUTC = 3; // UTC timestamp when content record was last modified
   google.protobuf.Timestamp PublishOnUTC = 4;  // UTC timestamp when content was or will be published
@@ -19,61 +22,84 @@ message ContentPublicRecord {
   google.protobuf.Timestamp PinnedOnUTC = 5;   // UTC timestamp when content was pinned
   google.protobuf.Timestamp DeletedOnUTC = 6;   // UTC timestamp when content was deleted
 
-  ContentPublicData Data = 21;
+  ContentPublicData Data = 21 [(buf.validate.field).required = true];
 }
 
 message ContentPrivateRecord {
-  string CreatedBy = 2;
-  string ModifiedBy = 3;
-  string PublishedBy = 4;
-  string AnnouncedBy = 7;
-  string PinnedBy = 5;
-  string DeletedBy = 6;
+  string CreatedBy = 2 [(buf.validate.field).string.uuid = true];
+  string ModifiedBy = 3 [(buf.validate.field).string.uuid = true];
+  string PublishedBy = 4 [(buf.validate.field).string.uuid = true];
+  string AnnouncedBy = 7 [(buf.validate.field).string.uuid = true];
+  string PinnedBy = 5 [(buf.validate.field).string.uuid = true];
+  string DeletedBy = 6 [(buf.validate.field).string.uuid = true];
 
-  ContentPrivateData Data = 21;
+  ContentPrivateData Data = 21 [(buf.validate.field).required = true];
 }
 
 message ContentPublicData {
-  string Title = 1;
-  string Description = 2;
-  string Author = 3;
-  string AuthorID = 13;
-  string URL = 4;
-  string FeaturedImageAssetID = 6;
-  uint32 SubscriptionLevel = 7;
-  repeated string CategoryIds = 8;
-  repeated string ChannelIds = 9;
-  repeated string Tags = 10;
+  string Title = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 3,
+    (buf.validate.field).string.max_len = 200
+  ];
+  string Description = 2 [
+    (buf.validate.field).string.max_len = 500
+  ];
+  string Author = 3 [(buf.validate.field).string.max_len = 100];
+  string AuthorID = 13 [
+    (buf.validate.field).string.uuid = true];
+  string URL = 4 [
+    (buf.validate.field).string.min_len = 3,
+    (buf.validate.field).string.max_len = 200
+  ];
+  string FeaturedImageAssetID = 6 [(buf.validate.field).string.uuid = true];
+  uint32 SubscriptionLevel = 7 [(buf.validate.field).uint32.gte = 0];
+  repeated string CategoryIds = 8 [
+    (buf.validate.field).repeated.items.string.uuid = true
+  ];
+  repeated string ChannelIds = 9 [
+    (buf.validate.field).repeated.items.string.uuid = true,
+    (buf.validate.field).repeated.min_items = 1
+  ];
+  repeated string Tags = 10 [
+    (buf.validate.field).repeated.max_items = 25,
+    (buf.validate.field).repeated.items.string.min_len = 1,
+    (buf.validate.field).repeated.items.string.max_len = 50
+  ];
 
   oneof ContentData_oneof {
-	  AudioContentPublicData Audio = 20;
-	  PictureContentPublicData Picture = 21;
-	  VideoContentPublicData Video = 22;
-	  WrittenContentPublicData Written = 23;
+    AudioContentPublicData Audio = 20;
+    PictureContentPublicData Picture = 21;
+    VideoContentPublicData Video = 22;
+    WrittenContentPublicData Written = 23;
   }
 }
 
 message ContentPrivateData {
   oneof ContentData_oneof {
-	  AudioContentPrivateData Audio = 20;
-	  PictureContentPrivateData Picture = 21;
-	  VideoContentPrivateData Video = 22;
-	  WrittenContentPrivateData Written = 23;
+    AudioContentPrivateData Audio = 20;
+    PictureContentPrivateData Picture = 21;
+    VideoContentPrivateData Video = 22;
+    WrittenContentPrivateData Written = 23;
   }
 
+  // OldContentID is optional and may be server-filled; allow empty on requests
   string OldContentID = 51;
 }
 
 message AudioContentPublicData {
-  string HtmlBody = 1;
-  string AudioAssetID = 2;
+  string HtmlBody = 1 [(buf.validate.field).string.min_len = 1];
+  string AudioAssetID = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 message AudioContentPrivateData {
 }
 
 message PictureContentPublicData {
   string HtmlBody = 1;
-  repeated string ImageAssetIDs = 2;
+  repeated string ImageAssetIDs = 2 [
+    (buf.validate.field).repeated.items.string.uuid = true,
+    (buf.validate.field).repeated.min_items = 1
+  ];
 }
 message PictureContentPrivateData {
 }
@@ -82,15 +108,14 @@ message VideoContentPublicData {
   string HtmlBody = 1;
   bool IsLiveStream = 2;
   bool IsLive = 3;
-  string RumbleVideoId = 11;
-  string YoutubeVideoId = 12;
+  string RumbleVideoId = 11 [(buf.validate.field).string.max_len = 100];
+  string YoutubeVideoId = 12 [(buf.validate.field).string.max_len = 100];
 }
 message VideoContentPrivateData {
 }
 
 message WrittenContentPublicData {
-  string HtmlBody = 1;
+  string HtmlBody = 1 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1, (buf.validate.field).string.max_len = 1000];
 }
 message WrittenContentPrivateData {
 }
-

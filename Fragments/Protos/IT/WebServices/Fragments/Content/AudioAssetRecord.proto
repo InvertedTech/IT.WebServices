@@ -3,6 +3,7 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Content;
 
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 
 // Asset record data
 message AudioAssetRecord {
@@ -16,7 +17,7 @@ message AudioAssetData {
 }
 
 message AudioAssetPublicRecord {
-  string AssetID = 1;                          // Guid for the asset record
+  string AssetID = 1 [(buf.validate.field).string.uuid = true];                          // Guid for the asset record
   google.protobuf.Timestamp CreatedOnUTC = 2;  // UTC timestamp when asset was created
   google.protobuf.Timestamp ModifiedOnUTC = 3; // UTC timestamp when asset record was last modified
 

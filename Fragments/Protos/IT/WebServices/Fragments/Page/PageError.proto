@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Page;
+
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+
+message PageError {
+    PageErrorReason Type = 1;
+    string Message = 2;
+    repeated IT.WebServices.Fragments.ValidationIssue Validation = 3;
+}
+
+enum PageErrorReason {
+    PAGE_REASON_UNSPECIFIED = 0;
+    
+    // Page Creation 100-149
+    CREATE_PAGE_ERROR_URL_CONFLICT = 100;
+    CREATE_PAGE_ERROR_INVALID_CONTENT = 101;
+    CREATE_PAGE_ERROR_UNAUTHORIZED = 102;
+    CREATE_PAGE_ERROR_UNKNOWN = 149;
+    
+    // Page Retrieval 200-249
+    GET_PAGE_ERROR_NOT_FOUND = 200;
+    GET_PAGE_ERROR_UNAUTHORIZED = 201;
+    GET_PAGE_ERROR_UNKNOWN = 249;
+    
+    // Page Modification 300-349
+    MODIFY_PAGE_ERROR_NOT_FOUND = 300;
+    MODIFY_PAGE_ERROR_UNAUTHORIZED = 301;
+    MODIFY_PAGE_ERROR_URL_CONFLICT = 302;
+    MODIFY_PAGE_ERROR_UNKNOWN = 349;
+    
+    // Page Publishing 400-449
+    PUBLISH_PAGE_ERROR_NOT_FOUND = 400;
+    PUBLISH_PAGE_ERROR_UNAUTHORIZED = 401;
+    PUBLISH_PAGE_ERROR_INVALID_DATE = 402;
+    PUBLISH_PAGE_ERROR_UNKNOWN = 449;
+    
+    // Page Deletion 500-549
+    DELETE_PAGE_ERROR_NOT_FOUND = 500;
+    DELETE_PAGE_ERROR_UNAUTHORIZED = 501;
+    DELETE_PAGE_ERROR_UNKNOWN = 549;
+    
+    // Page Search 600-649
+    SEARCH_PAGE_ERROR_INVALID_QUERY = 600;
+    SEARCH_PAGE_ERROR_UNKNOWN = 649;
+    
+    // Generic 900-999
+    PAGE_ERROR_SERVICE_OFFLINE = 900;
+    PAGE_ERROR_VALIDATION_FAILED = 901;
+    PAGE_ERROR_UNAUTHORIZED = 902;
+    PAGE_ERROR_UNKNOWN = 999;
+}

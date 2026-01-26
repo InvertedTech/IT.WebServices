@@ -64,11 +64,11 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             newEvent.SinglePrivate = new();
 
             var res = await _eventProvider.Create(newEvent);
-            if (res != CreateEventErrorType.CreateEventNoError)
+            if (!res)
             {
                 return new AdminCreateEventResponse()
                 {
-                    Error = new() { CreateEventError = res, Message = "An Error Ocurred" },
+                    Error = new() { Type = EventErrorReason.CreateEventErrorUnknown, Message = "An Error Ocurred" },
                 };
             }
 
@@ -76,7 +76,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 Error = new()
                 {
-                    CreateEventError = CreateEventErrorType.CreateEventNoError,
+                    Type = EventErrorReason.CreateEventNoError,
                     Message = "Success",
                 },
                 Event = newEvent,
@@ -95,8 +95,8 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 response.Error = new EventError
                 {
-                    CreateRecurringEventError =
-                        CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest,
+                    Type =
+                        EventErrorReason.CreateRecurringEventErrorInvalidRequest,
                     Message = "Missing Data or Recurrence Rule.",
                 };
                 return response;
@@ -155,11 +155,11 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             // Persist
             var result = await _eventProvider.CreateRecurring(records);
 
-            if (result != CreateRecurringEventErrorType.CreateRecurringEventNoError)
+            if (!result)
             {
                 response.Error = new EventError
                 {
-                    CreateRecurringEventError = result,
+                    Type = EventErrorReason.CreateRecurringEventErrorUnknown,
                     Message = "Failed to persist recurring events.",
                 };
                 return response;
@@ -167,11 +167,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
 
             // Return the "template" event (first instance)
             response.Event = records.First();
-            response.Error = new EventError
-            {
-                CreateRecurringEventError =
-                    CreateRecurringEventErrorType.CreateRecurringEventNoError,
-            };
+            response.Error = null;
             return response;
         }
 
@@ -188,13 +184,21 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                 {
                     Error = new()
                     {
-                        GetEventError = GetEventErrorType.GetEventUnknown,
+                        Type = EventErrorReason.GetEventErrorUnknown,
                         Message = "Invalid Id",
                     },
                 };
 
             var found = await _eventProvider.GetById(eventId);
-            return new AdminGetEventResponse() { Event = found.Item1 };
+            if (found == null)
+            {
+                return new AdminGetEventResponse()
+                {
+                    Error = new() { Type = EventErrorReason.GetEventErrorNotFound, Message = "Event not found" }
+                };
+            }
+
+            return new AdminGetEventResponse() { Event = found, Error = null };
         }
         
         [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
@@ -238,18 +242,18 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 res.Error = new EventError
                 {
-                    CreateEventError = CreateEventErrorType.CreateEventInvalidRequest,
+                    Type = EventErrorReason.CreateEventErrorInvalidRequest,
                     Message = "Invalid EventId passed",
                 };
                 return res;
             }
 
-            var (existing, error) = await _eventProvider.GetById(eventId);
+            var existing = await _eventProvider.GetById(eventId);
             if (existing == null || existing.OneOfType != EventRecordOneOfType.EventOneOfSingle)
             {
                 res.Error = new EventError
                 {
-                    CreateEventError = CreateEventErrorType.CreateEventInvalidRequest,
+                    Type = EventErrorReason.CreateEventErrorInvalidRequest,
                     Message = "Single event not found or event is not modifiable",
                 };
                 return res;
@@ -263,7 +267,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             single.Title = newData.Title;
             single.Description = newData.Description;
             single.Venue = newData.Venue;
-            single.Location = newData.Venue?.Name ?? "";
+            //single.Location = newData.Venue?.Name ?? "";
             single.StartOnUTC = newData.StartTimeUTC;
             single.EndOnUTC = newData.EndTimeUTC;
             single.Tags.Clear();
@@ -285,21 +289,16 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                     updated.SinglePrivate.ExtraMetadata.Add(newData.ExtraData);
             }
 
-            var updateError = await _eventProvider.Update(updated);
-            if (updateError != CreateEventErrorType.CreateEventNoError)
+            var updateSuccess = await _eventProvider.Update(updated);
+            if (!updateSuccess)
             {
                 res.Error = new EventError
                 {
-                    CreateEventError = updateError,
+                    Type = EventErrorReason.CreateEventErrorUnknown,
                     Message = "Failed to update the event",
                 };
                 return res;
             }
-
-            res.Error = new EventError
-            {
-                CreateEventError = CreateEventErrorType.CreateEventNoError,
-            };
 
             return res;
         }
@@ -316,31 +315,33 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 res.Error = new()
                 {
-                    CancelEventError = CancelEventErrorType.CancelEventUnknown,
+                    Type = EventErrorReason.CancelEventErrorUnknown,
                     Message = "Invalid Event Id",
                 };
                 return res;
             }
 
             var found = await _eventProvider.GetById(eventId);
-            if (found.Item2 != GetEventErrorType.GetEventNoError)
+            if (found == null)
             {
                 res.Error = new()
                 {
-                    CancelEventError = CancelEventErrorType.CancelEventUnknown,
+                    Type = EventErrorReason.GetEventErrorNotFound,
                     Message = "Error Getting Event To Cancel",
                 };
+                return res;
             }
 
-            var rec = found.Item1;
+            var rec = found;
             var now = Timestamp.FromDateTime(DateTime.UtcNow);
             if (rec == null)
             {
                 res.Error = new()
                 {
-                    CancelEventError = CancelEventErrorType.CancelEventNotFound,
+                    Type = EventErrorReason.CancelEventErrorNotFound,
                     Message = "Event Not Found",
                 };
+                return res;
             }
 
             if (rec.OneOfType == EventRecordOneOfType.EventOneOfRecurring)
@@ -359,7 +360,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 res.Error = new()
                 {
-                    CancelEventError = CancelEventErrorType.CancelEventUnknown,
+                    Type = EventErrorReason.CancelEventErrorUnknown,
                     Message = "Error Canceling Event",
                 };
                 return res;
@@ -367,21 +368,17 @@ namespace IT.WebServices.Authorization.Events.Services.Services
 
             var cancelRes = await _eventProvider.Update(rec);
 
-            if (cancelRes != CreateEventErrorType.CreateEventNoError)
+            if (!cancelRes)
             {
                 res.Error = new()
                 {
-                    CancelEventError = CancelEventErrorType.CancelEventUnknown,
+                    Type = EventErrorReason.CancelEventErrorUnknown,
                     Message = "Unknown Error Ocurred While Canceling Event",
                 };
             }
             else
             {
-                res.Error = new()
-                {
-                    CancelEventError = CancelEventErrorType.CancelEventNoError,
-                    Message = "Canceled Event",
-                };
+                res.Error = null;
             }
 
             return res;
@@ -399,8 +396,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             {
                 response.Error = new EventError
                 {
-                    CreateRecurringEventError =
-                        CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest,
+                    Type = EventErrorReason.CreateRecurringEventErrorInvalidRequest,
                     Message = "RecurrenceHash is required.",
                 };
                 return response;
@@ -437,21 +433,17 @@ namespace IT.WebServices.Authorization.Events.Services.Services
 
                 var updateResult = await _eventProvider.UpdateRecurring(toCancel);
 
-                if (updateResult != CreateRecurringEventErrorType.CreateRecurringEventNoError)
+                if (!updateResult)
                 {
                     response.Error = new EventError
                     {
-                        CreateRecurringEventError = updateResult,
+                        Type = EventErrorReason.CreateRecurringEventErrorUnknown,
                         Message = "Failed to update recurring events during cancellation.",
                     };
                     return response;
                 }
 
-                response.Error = new EventError
-                {
-                    CreateRecurringEventError =
-                        CreateRecurringEventErrorType.CreateRecurringEventNoError,
-                };
+                response.Error = null;
                 return response;
             }
             catch (Exception ex)
@@ -463,8 +455,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                 );
                 response.Error = new EventError
                 {
-                    CreateRecurringEventError =
-                        CreateRecurringEventErrorType.CreateRecurringEventUnknown,
+                    Type = EventErrorReason.CreateRecurringEventErrorUnknown,
                     Message = "Unexpected error occurred.",
                 };
                 return response;

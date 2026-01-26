@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "rootDir": "./ts-gen",
+    "outDir": "./dist/protos",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "stripInternal": false,
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "include": [
+    "ts-gen/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

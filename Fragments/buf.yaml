@@ -1,0 +1,24 @@
+version: v2
+
+modules:
+    - path: .
+      excludes:
+          - ts-gen/**
+          - dist/**
+          - node_modules/**
+          - __pack_extract__/**
+          - bin/**
+          - obj/**
+      name: buf.build/amingst/inverted-tech-fragments
+
+deps:
+    - buf.build/googleapis/googleapis
+    - buf.build/bufbuild/protovalidate
+
+lint:
+    use:
+        - STANDARD
+
+breaking:
+    use:
+        - FILE

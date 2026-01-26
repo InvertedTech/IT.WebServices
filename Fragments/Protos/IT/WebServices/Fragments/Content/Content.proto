@@ -4,9 +4,11 @@ package IT.WebServices.Fragments.Content;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Content/ContentRecord.proto";
 
-// Service for Content fragment interface
+// TODO: Move Error Structure
+// TODO: Add Other Validation Types To Requests
 service ContentInterface {
   rpc AnnounceContent (AnnounceContentRequest) returns (AnnounceContentResponse)
   {
@@ -117,7 +119,7 @@ service ContentInterface {
 }
   
 message AnnounceContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];   // Guid for the content record
   google.protobuf.Timestamp AnnounceOnUTC = 3; // UTC timestamp when content was or will be announced
 }
   
@@ -126,7 +128,8 @@ message AnnounceContentResponse {
 }
   
 message CreateContentRequest {
-  ContentPublicData Public = 1;
+  ContentPublicData Public = 1 [(buf.validate.field).required = true];
+  // Private is optional for client requests; server populates as needed
   ContentPrivateData Private = 2;
 }
   
@@ -135,7 +138,7 @@ message CreateContentResponse {
 }
 
 message DeleteContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1;// Guid for the content record
 }
   
 message DeleteContentResponse {
@@ -158,7 +161,7 @@ message GetAllContentRequest {
 }
   
 message GetAllContentResponse {
-  repeated ContentListRecord Records = 1;
+  repeated ContentListRecord Records = 1 ;
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
@@ -178,14 +181,14 @@ message GetAllContentAdminRequest {
 }
   
 message GetAllContentAdminResponse {
-  repeated ContentListRecord Records = 1;
+  repeated ContentListRecord Records = 1 [(buf.validate.field).required = true];
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
 }
   
 message GetContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
 }
   
 message GetContentResponse {
@@ -193,19 +196,19 @@ message GetContentResponse {
 }
   
 message GetContentByUrlRequest {
-  string ContentUrl = 1;
+  string ContentUrl = 1 [(buf.validate.field).required = true];
 }
   
 message GetContentByUrlResponse {
-  ContentPublicRecord Record = 1;
+  ContentPublicRecord Record = 1 ;
 }
   
 message GetContentAdminRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true,(buf.validate.field).string.uuid = true];   // Guid for the content record
 }
   
 message GetContentAdminResponse {
-  ContentRecord Record = 1;
+  ContentRecord Record = 1 ;
 }
 
 message GetRecentCategoriesRequest {
@@ -213,7 +216,7 @@ message GetRecentCategoriesRequest {
 }
   
 message GetRecentCategoriesResponse {
-  repeated string CategoryIds = 1;
+  repeated string CategoryIds = 1 ;
 }
 
 message GetRecentTagsRequest {
@@ -221,11 +224,11 @@ message GetRecentTagsRequest {
 }
   
 message GetRecentTagsResponse {
-  repeated string Tags = 1;
+  repeated string Tags = 1 ;
 }
   
 message GetRelatedContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
   uint32 PageSize = 2;
   uint32 PageOffset = 3;
 }
@@ -238,13 +241,13 @@ message GetRelatedContentResponse {
 }
   
 message ModifyContentRequest {
-  string ContentID = 1;   // Guid for the content record
-  ContentPublicData Public = 2;
-  ContentPrivateData Private = 3;
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
+  ContentPublicData Public = 2 [(buf.validate.field).required = true];
+  ContentPrivateData Private = 3 [(buf.validate.field).required = true];
 }
   
 message ModifyContentResponse {
-  ContentRecord Record = 1;
+  ContentRecord Record = 1 ;
 }
 
 message ContentListRecord {
@@ -267,7 +270,7 @@ message ContentListRecord {
 }
 
 message PublishContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
   google.protobuf.Timestamp PublishOnUTC = 3; // UTC timestamp when content was or will be published
 }
   
@@ -295,15 +298,15 @@ message SearchContentResponse {
 }
   
 message UnannounceContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
 }
   
 message UnannounceContentResponse {
-  ContentRecord Record = 1;
+  ContentRecord Record = 1 ;
 }
   
 message UndeleteContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
 }
   
 message UndeleteContentResponse {
@@ -311,7 +314,7 @@ message UndeleteContentResponse {
 }
   
 message UnpublishContentRequest {
-  string ContentID = 1;   // Guid for the content record
+  string ContentID = 1 [(buf.validate.field).required = true];   // Guid for the content record
 }
   
 message UnpublishContentResponse {
@@ -319,15 +322,14 @@ message UnpublishContentResponse {
 }
   
 enum ContentType {
-  None = 0;
-  Audio = 1;
-  Picture = 2;
-  Video = 3;
-  Written = 4;
+  ContentNone = 0;
+  ContentAudio = 1;
+  ContentPicture = 2;
+  ContentVideo = 3;
+  ContentWritten = 4;
 }
 
 message SubscriptionLevelSearch {
   uint32 MinimumLevel = 1;
   uint32 MaximumLevel = 2;
 }
-  

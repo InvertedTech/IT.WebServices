@@ -163,7 +163,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -178,11 +178,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -195,7 +195,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -210,11 +210,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -227,7 +227,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -242,11 +242,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -259,7 +259,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -274,11 +274,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -291,7 +291,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -306,11 +306,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -323,7 +323,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -338,11 +338,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -355,7 +355,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -370,11 +370,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -387,7 +387,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -402,11 +402,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -419,7 +419,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -434,11 +434,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -451,7 +451,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -466,11 +466,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -483,7 +483,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -498,11 +498,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -515,7 +515,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -530,11 +530,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -547,7 +547,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -562,11 +562,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -579,7 +579,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -594,11 +594,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -611,7 +611,7 @@ namespace IT.WebServices.Settings.Services
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -626,11 +626,11 @@ namespace IT.WebServices.Settings.Services
 
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -689,18 +689,9 @@ namespace IT.WebServices.Settings.Services
                             //{
                             //    Enabled = false,
                             //},
-                            Paypal = new()
-                            {
-                                Enabled = false,
-                            },
-                            Crypto = new()
-                            {
-                                Enabled = false,
-                            },
-                            Manual = new()
-                            {
-                                Enabled = true,
-                            }
+                            Paypal = new() { Enabled = false },
+                            Crypto = new() { Enabled = false },
+                            Manual = new() { Enabled = true },
                         },
                         CMS = new()
                         {
@@ -781,12 +772,15 @@ namespace IT.WebServices.Settings.Services
         }
 
         [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
-        public override async Task<ModifyEventPublicSettingsResponse> ModifyEventPublicSettings(ModifyEventPublicSettingsRequest request, ServerCallContext context)
+        public override async Task<ModifyEventPublicSettingsResponse> ModifyEventPublicSettings(
+            ModifyEventPublicSettingsRequest request,
+            ServerCallContext context
+        )
         {
             try
             {
                 if (request.Data == null)
-                    return new() { Error = ModifyResponseErrorType.UnknownError };
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
                 var record = await dataProvider.Get();
@@ -798,11 +792,65 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
                 await dataProvider.Save(record);
 
-                return new() { Error = ModifyResponseErrorType.NoError };
+                return new() { Error = null };
             }
             catch
             {
-                return new() { Error = ModifyResponseErrorType.UnknownError };
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
+            }
+        }
+
+        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyEventPrivateSettingsResponse> ModifyEventPrivateSettings(
+            ModifyEventPrivateSettingsRequest request,
+            ServerCallContext context
+        )
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Private.Events = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                return new() { Error = null };
+            }
+            catch
+            {
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
+            }
+        }
+
+        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyEventOwnerSettingsResponse> ModifyEventOwnerSettings(
+            ModifyEventOwnerSettingsRequest request,
+            ServerCallContext context
+        )
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Owner.Events = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                return new() { Error = null };
+            }
+            catch
+            {
+                return new() { Error = SettingsErrorExtensions.CreateError(SettingsErrorReason.SettingsErrorUnknown, "Unknown error occurred") };
             }
         }
     }

@@ -3,29 +3,11 @@
 package IT.WebServices.Fragments.Authorization.Events;
 import "google/protobuf/timestamp.proto";
 
-enum EventTicketClassType {
-	TICKET_GENERAL_ACCESS = 0;
-	TICKET_ALL_MEMBER_ACCESS = 1;
-	TICKET_MEMBER_LEVEL_ACCESS = 2;
-}
-
 enum EventTicketStatus {
 	TICKET_STATUS_AVAILABLE = 0;
 	TICKET_STATUS_USED = 1;
 	TICKET_STATUS_EXPIRED = 2;
 	TICKET_STATUS_CANCELED = 3;
-}
-
-message EventTicketClass {
-	string TicketClassId = 1;
-	EventTicketClassType Type = 2;
-	string Name = 3;
-	uint32 AmountAvailible = 4;
-	uint32 MaxTicketsPerUser = 5;
-	bool IsTransferrable = 6;
-	uint32 PricePerTicketCents = 7;
-	google.protobuf.Timestamp SaleStartOnUTC = 21;
-	google.protobuf.Timestamp SaleEndOnUTC = 22;
 }
 
 message EventTicketPublicRecord {

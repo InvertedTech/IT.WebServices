@@ -154,14 +154,14 @@ namespace IT.WebServices.Content.CMS.Services.Data
                 AssetListRecord listRec = null;
                 switch (assetType)
                 {
-                    case AssetType.Audio:
-                        if (assetType == AssetType.Image)
+                    case AssetType.AssetAudio:
+                        if (assetType == AssetType.AssetImage)
                             continue;
 
                         listRec = rec.ToAssetListRecord();
                         break;
-                    case AssetType.Image:
-                        if (assetType == AssetType.Audio)
+                    case AssetType.AssetImage:
+                        if (assetType == AssetType.AssetAudio)
                             continue;
 
                         listRec = rec.ToAssetListRecord();

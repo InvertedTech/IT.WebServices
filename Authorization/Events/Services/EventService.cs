@@ -48,50 +48,25 @@ namespace IT.WebServices.Authorization.Events.Services
         {
 
             Guid.TryParse(request.EventId, out var eventId);
-            if (eventId != Guid.Empty)
+            if (eventId == Guid.Empty)
                 return new GetEventResponse()
                 {
-                    Error = new()
-                    {
-                        GetEventError = GetEventErrorType.GetEventUnknown,
-                        Message = "Invalid Id",
-                    },
+                    Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Event ID")
                 };
 
-            var found = await _eventProvider.GetById(eventId);
-            var rec = found.Item1;
-            if (found.Item2 != GetEventErrorType.GetEventNoError)
-            {
-                return new GetEventResponse()
-                {
-                    Error = new()
-                    {
-                        GetEventError = found.Item2,
-                        Message = "Error Getting Event",
-                    },
-                };
-            }
-
+            var rec = await _eventProvider.GetById(eventId);
             if (rec == null)
             {
                 return new GetEventResponse()
                 {
-                    Error = new()
-                    {
-                        GetEventError = GetEventErrorType.GetEventNotFound,
-                        Message = "Event Not Found",
-                    },
+                    Error = EventErrorExtensions.CreateEventNotFoundError(eventId.ToString())
                 };
             }
 
             return  new GetEventResponse()
             {
                 Event = rec.GetPublicRecord(),
-                Error = new EventError()
-                {
-                    GetEventError = GetEventErrorType.GetEventNoError,
-                    Message = "Success",
-                },
+                Error = null // Success case - no error
             };
         }
 
@@ -126,11 +101,7 @@ namespace IT.WebServices.Authorization.Events.Services
                 }
             }
 
-            res.Error = new EventError()
-            {
-                GetEventError = GetEventErrorType.GetEventNoError,
-                Message = "Success",
-            };
+            res.Error = null; // Success case - no error
             return res;
         }
 
@@ -164,11 +135,7 @@ namespace IT.WebServices.Authorization.Events.Services
             var foundTicket = tickets.FirstOrDefault(t => t.TicketId == request.TicketId);
             if (foundTicket == null)
             {
-                res.Error = new TicketError()
-                {
-                    CancelTicketError = CancelTicketErrorType.CancelTicketTicketNotFound,
-                    Message = "Ticket not found",
-                };
+                res.Error = EventErrorExtensions.CreateTicketNotFoundError(request.TicketId);
                 return res;
             }
 
@@ -177,138 +144,112 @@ namespace IT.WebServices.Authorization.Events.Services
            var success = await _ticketProvider.Update(foundTicket);
             if (!success)
             {
-                res.Error = new TicketError()
-                {
-                    CancelTicketError = CancelTicketErrorType.CancelTicketTicketNotFound,
-                    Message = "Unknown Error Has Occured",
-                };
+                res.Error = EventErrorExtensions.CreateError(EventErrorReason.CancelTicketErrorUnknown, "Unknown error occurred while canceling ticket");
                 return res;
             }
-            res.Error = new TicketError()
-            {
-                CancelTicketError = CancelTicketErrorType.CancelTicketNoError,
-                Message = "Success",
-            };
+            res.Error = null; // Success case - no error
             return res;
         }
 
+        // TODO: Handle Event Count Update
         public override async Task<ReserveTicketForEventResponse> ReserveTicketForEvent(ReserveTicketForEventRequest request, ServerCallContext context)
         {
             var res = new ReserveTicketForEventResponse();
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
             {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketUnauthorized,
-                    Message = "User not authorized",
-                };
+                res.Error = EventErrorExtensions.CreateUnauthorizedTicketError("reserve ticket");
                 return res;
             }
 
             Guid.TryParse(request.EventId, out var eventId);
             if (eventId == Guid.Empty)
             {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketInvalidRequest,
-                    Message = "Invalid Event Id",
-                };
+                res.Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Event ID");
                 return res;
             }
 
-            var (eventRecord, eventError) = await _eventProvider.GetById(eventId);
-            if (eventRecord == null || eventError != GetEventErrorType.GetEventNoError)
+            var eventRecord = await _eventProvider.GetById(eventId);
+            if (eventRecord == null)
             {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketEventNotFound,
-                    Message = "Event not found",
-                };
+                res.Error = EventErrorExtensions.CreateEventNotFoundError(eventId.ToString());
                 return res;
             }
 
             var ticketClass = _ticketClassHelper.GetById(request.TicketClassId);
             if (ticketClass == null)
             {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketInvalidRequest,
-                    Message = "Invalid Ticket Class Id",
-                };
+                res.Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Ticket Class ID");
                 return res;
             }
 
-            if (!ticketClass.HasRequestedAmount((int) request.Quantity))
-            {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketInvalidRequest,
-                    Message = "No tickets available for this class",
-                };
-                return res;
-            }
+            // TODO: Rework generation to include the EventTicketClass
+            //if (!ticketClass.HasRequestedAmount((int) request.Quantity))
+            //{
+            //    res.Error = new TicketError()
+            //    {
+            //        ReserveTicketError = ReserveTicketErrorType.ReserveTicketInvalidRequest,
+            //        Message = "No tickets available for this class",
+            //    };
+            //    return res;
+            //}
 
-            var ticketsReservedByUser = 0;
-            await foreach (var ticket in _ticketProvider.GetAllByUser(user.Id))
-            {
-                if (ticket.Public.EventId == eventId.ToString())
-                {
-                    ticketsReservedByUser++;
-                }
-            }
+            //var ticketsReservedByUser = 0;
+            //await foreach (var ticket in _ticketProvider.GetAllByUser(user.Id))
+            //{
+            //    if (ticket.Public.EventId == eventId.ToString())
+            //    {
+            //        ticketsReservedByUser++;
+            //    }
+            //}
 
-            var ticketLimitHit = ticketClass.HitReservationLimit((int)request.Quantity, ticketsReservedByUser);
+            //var ticketLimitHit = ticketClass.HitReservationLimit((int)request.Quantity, ticketsReservedByUser);
 
-            if (ticketLimitHit)
-            {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketMaxLimitReached,
-                    Message = $"You can only reserve {ticketClass.MaxTicketsPerUser} tickets per user",
-                };
-                return res;
-            }
+            //if (ticketLimitHit)
+            //{
+            //    res.Error = new TicketError()
+            //    {
+            //        ReserveTicketError = ReserveTicketErrorType.ReserveTicketMaxLimitReached,
+            //        Message = $"You can only reserve {ticketClass.MaxTicketsPerUser} tickets per user",
+            //    };
+            //    return res;
+            //}
 
-            if (!ticketClass.IsOnSale())
-            {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketNotOnSale,
-                    Message = "Tickets are not on sale at this time",
-                };
-                return res;
-            }
+            //if (!ticketClass.IsOnSale())
+            //{
+            //    res.Error = new TicketError()
+            //    {
+            //        ReserveTicketError = ReserveTicketErrorType.ReserveTicketNotOnSale,
+            //        Message = "Tickets are not on sale at this time",
+            //    };
+            //    return res;
+            //}
 
-            var ticketsToReserve = EventTicketRecord.GenerateRecords((int) request.Quantity, eventRecord, user.Id.ToString(), ticketClass);
-            if (ticketsToReserve.Count == 0)
-            {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketUnknown,
-                    Message = "Unknown Error Has Occured"
-                };
-                return res;
-            }
+            //var ticketsToReserve = EventTicketRecord.GenerateRecords((int) request.Quantity, eventRecord, user.Id.ToString(), ticketClass);
+            //if (ticketsToReserve.Count == 0)
+            //{
+            //    res.Error = new TicketError()
+            //    {
+            //        ReserveTicketError = ReserveTicketErrorType.ReserveTicketUnknown,
+            //        Message = "Unknown Error Has Occured"
+            //    };
+            //    return res;
+            //}
 
-            var success = await _ticketProvider.Create(ticketsToReserve);
-            if (!success)
-            {
-                res.Error = new TicketError()
-                {
-                    ReserveTicketError = ReserveTicketErrorType.ReserveTicketUnknown,
-                    Message = "Unknown Error Has Occured"
-                };
-                return res;
-            }
+            //var success = await _ticketProvider.Create(ticketsToReserve);
+            //if (!success)
+            //{
+            //    res.Error = new TicketError()
+            //    {
+            //        ReserveTicketError = ReserveTicketErrorType.ReserveTicketUnknown,
+            //        Message = "Unknown Error Has Occured"
+            //    };
+            //    return res;
+            //}
 
-            res.Tickets.AddRange(ticketsToReserve);
+            //res.Tickets.AddRange(ticketsToReserve);
             
-            res.Error = new TicketError()
-            {
-                ReserveTicketError = ReserveTicketErrorType.ReserveTicketNoError,
-                Message = "Success",
-            };
+            res.Error = null; // Success case - no error
             return res;
         }
 
@@ -321,41 +262,25 @@ namespace IT.WebServices.Authorization.Events.Services
 
             if (foundTicket == null)
             {
-                res.Error = new TicketError()
-                {
-                    UseTicketError = UseTicketErrorType.UseTicketTicketNotFound,
-                    Message = "Ticket not found",
-                };
+                res.Error = EventErrorExtensions.CreateTicketNotFoundError(request.TicketId);
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusUsed)
             {
-                res.Error = new TicketError()
-                {
-                    UseTicketError = UseTicketErrorType.UseTicketAlreadyUsed,
-                    Message = "Ticket is not available for use",
-                };
+                res.Error = EventErrorExtensions.CreateTicketAlreadyUsedError(request.TicketId);
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusCanceled)
             {
-                res.Error = new TicketError()
-                {
-                    UseTicketError = UseTicketErrorType.UseTicketCanceled,
-                    Message = "Ticket is canceled and cannot be used",
-                };
+                res.Error = EventErrorExtensions.CreateTicketCanceledError(request.TicketId);
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusExpired)
             {
-                res.Error = new TicketError()
-                {
-                    UseTicketError = UseTicketErrorType.UseTicketExpired,
-                    Message = "Ticket is expired and cannot be used",
-                };
+                res.Error = EventErrorExtensions.CreateTicketExpiredError(request.TicketId);
                 return res;
             }
 
@@ -364,19 +289,11 @@ namespace IT.WebServices.Authorization.Events.Services
             var success = await _ticketProvider.Update(foundTicket);
             if (!success)
             {
-                res.Error = new TicketError()
-                {
-                    UseTicketError = UseTicketErrorType.UseTicketUnknown,
-                    Message = "Unknown Error Has Occured",
-                };
+                res.Error = EventErrorExtensions.CreateError(EventErrorReason.UseTicketErrorUnknown, "Unknown error occurred while using ticket");
                 return res;
             }
 
-            res.Error = new TicketError()
-            {
-                UseTicketError = UseTicketErrorType.UseTicketNoError,
-                Message = "Success",
-            };
+            res.Error = null; // Success case - no error
             return res;
         }
     }

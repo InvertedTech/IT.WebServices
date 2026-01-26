@@ -30,31 +30,39 @@ namespace IT.WebServices.Authorization.Events.Data
             _dataDir = root.CreateSubdirectory("event").CreateSubdirectory("events");
         }
 
-        public async Task<CreateEventErrorType> Create(EventRecord record)
+        public async Task<bool> Create(EventRecord record)
         {
-            var file = GetDataFilePath(record.EventId.ToGuid());
-            if (file.Exists)
-                return CreateEventErrorType.CreateEventFileExists; // TODO: Create File Exists Error Type
+            try
+            {
+                var file = GetDataFilePath(record.EventId.ToGuid());
+                if (file.Exists)
+                    return false; // File already exists
 
-            await Save(record);
-            return CreateEventErrorType.CreateEventNoError;
+                await Save(record);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create event {EventId}", record.EventId);
+                return false;
+            }
         }
 
-        public async Task<CreateRecurringEventErrorType> CreateRecurring(
+        public async Task<bool> CreateRecurring(
             IEnumerable<EventRecord> records
         )
         {
             if (records == null || !records.Any())
-                return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                return false;
 
             foreach (var record in records)
             {
                 if (string.IsNullOrWhiteSpace(record.EventId))
-                    return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                    return false;
 
                 // Sanity check: make sure all records are of recurring type
                 if (record.OneOfType != EventRecordOneOfType.EventOneOfRecurring)
-                    return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                    return false;
 
                 var file = GetDataFilePath(record.EventId.ToGuid());
                 if (file.Exists)
@@ -64,7 +72,7 @@ namespace IT.WebServices.Authorization.Events.Data
                         record.EventId,
                         file.FullName
                     );
-                    return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                    return false;
                 }
 
                 try
@@ -78,28 +86,28 @@ namespace IT.WebServices.Authorization.Events.Data
                         "Failed to save recurring event {EventId}",
                         record.EventId
                     );
-                    return CreateRecurringEventErrorType.CreateRecurringEventUnknown;
+                    return false;
                 }
             }
 
-            return CreateRecurringEventErrorType.CreateRecurringEventNoError;
+            return true;
         }
 
-        public async Task<(EventRecord, GetEventErrorType)> GetById(Guid id)
+        public async Task<EventRecord?> GetById(Guid id)
         {
-            var fd = GetDataFilePath(id);
-            if (!fd.Exists)
-                return (null, GetEventErrorType.GetEventNotFound);
-
-            var record = EventRecord.Parser.ParseFrom(await File.ReadAllBytesAsync(fd.FullName));
-
-            if (record == null)
+            try
             {
-                return (null, GetEventErrorType.GetEventUnknown);
+                var fd = GetDataFilePath(id);
+                if (!fd.Exists)
+                    return null;
+
+                var record = EventRecord.Parser.ParseFrom(await File.ReadAllBytesAsync(fd.FullName));
+                return record;
             }
-            else
+            catch (Exception ex)
             {
-                return (record, GetEventErrorType.GetEventNoError);
+                _logger.LogError(ex, "Failed to get event {EventId}", id);
+                return null;
             }
         }
 
@@ -116,27 +124,34 @@ namespace IT.WebServices.Authorization.Events.Data
             }
         }
 
-        public async Task<CreateEventErrorType> Update(EventRecord record)
+        public async Task<bool> Update(EventRecord record)
         {
-            // TODO: Flesh Out
-            await Save(record);
-            return CreateEventErrorType.CreateEventNoError;
+            try
+            {
+                await Save(record);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update event {EventId}", record.EventId);
+                return false;
+            }
         }
 
-        public async Task<CreateRecurringEventErrorType> UpdateRecurring(
+        public async Task<bool> UpdateRecurring(
             IEnumerable<EventRecord> records
         )
         {
             if (records == null || !records.Any())
-                return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                return false;
 
             foreach (var record in records)
             {
                 if (string.IsNullOrWhiteSpace(record.EventId))
-                    return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                    return false;
 
                 if (record.OneOfType != EventRecordOneOfType.EventOneOfRecurring)
-                    return CreateRecurringEventErrorType.CreateRecurringEventInvalidRequest;
+                    return false;
 
                 try
                 {
@@ -149,11 +164,11 @@ namespace IT.WebServices.Authorization.Events.Data
                         "Failed to save recurring event {EventId} during update.",
                         record.EventId
                     );
-                    return CreateRecurringEventErrorType.CreateRecurringEventUnknown;
+                    return false;
                 }
             }
 
-            return CreateRecurringEventErrorType.CreateRecurringEventNoError;
+            return true;
         }
 
         public Task<bool> Exists(Guid eventId)

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 package IT.WebServices.Fragments.Notification;
+import "buf/validate/validate.proto";
 
 message SendgridOwnerSettings {
   bool Enabled = 1;
-  string ApiKeySecret = 2;
-  string SendFromAddress = 3;
+  string ApiKeySecret = 2 [(buf.validate.field).string.min_len = 1];
+  string SendFromAddress = 3 [(buf.validate.field).string.email = true];
 }
-

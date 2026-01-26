@@ -3,6 +3,7 @@
 package IT.WebServices.Fragments;
 import "google/protobuf/timestamp.proto";
 
+
 enum WeekdayEnum {
 	Sunday = 0;
 	Monday = 1;

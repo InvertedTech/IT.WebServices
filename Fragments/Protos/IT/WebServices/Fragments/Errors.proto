@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package IT.WebServices.Fragments;
+
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+
+message ValidationIssue {
+  string field = 1;      
+  string message = 2;   
+  string code = 3;  
+}

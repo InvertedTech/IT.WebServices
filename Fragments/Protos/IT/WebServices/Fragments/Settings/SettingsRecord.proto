@@ -3,6 +3,7 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Settings;
 
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/SharedTypes.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Crypto/CryptoSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Manual/ManualPaymentSettings.proto";
@@ -52,8 +53,8 @@ message SettingsOwnerData {
 }
 
 message PersonalizationPublicRecord {
-  string Title = 1;
-  string MetaDescription = 2;
+  string Title = 1 [(buf.validate.field).string.min_len = 1];
+  string MetaDescription = 2 [(buf.validate.field).string.max_len = 300];
   bool DefaultToDarkMode = 3;
   string ProfileImageAssetId = 4;
   string HeaderImageAssetId = 5;
@@ -126,11 +127,11 @@ message NotificationOwnerRecord {
 message ChannelRecord {
   string ChannelId = 1;
   string ParentChannelId = 2;
-  string DisplayName = 3;
+  string DisplayName = 3 [(buf.validate.field).string.min_len = 1];
   string UrlStub = 4;
   string ImageAssetId = 5;
-  string YoutubeUrl = 101;
-  string RumbleUrl = 102;
+  string YoutubeUrl = 101 [(buf.validate.field).string.uri = true];
+  string RumbleUrl = 102 [(buf.validate.field).string.uri = true];
 
   string OldChannelId = 1001;
 }
@@ -138,15 +139,14 @@ message ChannelRecord {
 message CategoryRecord {
   string CategoryId = 1;
   string ParentCategoryId = 2;
-  string DisplayName = 3;
-  string UrlStub = 4;
-
+  string DisplayName = 3 [(buf.validate.field).string.min_len = 1];
+  string UrlStub = 4 ;
   string OldCategoryId = 1001;
 }
 
 message CMSPublicMenuRecord {
-  string AudioMenuLinkName = 1;
-  string PictureMenuLinkName = 2;
-  string VideoMenuLinkName = 3;
-  string WrittenMenuLinkName = 4;
+  string AudioMenuLinkName = 1 [(buf.validate.field).string.max_len = 60];
+  string PictureMenuLinkName = 2 [(buf.validate.field).string.max_len = 60];
+  string VideoMenuLinkName = 3 [(buf.validate.field).string.max_len = 60];
+  string WrittenMenuLinkName = 4 [(buf.validate.field).string.max_len = 60];
 }

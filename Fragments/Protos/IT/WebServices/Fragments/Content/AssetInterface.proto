@@ -7,6 +7,8 @@ import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Content/AssetRecord.proto";
 import "Protos/IT/WebServices/Fragments/Content/AudioAssetRecord.proto";
 import "Protos/IT/WebServices/Fragments/Content/ImageAssetRecord.proto";
+import "Protos/IT/WebServices/Fragments/Content/ContentError.proto";
+import "buf/validate/validate.proto";
 
 // Service for Asset fragment interface
 service AssetInterface {
@@ -65,10 +67,11 @@ message CreateAssetRequest {
   
 message CreateAssetResponse {
   AssetRecord Record = 1;
+  ContentError Error = 2;
 }
 
 message GetAssetRequest {
-  string AssetID = 1;   // Guid for the Asset record
+  string AssetID = 1[(buf.validate.field).string.uuid = true];   // Guid for the Asset record
 }
   
 message GetAssetResponse {
@@ -77,14 +80,16 @@ message GetAssetResponse {
     AudioAssetPublicRecord Audio = 1;
     ImageAssetPublicRecord Image = 2;
   }
+  ContentError Error = 3;
 }
   
 message GetAssetAdminRequest {
-  string AssetID = 1;   // Guid for the content record
+  string AssetID = 1[(buf.validate.field).string.uuid = true];   // Guid for the content record
 }
   
 message GetAssetAdminResponse {
   AssetRecord Record = 1;
+  ContentError Error = 2;
 }
   
 message GetAssetByOldContentIDRequest {
@@ -93,13 +98,14 @@ message GetAssetByOldContentIDRequest {
   
 message GetAssetByOldContentIDResponse {
   AssetRecord Record = 1;
+  ContentError Error = 2;
 }
 
 message GetListOfIDsRequest {
 }
 
 message GetListOfIDsResponse {
-  string AssetID = 1;
+  string AssetID = 1[(buf.validate.field).string.uuid = true];
   google.protobuf.Timestamp ModifiedOnUTC = 2;
 }
 
@@ -107,7 +113,7 @@ message GetListOfOldContentIDsRequest {
 }
 
 message GetListOfOldContentIDsResponse {
-  string AssetID = 1;
+  string AssetID = 1[(buf.validate.field).string.uuid = true];
   string OldAssetID = 2;
   google.protobuf.Timestamp ModifiedOnUTC = 3;
 }
@@ -124,16 +130,17 @@ message SearchAssetResponse {
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
+  ContentError Error = 14;
 }
 
 enum AssetType {
-  None = 0;
-  Audio = 1;
-  Image = 2;
+  AssetNone = 0;
+  AssetAudio = 1;
+  AssetImage = 2;
 }
 
 message AssetListRecord {
-  string AssetID = 1;                         // Guid for the asset record
+  string AssetID = 1[(buf.validate.field).string.uuid = true];                         // Guid for the asset record
   google.protobuf.Timestamp CreatedOnUTC = 2; // UTC timestamp when content was created
   string Title = 3;
   string Caption = 4;

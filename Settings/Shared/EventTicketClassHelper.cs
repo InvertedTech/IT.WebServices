@@ -16,12 +16,12 @@ namespace IT.WebServices.Settings
             _settingsClient = settingsClient;
         }
 
-        public EventTicketClass[] GetAll()
+        public TicketClassRecord[] GetAll()
         {
             return _settingsClient.PublicData?.Events?.TicketClasses?.ToArray();
         }
 
-        public EventTicketClass GetById(string id)
+        public TicketClassRecord GetById(string id)
         {
             return _settingsClient.PublicData?.Events?.TicketClasses?.FirstOrDefault(tc =>
                 tc.TicketClassId == id

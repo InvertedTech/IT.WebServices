@@ -170,7 +170,7 @@ namespace IT.WebServices.Content.CMS.Services
 
                 var listRec = rec.Public.ToContentListRecord();
 
-                if (request.ContentType != ContentType.None)
+                if (request.ContentType != ContentType.ContentNone)
                 {
                     if (listRec.ContentType != request.ContentType)
                         continue;
@@ -260,7 +260,7 @@ namespace IT.WebServices.Content.CMS.Services
 
                 var listRec = rec.Public.ToContentListRecord();
 
-                if (request.ContentType != ContentType.None)
+                if (request.ContentType != ContentType.ContentNone)
                 {
                     if (listRec.ContentType != request.ContentType)
                         continue;
@@ -420,7 +420,7 @@ namespace IT.WebServices.Content.CMS.Services
 
                 var listRec = rec.Public.ToContentListRecord();
 
-                if (curRec.Public.Data.GetContentType() != ContentType.None)
+                if (curRec.Public.Data.GetContentType() != ContentType.ContentNone)
                 {
                     if (listRec.ContentType != curRec.Public.Data.GetContentType())
                         continue;
@@ -543,7 +543,7 @@ namespace IT.WebServices.Content.CMS.Services
 
                 var listRec = rec.Public.ToContentListRecord();
 
-                if (request.ContentType != ContentType.None)
+                if (request.ContentType != ContentType.ContentNone)
                 {
                     if (listRec.ContentType != request.ContentType)
                         continue;

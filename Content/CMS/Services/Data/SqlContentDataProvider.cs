@@ -307,7 +307,10 @@ namespace IT.WebServices.Content.CMS.Services.Data
 
                 if (!parameters.Any(p => p.ParameterName == "AudioAssetID"))
                     parameters.Add(new MySqlParameter("AudioAssetID", System.DBNull.Value));
-
+                if (!parameters.Any(p => p.ParameterName == "RumbleVideoId"))
+                    parameters.Add(new MySqlParameter("RumbleVideoId", System.DBNull.Value));
+                if (!parameters.Any(p => p.ParameterName == "YoutubeVideoId"))
+                    parameters.Add(new MySqlParameter("YoutubeVideoId", System.DBNull.Value));
                 if (!parameters.Any(p => p.ParameterName == "IsLiveStream"))
                     parameters.Add(new MySqlParameter("IsLiveStream", System.DBNull.Value));
 
@@ -319,8 +322,10 @@ namespace IT.WebServices.Content.CMS.Services.Data
                 await categoryProvider.Update(content);
                 await channelProvider.Update(content);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
         }
 

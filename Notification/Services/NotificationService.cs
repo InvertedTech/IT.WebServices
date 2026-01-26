@@ -26,13 +26,13 @@ namespace IT.WebServices.Notification.Services
             {
                 var error = await sendgridClient.SendEmail(request);
                 if (error != null)
-                    return new() { Error = error };
+                    return new() { Error = NotificationErrorExtensions.CreateDeliveryFailedError(error) };
 
                 return new();
             }
             catch
             {
-                return new() { Error = "Unknown Error" };
+                return new() { Error = NotificationErrorExtensions.CreateError(NotificationErrorReason.NotificationErrorUnknown, "Unknown Error") };
             }
         }
     }

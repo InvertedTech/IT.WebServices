@@ -20,6 +20,7 @@ namespace IT.WebServices.Authorization.Events.Extensions
             services.AddSingleton<ITicketDataProvider, FileSystemTicketDataProvider>();
             services.AddSingleton<IEventDataProvider, FileSystemEventDataProvider>();
             services.AddScoped<EventTicketClassHelper>();
+            services.AddScoped<EventVenueHelper>();
             return services;
         }
 

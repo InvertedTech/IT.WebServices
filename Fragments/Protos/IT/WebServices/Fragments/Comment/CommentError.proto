@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Comment;
+
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+
+message CommentError {
+    CommentErrorReason Type = 1;
+    string Message = 2;
+    repeated IT.WebServices.Fragments.ValidationIssue Validation = 3;
+}
+
+enum CommentErrorReason {
+    COMMENT_REASON_UNSPECIFIED = 0;
+    
+    // Create Comment 100-149
+    CREATE_COMMENT_ERROR_CONTENT_NOT_FOUND = 100;
+    CREATE_COMMENT_ERROR_PARENT_NOT_FOUND = 101;
+    CREATE_COMMENT_ERROR_TEXT_INVALID = 102;
+    CREATE_COMMENT_ERROR_UNAUTHORIZED = 103;
+    CREATE_COMMENT_ERROR_UNKNOWN = 149;
+    
+    // Edit Comment 200-249
+    EDIT_COMMENT_ERROR_NOT_FOUND = 200;
+    EDIT_COMMENT_ERROR_UNAUTHORIZED = 201;
+    EDIT_COMMENT_ERROR_TEXT_INVALID = 202;
+    EDIT_COMMENT_ERROR_UNKNOWN = 249;
+    
+    // Delete Comment 300-349
+    DELETE_COMMENT_ERROR_NOT_FOUND = 300;
+    DELETE_COMMENT_ERROR_UNAUTHORIZED = 301;
+    DELETE_COMMENT_ERROR_UNKNOWN = 349;
+    
+    // Like/Unlike Comment 400-449
+    LIKE_COMMENT_ERROR_NOT_FOUND = 400;
+    LIKE_COMMENT_ERROR_UNAUTHORIZED = 401;
+    LIKE_COMMENT_ERROR_UNKNOWN = 449;
+    
+    // Admin Operations 500-549
+    ADMIN_COMMENT_ERROR_NOT_FOUND = 500;
+    ADMIN_COMMENT_ERROR_UNAUTHORIZED = 501;
+    ADMIN_COMMENT_ERROR_UNKNOWN = 549;
+    
+    // Generic 900-999
+    COMMENT_ERROR_SERVICE_OFFLINE = 900;
+    COMMENT_ERROR_VALIDATION_FAILED = 901;
+    COMMENT_ERROR_UNKNOWN = 999;
+}

@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package IT.WebServices.Fragments.Authorization.Payment.Fortis;
+import "buf/validate/validate.proto";
 
 message FortisPublicSettings {
   bool Enabled = 1;
@@ -8,8 +9,8 @@ message FortisPublicSettings {
 }
 
 message FortisOwnerSettings {
-  string UserID = 1;
-  string UserApiKey = 2;
-  string LocationID = 3;
-  string ProductID = 4;
+  string UserID = 1 [(buf.validate.field).string.min_len = 1];
+  string UserApiKey = 2 [(buf.validate.field).string.min_len = 1];
+  string LocationID = 3 [(buf.validate.field).string.min_len = 1];
+  string ProductID = 4 [(buf.validate.field).string.min_len = 1];
 }

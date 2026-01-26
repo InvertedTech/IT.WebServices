@@ -17,6 +17,7 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventsSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventTicketRecord.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\TicketClassRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\AdminPaymentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\BitcoinInterface.proto" />
@@ -29,6 +30,7 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Manual\ManualPaymentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Manual\ManualPaymentSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Manual\ManualSubscriptionRecord.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\PaymentError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\PaymentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Paypal\PaypalInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Paypal\PaypalRecords.proto" />
@@ -39,6 +41,7 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\SharedTypes.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Comment\CommentError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\CommentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\CommentRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\SharedTypes.proto" />
@@ -47,6 +50,7 @@
     <None Remove="Protos\IT\WebServices\Fragments\Content\AssetInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\AssetRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\AudioAssetRecord.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Content\ContentError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\ImageAssetRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Music\MusicInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Music\MusicRecord.proto" />
@@ -59,13 +63,17 @@
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsSaveInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsShareInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsViewInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Errors.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationUserRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\UserNotificationInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\UserNotificationSettingsRecord.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Page\PageError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Page\PageRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Settings\Backup.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Settings\NotificationSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Settings\SettingsError.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Settings\SettingsInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Settings\SettingsRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\Backup.proto" />
@@ -93,6 +101,7 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventRecord.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventsSettings.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventTicketRecord.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\TicketClassRecord.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\CryptoRecords.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\CryptoSettings.proto" GrpcServices="None" />
@@ -104,6 +113,7 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Manual\ManualPaymentInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Manual\ManualSubscriptionRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\AdminPaymentInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\PaymentError.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\PaymentInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Paypal\PaypalRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Paypal\PaypalSettings.proto" GrpcServices="None" />
@@ -116,14 +126,19 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeSettings.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\SharedTypes.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\CommentError.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\CommentInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\CommentRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\SharedTypes.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\CommonTypes.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\AssetBackup.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\AssetRecord.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Content\ContentError.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Music\MusicInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Music\MusicRecord.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Errors.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Notification\NotificationError.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageError.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Stats\StatsSaveInterface.proto" />
@@ -142,6 +157,7 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Notification\UserNotificationSettingsRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Settings\Backup.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Notification\NotificationSettings.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Settings\SettingsError.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Settings\SettingsInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Settings\SettingsRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
@@ -175,5 +191,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="ProtoValidate" Version="1.0.0" />
   </ItemGroup>
 </Project>

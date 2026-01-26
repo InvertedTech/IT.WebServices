@@ -69,7 +69,7 @@ namespace IT.WebServices.Notification.Services
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new() { Error = "No user token specified" };
+                    return new() { Error = NotificationErrorExtensions.CreateUnauthorizedError("modify notification record") };
 
                 var record = await userDataProvider.GetById(userToken.Id);
                 if (record == null)
@@ -90,7 +90,7 @@ namespace IT.WebServices.Notification.Services
             }
             catch
             {
-                return new() { Error = "Unknown error" };
+                return new() { Error = NotificationErrorExtensions.CreateError(NotificationErrorReason.NotificationErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -100,10 +100,10 @@ namespace IT.WebServices.Notification.Services
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new() { Error = "No user token specified" };
+                    return new() { Error = NotificationErrorExtensions.CreateUnauthorizedError("register notification token") };
 
                 if (string.IsNullOrWhiteSpace(request.TokenID))
-                    return new() { Error = "TokenID is empty" };
+                    return new() { Error = NotificationErrorExtensions.CreateValidationError("TokenID is required") };
 
                 var record = await notificationDataProvider.GetByTokenId(request.TokenID);
                 if (record == null)
@@ -122,7 +122,7 @@ namespace IT.WebServices.Notification.Services
             }
             catch
             {
-                return new() { Error = "Unknown error" };
+                return new() { Error = NotificationErrorExtensions.CreateError(NotificationErrorReason.NotificationErrorUnknown, "Unknown error occurred") };
             }
         }
 
@@ -132,10 +132,10 @@ namespace IT.WebServices.Notification.Services
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new() { Error = "No user token specified" };
+                    return new() { Error = NotificationErrorExtensions.CreateUnauthorizedError("unregister notification token") };
 
                 if (string.IsNullOrWhiteSpace(request.TokenID))
-                    return new() { Error = "TokenID is empty" };
+                    return new() { Error = NotificationErrorExtensions.CreateValidationError("TokenID is required") };
 
                 var record = await notificationDataProvider.GetByTokenId(request.TokenID);
                 if (record == null)
@@ -153,7 +153,7 @@ namespace IT.WebServices.Notification.Services
             }
             catch
             {
-                return new() { Error = "Unknown error" };
+                return new() { Error = NotificationErrorExtensions.CreateError(NotificationErrorReason.NotificationErrorUnknown, "Unknown error occurred") };
             }
         }
     }

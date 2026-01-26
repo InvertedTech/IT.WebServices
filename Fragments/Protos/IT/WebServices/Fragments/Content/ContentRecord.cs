@@ -24,15 +24,15 @@ namespace IT.WebServices.Fragments.Content
             switch (ContentDataOneofCase)
             {
                 case ContentDataOneofOneofCase.Audio:
-                    return ContentType.Audio;
+                    return ContentType.ContentAudio;
                 case ContentDataOneofOneofCase.Picture:
-                    return ContentType.Picture;
+                    return ContentType.ContentPicture;
                 case ContentDataOneofOneofCase.Written:
-                    return ContentType.Written;
+                    return ContentType.ContentWritten;
                 case ContentDataOneofOneofCase.Video:
-                    return ContentType.Video;
+                    return ContentType.ContentVideo;
                 default:
-                    return ContentType.None;
+                    return ContentType.ContentNone;
             }
         }
     }
@@ -66,7 +66,7 @@ namespace IT.WebServices.Fragments.Content
             rec.CategoryIds.AddRange(Data.CategoryIds);
             rec.ChannelIds.AddRange(Data.ChannelIds);
 
-            if (rec.ContentType == ContentType.Video)
+            if (rec.ContentType == ContentType.ContentVideo)
             {
                 rec.IsLiveStream = Data.Video.IsLiveStream;
                 rec.IsLive = Data.Video.IsLive;

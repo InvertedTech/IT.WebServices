@@ -255,14 +255,14 @@ namespace IT.WebServices.Content.CMS.Services
                 AssetListRecord listRec = null;
                 switch (rec.AssetType)
                 {
-                    case AssetType.Audio:
-                        if (request.AssetType == AssetType.Image)
+                    case AssetType.AssetAudio:
+                        if (request.AssetType == AssetType.AssetImage)
                             continue;
 
                         listRec = rec;
                         break;
-                    case AssetType.Image:
-                        if (request.AssetType == AssetType.Audio)
+                    case AssetType.AssetImage:
+                        if (request.AssetType == AssetType.AssetAudio)
                             continue;
 
                         listRec = rec;
@@ -317,7 +317,7 @@ namespace IT.WebServices.Content.CMS.Services
                     .ToArray();
 
             var res = new SearchAssetResponse();
-            var list = await this.dataProvider.GetByAssetTypeAsync(AssetType.Image);
+            var list = await this.dataProvider.GetByAssetTypeAsync(AssetType.AssetImage);
 
             if (list == null)
                 return res;

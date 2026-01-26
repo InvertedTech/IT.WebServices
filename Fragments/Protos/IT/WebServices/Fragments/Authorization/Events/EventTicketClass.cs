@@ -1,10 +1,10 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using IT.WebServices.Fragments.Generic;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf.WellKnownTypes;
+using IT.WebServices.Fragments.Generic;
 using pb = global::Google.Protobuf;
 
 namespace IT.WebServices.Fragments.Authorization.Events
@@ -13,20 +13,21 @@ namespace IT.WebServices.Fragments.Authorization.Events
     {
         public bool HasRequestedAmount(int numToReserve)
         {
-            var amountAvailable = (int)AmountAvailible;
-            var maxPerUser = (int)MaxTicketsPerUser;
-            return numToReserve > 0 && numToReserve <= amountAvailable ;
+            var amountAvailable = (int)Public.AmountAvailable;
+            var maxPerUser = (int)Public.MaxTicketsPerUser;
+            return numToReserve > 0 && numToReserve <= amountAvailable;
         }
 
         public bool HitReservationLimit(int numToReserve, int numReservedAlready = 0)
         {
-            var maxPerUser = (int)MaxTicketsPerUser;
+            var maxPerUser = (int)Public.MaxTicketsPerUser;
             return numToReserve > maxPerUser || numToReserve <= numReservedAlready;
         }
 
         public bool IsOnSale()
         {
-            return SaleStartOnUTC <= Timestamp.FromDateTime(DateTime.UtcNow) && SaleEndOnUTC >= Timestamp.FromDateTime(DateTime.UtcNow);
+            return SaleStartOnUTC <= Timestamp.FromDateTime(DateTime.UtcNow)
+                && SaleEndOnUTC >= Timestamp.FromDateTime(DateTime.UtcNow);
         }
     }
 }

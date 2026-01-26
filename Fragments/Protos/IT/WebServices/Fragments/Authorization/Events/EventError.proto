@@ -2,83 +2,71 @@
 
 package IT.WebServices.Fragments.Authorization.Events;
 
-enum CreateEventErrorType {
-	CREATE_EVENT_NO_ERROR = 0; // No error occurred
-	CREATE_EVENT_INVALID_REQUEST = 1; // The request was invalid
-	CREATE_EVENT_UNAUTHORIZED = 2; // The user is not authorized to create events
-	CREATE_EVENT_NULL_BODY = 3; // The request body was null
-	CREATE_EVENT_FILE_EXISTS = 4; // Event Already Exists
-	CREATE_EVENT_UNKNOWN = 5; // An unknown error occurred
-}
-
-enum CreateRecurringEventErrorType {
-	CREATE_RECURRING_EVENT_NO_ERROR = 0; // No error occurred
-	CREATE_RECURRING_EVENT_INVALID_REQUEST = 1; // The request was invalid
-	CREATE_RECURRING_EVENT_UNAUTHORIZED = 2; // The user is not authorized to create recurring events
-	CREATE_RECURRING_EVENT_NULL_BODY = 3; // The request body was null
-	CREATE_RECURRING_EVENT_IVALID_RECURRENCE = 4; // An Invalidd recurrence rule was provided
-	CREATE_RECURRING_EVENT_UNKNOWN = 5; // An unknown error occurred
-	CREATE_RECURRING_EVENT_INVALID_HASH = 6; // The recurrence hash provided is invalid
-}
-
-enum GetEventErrorType {
-	GET_EVENT_NO_ERROR = 0; // No error occurred
-	GET_EVENT_NOT_FOUND = 1; // The requested event was not found
-	GET_EVENT_UNAUTHORIZED = 2; // The user is not authorized to view the event
-	GET_EVENT_UNKNOWN = 3; // An unknown error occurred
-	GET_EVENT_INVALID_HASH = 4; // The recurrence hash provided is invalid
-}
-
-enum CancelEventErrorType {
-	CANCEL_EVENT_NO_ERROR = 0; // No error occurred
-	CANCEL_EVENT_NOT_FOUND = 1; // The event to cancel was not found
-	CANCEL_EVENT_UNAUTHORIZED = 2; // The user is not authorized to cancel the event
-	CANCEL_EVENT_UNKNOWN = 3; // An unknown error occurred
-}
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 
 message EventError {
-	string Message = 1;
-	oneof ErrorTypeOneOf {
-		CreateEventErrorType CreateEventError = 2; // Error type for event creation
-		CreateRecurringEventErrorType CreateRecurringEventError = 3; // Error type for recurring event creation
-		CancelEventErrorType CancelEventError = 4; // Error type for event cancellation
-		GetEventErrorType GetEventError = 5;
-	}
+    EventErrorReason Type = 1;
+    string Message = 2;
+    repeated IT.WebServices.Fragments.ValidationIssue Validation = 3;
 }
 
-enum ReserveTicketErrorType {
-	RESERVE_TICKET_NO_ERROR = 0; // No error occurred
-	RESERVE_TICKET_INVALID_REQUEST = 1; // The request was invalid
-	RESERVE_TICKET_UNAUTHORIZED = 2; // The user is not authorized to reserve tickets
-	RESERVE_TICKET_EVENT_NOT_FOUND = 3; // The event for which to reserve tickets was not found
-	RESERVE_TICKET_MAX_LIMIT_REACHED = 4; // The maximum number of tickets for the event has been reached
-	RESERVE_TICKET_NOT_ON_SALE = 5; // The tickets for the event are not currently on sale
-	RESERVE_TICKET_UNKNOWN = 6; // An unknown error occurred
-}
-
-enum CancelTicketErrorType {
-	CANCEL_TICKET_NO_ERROR = 0;
-	CANCEL_TICKET_UNAUTHORIZED = 1;
-	CANCEL_TICKET_EVENT_NOT_FOUND = 2;
-	CANCEL_TICKET_TICKET_NOT_FOUND = 3;
-}
-
-enum UseTicketErrorType {
-	USE_TICKET_NO_ERROR = 0; // No error occurred
-	USE_TICKET_UNAUTHORIZED = 1; // The user is not authorized to use the ticket
-	USE_TICKET_EVENT_NOT_FOUND = 2; // The event for which to use the ticket was not found
-	USE_TICKET_TICKET_NOT_FOUND = 3; // The ticket to use was not found
-	USE_TICKET_ALREADY_USED = 4; // The ticket has already been used
-	USE_TICKET_EXPIRED = 5; // The ticket has expired
-	USE_TICKET_CANCELED = 6; // The ticket has been canceled
-	USE_TICKET_UNKNOWN = 7; // An unknown error occurred
-}
-
-message TicketError {
-	string Message = 1;
-	oneof TicketErrorType {
-		ReserveTicketErrorType ReserveTicketError = 2;
-		CancelTicketErrorType CancelTicketError = 3;
-		UseTicketErrorType UseTicketError = 4; // Error type for using a ticket
-	}
+enum EventErrorReason {
+    EVENT_REASON_UNSPECIFIED = 0;
+    
+    // Event Creation 100-149
+    CREATE_EVENT_ERROR_INVALID_REQUEST = 100;
+    CREATE_EVENT_ERROR_UNAUTHORIZED = 101;
+    CREATE_EVENT_ERROR_NULL_BODY = 102;
+    CREATE_EVENT_ERROR_ALREADY_EXISTS = 103;
+    CREATE_EVENT_NO_ERROR = 104;
+    CREATE_EVENT_ERROR_UNKNOWN = 149;
+    
+    // Recurring Event Creation 200-249
+    CREATE_RECURRING_EVENT_ERROR_INVALID_REQUEST = 200;
+    CREATE_RECURRING_EVENT_ERROR_UNAUTHORIZED = 201;
+    CREATE_RECURRING_EVENT_ERROR_NULL_BODY = 202;
+    CREATE_RECURRING_EVENT_ERROR_INVALID_RECURRENCE = 203;
+    CREATE_RECURRING_EVENT_ERROR_INVALID_HASH = 204;
+    CREATE_RECURRING_EVENT_NO_ERROR = 205;
+    CREATE_RECURRING_EVENT_ERROR_UNKNOWN = 249;
+    
+    // Event Retrieval 300-349
+    GET_EVENT_ERROR_NOT_FOUND = 300;
+    GET_EVENT_ERROR_UNAUTHORIZED = 301;
+    GET_EVENT_ERROR_INVALID_HASH = 302;
+    GET_EVENT_ERROR_UNKNOWN = 349;
+    
+    // Event Cancellation 400-449
+    CANCEL_EVENT_ERROR_NOT_FOUND = 400;
+    CANCEL_EVENT_ERROR_UNAUTHORIZED = 401;
+    CANCEL_EVENT_ERROR_UNKNOWN = 449;
+    
+    // Ticket Reservation 500-549
+    RESERVE_TICKET_ERROR_INVALID_REQUEST = 500;
+    RESERVE_TICKET_ERROR_UNAUTHORIZED = 501;
+    RESERVE_TICKET_ERROR_EVENT_NOT_FOUND = 502;
+    RESERVE_TICKET_ERROR_MAX_LIMIT_REACHED = 503;
+    RESERVE_TICKET_ERROR_NOT_ON_SALE = 504;
+    RESERVE_TICKET_ERROR_UNKNOWN = 549;
+    
+    // Ticket Cancellation 600-649
+    CANCEL_TICKET_ERROR_UNAUTHORIZED = 600;
+    CANCEL_TICKET_ERROR_EVENT_NOT_FOUND = 601;
+    CANCEL_TICKET_ERROR_TICKET_NOT_FOUND = 602;
+    CANCEL_TICKET_ERROR_UNKNOWN = 649;
+    
+    // Ticket Usage 700-749
+    USE_TICKET_ERROR_UNAUTHORIZED = 700;
+    USE_TICKET_ERROR_EVENT_NOT_FOUND = 701;
+    USE_TICKET_ERROR_TICKET_NOT_FOUND = 702;
+    USE_TICKET_ERROR_ALREADY_USED = 703;
+    USE_TICKET_ERROR_EXPIRED = 704;
+    USE_TICKET_ERROR_CANCELED = 705;
+    USE_TICKET_ERROR_UNKNOWN = 749;
+    
+    // Generic 900-999
+    EVENT_ERROR_SERVICE_OFFLINE = 900;
+    EVENT_ERROR_VALIDATION_FAILED = 901;
+    EVENT_ERROR_UNAUTHORIZED = 902;
+    EVENT_ERROR_UNKNOWN = 999;
 }

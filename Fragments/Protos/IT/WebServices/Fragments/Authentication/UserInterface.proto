@@ -1,9 +1,11 @@
-syntax = "proto3";
+﻿syntax = "proto3";
 
 package IT.WebServices.Fragments.Authentication;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Authentication/UserRecord.proto";
 
 // Service for Authentication user fragment interface
@@ -232,16 +234,95 @@ service UserInterface {
     };
   }
 }
-  
-message AuthenticateUserRequest {
-  string UserName = 1;
-  string Password = 2;
-  string MFACode = 3;
+
+message AuthError {
+    AuthErrorReason Type = 1;
+    string Message = 2;
+    repeated ValidationIssue Validation = 3;
+}
+
+enum AuthErrorReason {
+  // 0s — generic
+  AUTH_REASON_UNSPECIFIED = 0;
+
+  // 1–49: AuthenticateUser (login)
+  LOGIN_ERROR_INVALID_CREDENTIALS = 1;
+  LOGIN_ERROR_MFA_REQUIRED        = 2;
+  LOGIN_ERROR_INVALID_MFA_CODE    = 3;
+  LOGIN_ERROR_SERVICE_UNAVAILABLE = 4;
+
+  // 100–149: ChangeOtherPassword
+  CHANGE_OTHER_PASSWORD_ERROR_USER_NOT_FOUND  = 100;
+  CHANGE_OTHER_PASSWORD_ERROR_BAD_NEW_PASSWORD = 101;
+  CHANGE_OTHER_PASSWORD_ERROR_UNKNOWN          = 149;
+
+  // 200–249: ChangeOtherProfileImage
+  CHANGE_OTHER_PROFILE_IMAGE_ERROR_USER_NOT_FOUND = 200;
+  CHANGE_OTHER_PROFILE_IMAGE_ERROR_BAD_FORMAT     = 201;
+  CHANGE_OTHER_PROFILE_IMAGE_ERROR_UNKNOWN        = 249;
+
+  // 300–349: ChangeOwnPassword
+  CHANGE_OWN_PASSWORD_ERROR_BAD_OLD_PASSWORD = 300;
+  CHANGE_OWN_PASSWORD_ERROR_BAD_NEW_PASSWORD = 301;
+  CHANGE_OWN_PASSWORD_ERROR_UNKNOWN          = 349;
+
+  // 400–449: ChangeOwnProfileImage
+  CHANGE_OWN_PROFILE_IMAGE_ERROR_BAD_FORMAT = 400;
+  CHANGE_OWN_PROFILE_IMAGE_ERROR_UNKNOWN    = 449;
+
+  // 500–549: CreateUser
+  CREATE_USER_ERROR_USERNAME_TAKEN = 500;
+  CREATE_USER_ERROR_EMAIL_TAKEN    = 501;
+  CREATE_USER_ERROR_UNKNOWN        = 549;
+
+  // 600–649: Disable/Enable other user
+  DISABLE_OTHER_USER_ERROR_UNKNOWN = 600;
+  ENABLE_OTHER_USER_ERROR_UNKNOWN  = 601;
+
+  // 700–749: Disable TOTP
+  DISABLE_OTHER_TOTP_ERROR_UNKNOWN = 700;
+  DISABLE_OWN_TOTP_ERROR_UNKNOWN   = 701;
+
+  // 800–849: Generate TOTP
+  GENERATE_OTHER_TOTP_ERROR_UNKNOWN = 800;
+  GENERATE_OWN_TOTP_ERROR_UNKNOWN   = 801;
+
+  // 900–949: ModifyOtherUser
+  MODIFY_OTHER_USER_ERROR_UNAUTHORIZED    = 900;
+  MODIFY_OTHER_USER_ERROR_USER_NOT_FOUND  = 901;
+  MODIFY_OTHER_USER_ERROR_USERNAME_TAKEN  = 902;
+  MODIFY_OTHER_USER_ERROR_EMAIL_TAKEN     = 903;
+  MODIFY_OTHER_USER_ERROR_SERVICE_OFFLINE = 904;
+  MODIFY_OTHER_USER_ERROR_UNKNOWN         = 949;
+
+  // 950–999: ModifyOtherUserRoles
+  MODIFY_OTHER_USER_ROLES_ERROR_UNKNOWN = 950;
+
+  // 1000–1049: ModifyOwnUser
+  MODIFY_OWN_USER_ERROR_UNKNOWN = 1000;
+
+  // 1100–1149: Verify TOTP
+  VERIFY_OTHER_TOTP_ERROR_INVALID_CODE = 1100;
+  VERIFY_OTHER_TOTP_ERROR_UNKNOWN      = 1149;
+  VERIFY_OWN_TOTP_ERROR_INVALID_CODE   = 1150;
+  VERIFY_OWN_TOTP_ERROR_UNKNOWN        = 1199;
+
+  // 1200–1249: RenewToken
+  RENEW_TOKEN_ERROR_UNAUTHENTICATED = 1200;
+  RENEW_TOKEN_ERROR_UNKNOWN         = 1249;
 }
   
+message AuthenticateUserRequest {
+  string UserName = 1 [(buf.validate.field).required = true];
+  string Password = 2 [(buf.validate.field).required = true];
+  string MFACode = 3;
+}
+
 message AuthenticateUserResponse {
-  string BearerToken = 1;
-  UserNormalRecord UserRecord = 2;
+  bool ok = 1; 
+  string BearerToken = 2;
+  UserNormalRecord UserRecord = 3;
+  AuthError Error = 4;
 }
   
 message ChangeOtherPasswordRequest {
@@ -250,14 +331,7 @@ message ChangeOtherPasswordRequest {
 }
   
 message ChangeOtherPasswordResponse {
-  ChangeOtherPasswordResponseErrorType Error = 1;
-
-  enum ChangeOtherPasswordResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-    UserNotFound = 1;
-    BadNewPassword = 2;
-  }
+  AuthError Error = 1;
 }
   
 message ChangeOtherProfileImageRequest {
@@ -266,14 +340,7 @@ message ChangeOtherProfileImageRequest {
 }
   
 message ChangeOtherProfileImageResponse {
-  ChangeOtherProfileImageResponseErrorType Error = 1;
-
-  enum ChangeOtherProfileImageResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-    UserNotFound = 1;
-    BadFormat = 2;
-  }
+  AuthError Error = 1;
 }
   
 message ChangeOwnPasswordRequest {
@@ -282,14 +349,7 @@ message ChangeOwnPasswordRequest {
 }
   
 message ChangeOwnPasswordResponse {
-  ChangeOwnPasswordResponseErrorType Error = 1;
-
-  enum ChangeOwnPasswordResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-    BadOldPassword = 1;
-    BadNewPassword = 2;
-  }
+  AuthError Error = 1;
 }
 
 message ChangeOwnProfileImageRequest {
@@ -297,33 +357,20 @@ message ChangeOwnProfileImageRequest {
 }
   
 message ChangeOwnProfileImageResponse {
-  ChangeOwnProfileImageResponseErrorType Error = 1;
-
-  enum ChangeOwnProfileImageResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-    BadFormat = 1;
-  }
+  AuthError Error = 1;
 }
 
 message CreateUserRequest {
-  string UserName = 1;                // User name of the user
-  string Password = 2;                // Password of the user
+  string UserName = 1 [(buf.validate.field).string.min_len = 3];                // User name of the user
+  string Password = 2 [(buf.validate.field).string.min_len = 6];                // Password of the user
   string DisplayName = 3;             // Public display name of the user
   string Bio = 4;                     // Biographical info of the user
-  string Email = 5;                   // Private email used for password resets
+  string Email = 5[(buf.validate.field).string.email = true];                   // Private email used for password resets
 }
   
 message CreateUserResponse {
   string BearerToken = 1;
-  CreateUserResponseErrorType Error = 2;
-
-  enum CreateUserResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-    UserNameTaken = 1;
-    EmailTaken = 2;
-  }
+  AuthError Error = 2;
 }
 
 message DisableEnableOtherUserRequest {
@@ -331,7 +378,7 @@ message DisableEnableOtherUserRequest {
 }
   
 message DisableEnableOtherUserResponse {
-  DisableEnableOtherUserResponseErrorType Error = 1;
+  AuthError Error = 10;
 
   enum DisableEnableOtherUserResponseErrorType {
     NoError = 0;
@@ -345,7 +392,7 @@ message DisableOtherTotpRequest {
 }
 
 message DisableOtherTotpResponse {
-  string Error = 10;
+  AuthError Error = 10;
 }
 
 message DisableOwnTotpRequest {
@@ -353,7 +400,7 @@ message DisableOwnTotpRequest {
 }
 
 message DisableOwnTotpResponse {
-  string Error = 10;
+  AuthError Error = 10;
 }
 
 message GenerateOtherTotpRequest {
@@ -365,7 +412,7 @@ message GenerateOtherTotpResponse {
   string TotpID = 1;
   string Key = 2;
   string QRCode = 3;
-  string Error = 10;
+  AuthError Error = 10;
 }
 
 message GenerateOwnTotpRequest {
@@ -376,7 +423,7 @@ message GenerateOwnTotpResponse {
   string TotpID = 1;
   string Key = 2;
   string QRCode = 3;
-  string Error = 10;
+  AuthError Error = 10;
 }
 
 message GetAllUsersRequest {
@@ -469,7 +516,7 @@ message ModifyOtherUserRequest {
 }
   
 message ModifyOtherUserResponse {
-  string Error = 1;
+  AuthError Error = 1;
 }
 
 message ModifyOtherUserRolesRequest {
@@ -478,7 +525,7 @@ message ModifyOtherUserRolesRequest {
 }
   
 message ModifyOtherUserRolesResponse {
-  string Error = 1;
+  AuthError Error = 1;
 }
 
 message ModifyOwnUserRequest {
@@ -489,7 +536,7 @@ message ModifyOwnUserRequest {
 }
   
 message ModifyOwnUserResponse {
-  string Error = 1;
+  AuthError Error = 1;
   string BearerToken = 2;
 }
 
@@ -542,7 +589,7 @@ message VerifyOtherTotpRequest {
 }
 
 message VerifyOtherTotpResponse {
-  string Error = 10;
+  AuthError Error = 10;
 }
 
 message VerifyOwnTotpRequest {
@@ -551,5 +598,6 @@ message VerifyOwnTotpRequest {
 }
 
 message VerifyOwnTotpResponse {
-  string Error = 10;
+  AuthError Error = 10;
 }
+

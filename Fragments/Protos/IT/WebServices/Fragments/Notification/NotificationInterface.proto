@@ -3,6 +3,7 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Notification;
 
 import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Notification/NotificationError.proto";
 
 // Service for Notification fragment interface
 service NotificationInterface {
@@ -23,5 +24,5 @@ message SendEmailRequest {
 }
   
 message SendEmailResponse {
-  string Error = 1;
+  NotificationError Error = 1;
 }

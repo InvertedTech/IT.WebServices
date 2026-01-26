@@ -1,13 +1,14 @@
 syntax = "proto3";
 
 package IT.WebServices.Fragments.Authorization.Payment.Paypal;
+import "buf/validate/validate.proto";
 
 message PaypalPublicSettings {
   bool Enabled = 1;
-  string Url = 2;
-  string ClientID = 3;
+  string Url = 2 [(buf.validate.field).string.uri = true];
+  string ClientID = 3 [(buf.validate.field).string.min_len = 1];
 }
 
 message PaypalOwnerSettings {
-  string ClientSecret = 1;
+  string ClientSecret = 1 [(buf.validate.field).string.min_len = 1];
 }

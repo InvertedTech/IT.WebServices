@@ -4,6 +4,7 @@ package IT.WebServices.Fragments.Authorization.Events;
 
 import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/CommonTypes.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/TicketClassRecord.proto";
 
 //
 // ENUMS
@@ -24,21 +25,43 @@ enum EventRecordOneOfType {
 	EVENT_ONE_OF_RECURRING = 2;   // The record is a recurring event definition
 }
 
+enum EventVenueOneOfType {
+	VENUE_ONE_OF_PHYSICAL = 0;    // The venue is a physical location
+	VENUE_ONE_OF_VIRTUAL = 1;      // The venue is a virtual location (e.g., online)
+}
+
 //
 // VENUE
 //
 
 // Represents a physical location where events are held
+message PhysicalEventVenue {
+	string Name = 1;                               // Name of the venue
+	string Address = 2;                            // Physical address
+	string City = 3;                               // City where the venue is located
+	string StateOrProvince = 4;                    // State or province
+	string PostalCode = 5;                          // Postal code
+	string Country = 6;                             // Country
+	string PhoneNumber = 7;                         // Contact phone number
+	string EmailAddress = 8;                        // Contact email address
+}
+
+// Represents a virtual venue for online events
+message VirtualEventVenue {                    // Unique identifier for the virtual venue
+	string Name = 1;                               // Name of the virtual venue
+	string Url = 2;                                // URL for accessing the virtual venue (e.g., video conference link)
+	string AccessInstructions = 3;                 // Instructions for accessing the virtual venue
+	string ContactEmailAddress = 4;                // Contact email address for support
+}
+
+// Represents a venue for events, can be physical or virtual
 message EventVenue {
 	string VenueId = 1;                            // Unique identifier for the venue
-	string Name = 2;                               // Name of the venue
-	string Address = 3;                            // Physical address
-	string City = 4;                               // City where the venue is located
-	string StateOrProvince = 5;                    // State or province
-	string PostalCode = 6;                          // Postal code
-	string Country = 7;                             // Country
-	string PhoneNumber = 8;                         // Contact phone number
-	string EmailAddress = 9;                        // Contact email address
+	EventVenueOneOfType OneOfType = 2;            // Indicates which branch is active
+	oneof VenueOneOf {
+		PhysicalEventVenue Physical = 3;           // Physical venue details
+		VirtualEventVenue Virtual = 4;             // Virtual venue details
+	}
 }
 
 
@@ -75,14 +98,14 @@ message SingleEventPublicRecord {
 	google.protobuf.Timestamp EndOnUTC = 6;           // When the event ends (UTC)
 
 	repeated string Tags = 7;                         // Optional tags for categorization
-	repeated string TicketClasses = 8;      // Tickets available for this event
+	repeated EventTicketClass TicketClasses = 8;      // Tickets available for this event
 
 	bool IsCanceled = 9;                              // Whether the event was canceled
-	google.protobuf.Timestamp CanceledOnUTC = 10;
-
-	google.protobuf.Timestamp CreatedOnUTC = 11;
-	google.protobuf.Timestamp ModifiedOnUTC = 12;
-	EventVenue Venue = 15; // Venue where the recurring event takes place
+	EventVenue Venue = 10; // Venue where the recurring event takes place
+	uint32 MaxTickets = 11; // Maximum number of tickets available for this event
+	google.protobuf.Timestamp CanceledOnUTC = 20;
+	google.protobuf.Timestamp CreatedOnUTC = 21;
+	google.protobuf.Timestamp ModifiedOnUTC = 22;
 }
 
 // Internal data for single events (not exposed publicly)
@@ -108,22 +131,21 @@ message RecurringEventPublicRecord {
 	string Title = 2;
 	string Description = 3;
 	string Location = 4;
+	uint32 MaxTickets = 5; // Maximum number of tickets available for each occurrence
+	google.protobuf.Timestamp TemplateStartOnUTC = 6; // Example/template start time
+	google.protobuf.Timestamp TemplateEndOnUTC = 7;  // Example/template end time
 
-	google.protobuf.Timestamp TemplateStartOnUTC = 5; // Example/template start time
-	google.protobuf.Timestamp TemplateEndOnUTC = 6;   // Example/template end time
+	repeated string Tags = 8;
+	repeated EventTicketClass TicketClasses = 9;
 
-	repeated string Tags = 7;
-	repeated string TicketClasses = 8;
-
-	EventRecurrenceRule Recurrence = 9;
-
-	bool IsCanceled = 10;
-	google.protobuf.Timestamp CanceledOnUTC = 11;
-
-	google.protobuf.Timestamp CreatedOnUTC = 12;
-	google.protobuf.Timestamp ModifiedOnUTC = 13;
-	string RecurrenceHash = 14;	// Hash all recurring events created together share for db indexing
-	EventVenue Venue = 15; // Venue where the recurring event takes place
+	EventRecurrenceRule Recurrence = 10;
+	
+	string RecurrenceHash = 12;	// Hash all recurring events created together share for db indexing
+	EventVenue Venue = 13; // Venue where the recurring event takes place
+	bool IsCanceled = 11;
+	google.protobuf.Timestamp CanceledOnUTC = 21;
+	google.protobuf.Timestamp CreatedOnUTC = 22;
+	google.protobuf.Timestamp ModifiedOnUTC = 23;
 }
 
 // Internal data for recurring event definitions

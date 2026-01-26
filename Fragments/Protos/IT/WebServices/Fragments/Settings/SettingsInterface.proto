@@ -3,7 +3,9 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Settings;
 
 import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
+import "Protos/IT/WebServices/Fragments/Settings/SettingsError.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
 
@@ -199,6 +201,22 @@ service SettingsInterface {
       body: "*"
     };
   }
+
+  rpc ModifyEventPrivateSettings (ModifyEventPrivateSettingsRequest) returns (ModifyEventPrivateSettingsResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/settings/events/private"
+      body: "*"
+    };
+  }
+
+  rpc ModifyEventOwnerSettings (ModifyEventOwnerSettingsRequest) returns (ModifyEventOwnerSettingsResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/settings/events/owner"
+      body: "*"
+    };
+  }
 }
 
 message GetPublicDataRequest {
@@ -252,137 +270,150 @@ message GetOwnerNewerDataResponse {
   SettingsOwnerData Owner = 3;
 }
 
-enum ModifyResponseErrorType {
-  NoError = 0;
-  UnknownError = -1;
-}
+
 
 
 message ModifyCMSPublicDataRequest {
-  CMSPublicRecord Data = 1;
+  CMSPublicRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCMSPublicDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyCMSPrivateDataRequest {
-  CMSPrivateRecord Data = 1;
+  CMSPrivateRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCMSPrivateDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyCMSOwnerDataRequest {
-  CMSOwnerRecord Data = 1;
+  CMSOwnerRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCMSOwnerDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyPersonalizationPublicDataRequest {
-  PersonalizationPublicRecord Data = 1;
+  PersonalizationPublicRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyPersonalizationPublicDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyPersonalizationPrivateDataRequest {
-  PersonalizationPrivateRecord Data = 1;
+  PersonalizationPrivateRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyPersonalizationPrivateDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyPersonalizationOwnerDataRequest {
-  PersonalizationOwnerRecord Data = 1;
+  PersonalizationOwnerRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyPersonalizationOwnerDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifySubscriptionPublicDataRequest {
-  SubscriptionPublicRecord Data = 1;
+  SubscriptionPublicRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifySubscriptionPublicDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifySubscriptionPrivateDataRequest {
-  SubscriptionPrivateRecord Data = 1;
+  SubscriptionPrivateRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifySubscriptionPrivateDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifySubscriptionOwnerDataRequest {
-  SubscriptionOwnerRecord Data = 1;
+  SubscriptionOwnerRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifySubscriptionOwnerDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyCommentsPublicDataRequest {
-  CommentsPublicRecord Data = 1;
+  CommentsPublicRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCommentsPublicDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyCommentsPrivateDataRequest {
-  CommentsPrivateRecord Data = 1;
+  CommentsPrivateRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCommentsPrivateDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyCommentsOwnerDataRequest {
-  CommentsOwnerRecord Data = 1;
+  CommentsOwnerRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyCommentsOwnerDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyNotificationPublicDataRequest {
-  NotificationPublicRecord Data = 1;
+  NotificationPublicRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyNotificationPublicDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyNotificationPrivateDataRequest {
-  NotificationPrivateRecord Data = 1;
+  NotificationPrivateRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyNotificationPrivateDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyNotificationOwnerDataRequest {
-  NotificationOwnerRecord Data = 1;
+  NotificationOwnerRecord Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyNotificationOwnerDataResponse {
-  ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
 }
 
 message ModifyEventPublicSettingsRequest {
-  IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Data = 1;
+  IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Data = 1 [(buf.validate.field).required = true];
 }
 
 message ModifyEventPublicSettingsResponse {
-    ModifyResponseErrorType Error = 1;
+  SettingsError Error = 1;
+}
+
+message ModifyEventPrivateSettingsRequest {
+  IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Data = 1 [(buf.validate.field).required = true];
+}
+
+message ModifyEventPrivateSettingsResponse {
+  SettingsError Error = 1;
+}
+
+message ModifyEventOwnerSettingsRequest {
+  IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Data = 1 [(buf.validate.field).required = true];
+}
+
+message ModifyEventOwnerSettingsResponse {
+  SettingsError Error = 1;
 }
 

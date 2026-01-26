@@ -1,0 +1,46 @@
+# # buf.gen.v2.yaml
+# version: v2
+# inputs:
+#   - directory: .
+# plugins:
+#   # protobuf-es v2 (works with @bufbuild/protobuf ^2.10.0)
+#   - remote: buf.build/bufbuild/es:v2.9.0
+#     out: ts-gen/gen
+#     opt:
+#       - target=ts
+#       - import_extension=none
+
+#   # connect-es: use a version that IS on BSR (v1.6.1), or just use :latest
+#   - remote: buf.build/connectrpc/es:v1.6.1
+#     out: ts-gen/gen
+#     opt:
+#       - target=ts
+#       - import_extension=none
+version: v2
+
+inputs:
+    - directory: .
+      paths:
+          - Protos/
+
+    - module: buf.build/googleapis/googleapis
+      paths:
+          - google/api/annotations.proto
+          - google/api/http.proto
+
+    - module: buf.build/bufbuild/protovalidate
+      paths:
+          - buf/validate/validate.proto
+
+plugins:
+    - remote: buf.build/bufbuild/es:v2.9.0
+      out: ts-gen
+      opt:
+          - target=ts
+          - import_extension=none
+
+    - remote: buf.build/connectrpc/es:v1.6.1
+      out: ts-gen
+      opt:
+          - target=ts
+          - import_extension=none

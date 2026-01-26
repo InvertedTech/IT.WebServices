@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Notification;
+
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+
+message NotificationError {
+    NotificationErrorReason Type = 1;
+    string Message = 2;
+    repeated IT.WebServices.Fragments.ValidationIssue Validation = 3;
+}
+
+enum NotificationErrorReason {
+    NOTIFICATION_REASON_UNSPECIFIED = 0;
+    
+    // Email Sending 100-149
+    SEND_EMAIL_ERROR_INVALID_ADDRESS = 100;
+    SEND_EMAIL_ERROR_DELIVERY_FAILED = 101;
+    SEND_EMAIL_ERROR_TEMPLATE_ERROR = 102;
+    SEND_EMAIL_ERROR_RATE_LIMITED = 103;
+    SEND_EMAIL_ERROR_UNKNOWN = 149;
+    
+    // Generic 900-999
+    NOTIFICATION_ERROR_SERVICE_OFFLINE = 900;
+    NOTIFICATION_ERROR_VALIDATION_FAILED = 901;
+    NOTIFICATION_ERROR_UNAUTHORIZED = 902;
+    NOTIFICATION_ERROR_UNKNOWN = 999;
+}

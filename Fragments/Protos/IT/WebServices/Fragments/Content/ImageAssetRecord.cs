@@ -34,7 +34,7 @@ namespace IT.WebServices.Fragments.Content
                 CreatedOnUTC = CreatedOnUTC,
                 Title = Data.Title,
                 Caption = Data.Caption,
-                AssetType = AssetType.Image,
+                AssetType = AssetType.AssetImage,
                 Height = Data.Height,
                 Width = Data.Width,
             };

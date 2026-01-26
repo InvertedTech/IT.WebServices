@@ -4,6 +4,7 @@ package IT.WebServices.Fragments.Content;
 
 import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Content/Rumble.proto";
+import "Protos/IT/WebServices/Fragments/Content/ContentError.proto";
 
 service VideoInterface {
 	rpc GetData(GetDataRequest) returns (DataResponse);
@@ -24,7 +25,7 @@ message GetDataRequest {
 
 message DataResponse {
 	bool Success = 1;
-	string Error = 2;
+	ContentError Error = 2;
 	string Msg = 3;
 	VideoProviderData Data = 4;
 }

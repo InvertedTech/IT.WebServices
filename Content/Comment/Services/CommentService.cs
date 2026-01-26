@@ -119,18 +119,18 @@ namespace IT.WebServices.Content.Comment.Services
         {
             var contentId = request.ContentID.ToGuid();
             if (contentId == Guid.Empty)
-                return new() { Error = $"ContentID missing" };
+                return new() { Error = CommentErrorExtensions.CreateError(CommentErrorReason.CreateCommentErrorContentNotFound, "ContentID missing") };
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (!CanCreateComment(user))
-                return new() { Error = $"Access Denied" };
+                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("create comment") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new() { Error = $"No comment text" };
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = $"Length must be less than {MAX_COMMENT_LENGTH}" };
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             CommentRecord record = new()
             {
@@ -166,18 +166,18 @@ namespace IT.WebServices.Content.Comment.Services
             var parentId = request.ParentCommentID.ToGuid();
             var parent = await dataProvider.Get(parentId);
             if (parent == null)
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateParentCommentNotFoundError(parentId.ToString()) };
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (!CanCreateComment(user))
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("create comment") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = $"Length must be less than {MAX_COMMENT_LENGTH}" };
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             CommentRecord record = new()
             {
@@ -235,22 +235,22 @@ namespace IT.WebServices.Content.Comment.Services
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("edit comment") };
 
             var commentId = request.CommentID.ToGuid();
             var record = await dataProvider.Get(commentId);
             if (record == null)
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateCommentNotFoundError(commentId.ToString()) };
 
             if (record.Public.UserID != user.Id.ToString())
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateUnauthorizedCommentError("edit") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new();
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = $"Length must be less than {MAX_COMMENT_LENGTH}" };
+                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             record.Public.Data.CommentText = text;
             record.Public.Data.Likes = 0;

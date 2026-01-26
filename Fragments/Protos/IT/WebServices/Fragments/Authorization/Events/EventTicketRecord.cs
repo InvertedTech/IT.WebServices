@@ -1,10 +1,10 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using IT.WebServices.Fragments.Generic;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf.WellKnownTypes;
+using IT.WebServices.Fragments.Generic;
 using pb = global::Google.Protobuf;
 
 namespace IT.WebServices.Fragments.Authorization.Events
@@ -35,7 +35,12 @@ namespace IT.WebServices.Fragments.Authorization.Events
             return this;
         }
 
-        public static List<EventTicketRecord> GenerateRecords(int numToGenerate, Fragments.Authorization.Events.EventRecord eventRecord, string userId, EventTicketClass ticketClass)
+        public static List<EventTicketRecord> GenerateRecords(
+            int numToGenerate,
+            Fragments.Authorization.Events.EventRecord eventRecord,
+            string userId,
+            EventTicketClass ticketClass
+        )
         {
             List<EventTicketRecord> tickets = new List<EventTicketRecord>();
 
@@ -48,14 +53,34 @@ namespace IT.WebServices.Fragments.Authorization.Events
                     Public = new EventTicketPublicRecord()
                     {
                         TicketClassId = ticketClass.TicketClassId,
-                        Title = ticketClass.Name + " " + (eventRecord.EventPublicRecordOneOfCase == Fragments.Authorization.Events.EventRecord.EventPublicRecordOneOfOneofCase.SinglePublic ? eventRecord.SinglePublic.Title : eventRecord.RecurringPublic.Title),
+                        Title =
+                            ticketClass.Public.Name
+                            + " "
+                            + (
+                                eventRecord.EventPublicRecordOneOfCase
+                                == Fragments
+                                    .Authorization
+                                    .Events
+                                    .EventRecord
+                                    .EventPublicRecordOneOfOneofCase
+                                    .SinglePublic
+                                    ? eventRecord.SinglePublic.Title
+                                    : eventRecord.RecurringPublic.Title
+                            ),
                         EventId = eventRecord.EventId,
                         Status = EventTicketStatus.TicketStatusAvailable,
                         CreatedOnUTC = now,
                         ModifiedOnUTC = now,
-                        ExpiredOnUTC = eventRecord.EventPublicRecordOneOfCase == Fragments.Authorization.Events.EventRecord.EventPublicRecordOneOfOneofCase.SinglePublic
-                            ? eventRecord.SinglePublic.EndOnUTC
-                            : eventRecord.RecurringPublic.TemplateEndOnUTC,
+                        ExpiredOnUTC =
+                            eventRecord.EventPublicRecordOneOfCase
+                            == Fragments
+                                .Authorization
+                                .Events
+                                .EventRecord
+                                .EventPublicRecordOneOfOneofCase
+                                .SinglePublic
+                                ? eventRecord.SinglePublic.EndOnUTC
+                                : eventRecord.RecurringPublic.TemplateEndOnUTC,
                     },
                     Private = new EventTicketPrivateRecord()
                     {

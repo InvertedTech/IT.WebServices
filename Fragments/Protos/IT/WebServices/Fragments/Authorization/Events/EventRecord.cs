@@ -22,7 +22,7 @@ namespace IT.WebServices.Fragments.Authorization.Events
                 EventId = id.ToString(), 
                 Title = request.Data.Title,
                 Description = request.Data.Description,
-                Location = request.Data.Venue?.Name ?? "",
+                // Location = request.Data.Venue?.Name ?? "",
                 TemplateStartOnUTC = request.Data.StartTimeUTC,
                 TemplateEndOnUTC = request.Data.EndTimeUTC,
                 Tags = { request.Data.Tags },

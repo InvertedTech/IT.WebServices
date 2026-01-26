@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventRecord.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/TicketClassRecord.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventError.proto";
 import "Protos/IT/WebServices/Fragments/CommonTypes.proto";
 
@@ -87,8 +88,9 @@ message CreateEventData {
 	google.protobuf.Timestamp StartTimeUTC = 4; // Start time of the event in UTC
 	google.protobuf.Timestamp EndTimeUTC = 5; // End time of the event in UTC
 	repeated string Tags = 6; // Tags associated with the event
-	repeated string TicketClasses = 7; // Ticket classes available for the event
+	repeated EventTicketClass TicketClasses = 7; // Ticket classes available for the event
 	map<string, string> ExtraData = 8; // Additional metadata for the event
+	uint32 MaxTickets = 9; // Maximum number of tickets available for the event
 }
 
 message AdminCreateEventRequest {
@@ -189,7 +191,7 @@ message AdminCancelOtherTicketRequest {
 }
 
 message AdminCancelOtherTicketResponse {
-	TicketError Error = 1;
+	EventError Error = 1;
 }
 
 message AdminReserveEventTicketForUserRequest {
@@ -200,6 +202,6 @@ message AdminReserveEventTicketForUserRequest {
 }
 
 message AdminReserveEventTicketForUserResponse {
-	TicketError Error = 1; // Error information if reservation failed
+	EventError Error = 1; // Error information if reservation failed
 	repeated EventTicketRecord Tickets = 2; // List of reserved tickets if successful
 }

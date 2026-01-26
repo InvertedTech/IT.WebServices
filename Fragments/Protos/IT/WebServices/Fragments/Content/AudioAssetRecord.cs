@@ -34,7 +34,7 @@ namespace IT.WebServices.Fragments.Content
                 CreatedOnUTC = CreatedOnUTC,
                 Title = Data.Title,
                 Caption = Data.Caption,
-                AssetType = AssetType.Audio,
+                AssetType = AssetType.AssetAudio,
                 LengthSeconds = Data.LengthSeconds,
             };
 

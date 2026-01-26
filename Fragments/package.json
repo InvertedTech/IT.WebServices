@@ -1,0 +1,329 @@
+{
+	"name": "@inverted-tech/fragments",
+	"version": "0.7.2",
+	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
+	"types": "dist/protos/index.d.ts",
+	"module": "dist/esm/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/protos/index.d.ts",
+			"import": "./dist/esm/index.js",
+			"default": "./dist/esm/index.js"
+		},
+		"./protos": {
+			"types": "./dist/protos/index.d.ts",
+			"import": "./dist/esm/protos/index.js"
+		},
+		"./protos/": {
+			"types": "./dist/protos/",
+			"import": "./dist/esm/protos/"
+		},
+		"./protos/*": {
+			"types": "./dist/protos/*.d.ts",
+			"import": "./dist/esm/protos/*.js"
+		},
+		"./Authorization": {
+			"types": "./dist/protos/Authorization/index.d.ts",
+			"import": "./dist/esm/Authorization/index.js",
+			"default": "./dist/esm/Authorization/index.js"
+		},
+		"./Authorization/": {
+			"types": "./dist/protos/Authorization/",
+			"import": "./dist/esm/Authorization/"
+		},
+		"./Authorization/*": {
+			"types": "./dist/protos/Authorization/*.d.ts",
+			"import": "./dist/esm/Authorization/*.js"
+		},
+		"./Authorization/Events": {
+			"types": "./dist/protos/Authorization/Events/index.d.ts",
+			"import": "./dist/esm/Authorization/Events/index.js",
+			"default": "./dist/esm/Authorization/Events/index.js"
+		},
+		"./Authorization/Events/": {
+			"types": "./dist/protos/Authorization/Events/",
+			"import": "./dist/esm/Authorization/Events/"
+		},
+		"./Authorization/Events/*": {
+			"types": "./dist/protos/Authorization/Events/*.d.ts",
+			"import": "./dist/esm/Authorization/Events/*.js"
+		},
+		"./Authorization/Payments": {
+			"types": "./dist/protos/Authorization/Payments/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/index.js",
+			"default": "./dist/esm/Authorization/Payments/index.js"
+		},
+		"./Authorization/Payments/": {
+			"types": "./dist/protos/Authorization/Payments/",
+			"import": "./dist/esm/Authorization/Payments/"
+		},
+		"./Authorization/Payments/*": {
+			"types": "./dist/protos/Authorization/Payments/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/*.js"
+		},
+		"./Authorization/Payments/Crypto": {
+			"types": "./dist/protos/Authorization/Payments/Crypto/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Crypto/index.js",
+			"default": "./dist/esm/Authorization/Payments/Crypto/index.js"
+		},
+		"./Authorization/Payments/Crypto/": {
+			"types": "./dist/protos/Authorization/Payments/Crypto/",
+			"import": "./dist/esm/Authorization/Payments/Crypto/"
+		},
+		"./Authorization/Payments/Crypto/*": {
+			"types": "./dist/protos/Authorization/Payments/Crypto/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Crypto/*.js"
+		},
+		"./Authorization/Payments/Fortis": {
+			"types": "./dist/protos/Authorization/Payments/Fortis/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Fortis/index.js",
+			"default": "./dist/esm/Authorization/Payments/Fortis/index.js"
+		},
+		"./Authorization/Payments/Fortis/": {
+			"types": "./dist/protos/Authorization/Payments/Fortis/",
+			"import": "./dist/esm/Authorization/Payments/Fortis/"
+		},
+		"./Authorization/Payments/Fortis/*": {
+			"types": "./dist/protos/Authorization/Payments/Fortis/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Fortis/*.js"
+		},
+		"./Authorization/Payments/Manual": {
+			"types": "./dist/protos/Authorization/Payments/Manual/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Manual/index.js",
+			"default": "./dist/esm/Authorization/Payments/Manual/index.js"
+		},
+		"./Authorization/Payments/Manual/": {
+			"types": "./dist/protos/Authorization/Payments/Manual/",
+			"import": "./dist/esm/Authorization/Payments/Manual/"
+		},
+		"./Authorization/Payments/Manual/*": {
+			"types": "./dist/protos/Authorization/Payments/Manual/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Manual/*.js"
+		},
+		"./Authorization/Payments/Paypal": {
+			"types": "./dist/protos/Authorization/Payments/Paypal/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Paypal/index.js",
+			"default": "./dist/esm/Authorization/Payments/Paypal/index.js"
+		},
+		"./Authorization/Payments/Paypal/": {
+			"types": "./dist/protos/Authorization/Payments/Paypal/",
+			"import": "./dist/esm/Authorization/Payments/Paypal/"
+		},
+		"./Authorization/Payments/Paypal/*": {
+			"types": "./dist/protos/Authorization/Payments/Paypal/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Paypal/*.js"
+		},
+		"./Authorization/Payments/Stripe": {
+			"types": "./dist/protos/Authorization/Payments/Stripe/index.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Stripe/index.js",
+			"default": "./dist/esm/Authorization/Payments/Stripe/index.js"
+		},
+		"./Authorization/Payments/Stripe/": {
+			"types": "./dist/protos/Authorization/Payments/Stripe/",
+			"import": "./dist/esm/Authorization/Payments/Stripe/"
+		},
+		"./Authorization/Payments/Stripe/*": {
+			"types": "./dist/protos/Authorization/Payments/Stripe/*.d.ts",
+			"import": "./dist/esm/Authorization/Payments/Stripe/*.js"
+		},
+		"./Authentication": {
+			"types": "./dist/protos/Authentication/index.d.ts",
+			"import": "./dist/esm/Authentication/index.js",
+			"default": "./dist/esm/Authentication/index.js"
+		},
+		"./Authentication/": {
+			"types": "./dist/protos/Authentication/",
+			"import": "./dist/esm/Authentication/"
+		},
+		"./Authentication/*": {
+			"types": "./dist/protos/Authentication/*.d.ts",
+			"import": "./dist/esm/Authentication/*.js"
+		},
+		"./Comment": {
+			"types": "./dist/protos/Comment/index.d.ts",
+			"import": "./dist/esm/Comment/index.js",
+			"default": "./dist/esm/Comment/index.js"
+		},
+		"./Comment/": {
+			"types": "./dist/protos/Comment/",
+			"import": "./dist/esm/Comment/"
+		},
+		"./Comment/*": {
+			"types": "./dist/protos/Comment/*.d.ts",
+			"import": "./dist/esm/Comment/*.js"
+		},
+		"./Content": {
+			"types": "./dist/protos/Content/index.d.ts",
+			"import": "./dist/esm/Content/index.js",
+			"default": "./dist/esm/Content/index.js"
+		},
+		"./Content/": {
+			"types": "./dist/protos/Content/",
+			"import": "./dist/esm/Content/"
+		},
+		"./Content/*": {
+			"types": "./dist/protos/Content/*.d.ts",
+			"import": "./dist/esm/Content/*.js"
+		},
+		"./Content/Music": {
+			"types": "./dist/protos/Content/Music/index.d.ts",
+			"import": "./dist/esm/Content/Music/index.js",
+			"default": "./dist/esm/Content/Music/index.js"
+		},
+		"./Content/Music/": {
+			"types": "./dist/protos/Content/Music/",
+			"import": "./dist/esm/Content/Music/"
+		},
+		"./Content/Music/*": {
+			"types": "./dist/protos/Content/Music/*.d.ts",
+			"import": "./dist/esm/Content/Music/*.js"
+		},
+		"./Content/Stats": {
+			"types": "./dist/protos/Content/Stats/index.d.ts",
+			"import": "./dist/esm/Content/Stats/index.js",
+			"default": "./dist/esm/Content/Stats/index.js"
+		},
+		"./Content/Stats/": {
+			"types": "./dist/protos/Content/Stats/",
+			"import": "./dist/esm/Content/Stats/"
+		},
+		"./Content/Stats/*": {
+			"types": "./dist/protos/Content/Stats/*.d.ts",
+			"import": "./dist/esm/Content/Stats/*.js"
+		},
+		"./CreatorDashboard": {
+			"types": "./dist/protos/CreatorDashboard/index.d.ts",
+			"import": "./dist/esm/CreatorDashboard/index.js",
+			"default": "./dist/esm/CreatorDashboard/index.js"
+		},
+		"./CreatorDashboard/": {
+			"types": "./dist/protos/CreatorDashboard/",
+			"import": "./dist/esm/CreatorDashboard/"
+		},
+		"./CreatorDashboard/*": {
+			"types": "./dist/protos/CreatorDashboard/*.d.ts",
+			"import": "./dist/esm/CreatorDashboard/*.js"
+		},
+		"./Generic": {
+			"types": "./dist/protos/Generic/index.d.ts",
+			"import": "./dist/esm/Generic/index.js",
+			"default": "./dist/esm/Generic/index.js"
+		},
+		"./Generic/": {
+			"types": "./dist/protos/Generic/",
+			"import": "./dist/esm/Generic/"
+		},
+		"./Generic/*": {
+			"types": "./dist/protos/Generic/*.d.ts",
+			"import": "./dist/esm/Generic/*.js"
+		},
+		"./Notification": {
+			"types": "./dist/protos/Notification/index.d.ts",
+			"import": "./dist/esm/Notification/index.js",
+			"default": "./dist/esm/Notification/index.js"
+		},
+		"./Notification/": {
+			"types": "./dist/protos/Notification/",
+			"import": "./dist/esm/Notification/"
+		},
+		"./Notification/*": {
+			"types": "./dist/protos/Notification/*.d.ts",
+			"import": "./dist/esm/Notification/*.js"
+		},
+		"./Page": {
+			"types": "./dist/protos/Page/index.d.ts",
+			"import": "./dist/esm/Page/index.js",
+			"default": "./dist/esm/Page/index.js"
+		},
+		"./Page/": {
+			"types": "./dist/protos/Page/",
+			"import": "./dist/esm/Page/"
+		},
+		"./Page/*": {
+			"types": "./dist/protos/Page/*.d.ts",
+			"import": "./dist/esm/Page/*.js"
+		},
+		"./Settings": {
+			"types": "./dist/protos/Settings/index.d.ts",
+			"import": "./dist/esm/Settings/index.js",
+			"default": "./dist/esm/Settings/index.js"
+		},
+		"./Settings/": {
+			"types": "./dist/protos/Settings/",
+			"import": "./dist/esm/Settings/"
+		},
+		"./Settings/*": {
+			"types": "./dist/protos/Settings/*.d.ts",
+			"import": "./dist/esm/Settings/*.js"
+		},
+		"./validation": {
+			"types": "./dist/protos/validation.d.ts",
+			"import": "./dist/esm/validation.js"
+		},
+		"./client": {
+			"types": "./dist/protos/client.d.ts",
+			"import": "./dist/esm/client.js"
+		},
+		"./*": {
+			"types": "./dist/*",
+			"import": "./dist/esm/*"
+		}
+	},
+	"scripts": {
+		"gen": "node ./generate-ts.mjs && node ./scripts/fix-empty-indexes.mjs",
+		"build": "npm run build:esm && npm run postbuild:esm && npm run build:types",
+		"test": "npm run build && node --test test/**/*.test.mjs",
+		"test:client": "npm run build && node --test test/client.test.mjs",
+		"test:basic": "node --test test/client-basic.test.mjs",
+		"prebuild:esm": "node ./scripts/fix-empty-indexes.mjs",
+		"build:gen": "npm run gen && npm run build",
+		"build:esm": "tsc -p tsconfig.esm.json",
+		"postbuild:esm": "node ./scripts/fix-all-imports.mjs && node ./scripts/fix-directory-imports.mjs",
+		"prebuild:types": "node ./scripts/fix-empty-indexes.mjs",
+		"build:types": "tsc -p tsconfig.types.json",
+		"lint": "eslint . --ext .ts",
+		"lint:gen": "eslint ts-gen --ext .ts",
+		"lint:gen:fix": "eslint ts-gen --ext .ts --fix",
+		"clean": "node -e \"const fs=require('fs'),path=require('path'); const rm=(p)=>fs.rmSync(p,{recursive:true,force:true}); if(fs.existsSync('dist')) rm('dist'); const base='ts-gen'; if(fs.existsSync(base)){ for(const ent of fs.readdirSync(base,{withFileTypes:true})) { if(ent.name==='validation.ts' || ent.name==='client.ts') continue; rm(path.join(base, ent.name)); } }\"",
+		"clean:pack": "node -e \"const fs=require('fs'); const path=require('path'); fs.rmSync('__pack_extract__',{recursive:true,force:true}); fs.readdirSync('.').filter(f=>f.endsWith('.tgz')).forEach(f=>fs.rmSync(path.join('.',f),{force:true})); console.log('Removed __pack_extract__ and *.tgz');\"",
+		"clean:dist": "node -e \"const fs=require('fs'); fs.rmSync('dist',{recursive:true,force:true});\"",
+		"rebuild": "npm run clean:dist && node ./scripts/ensure-gen.mjs && npm run build",
+		"prepublishOnly": "node ./scripts/ensure-gen.mjs",
+		"compile": "tsc",
+		"changeset": "changeset",
+		"release:version": "changeset version",
+		"release:version:patch": "node ./scripts/make-changeset.mjs patch && changeset version",
+		"release:version:minor": "node ./scripts/make-changeset.mjs minor && changeset version",
+		"release:version:major": "node ./scripts/make-changeset.mjs major && changeset version",
+		"release:publish": "npm run rebuild && changeset publish",
+		"prepack": "npm run rebuild && node ./scripts/prepack-readme.mjs",
+		"postpack": "node ./scripts/postpack-readme.mjs"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"sideEffects": false,
+	"devDependencies": {
+		"@bufbuild/buf": "^1.6.0",
+		"@bufbuild/protoc-gen-es": "^2.10.0",
+		"@changesets/cli": "^2.29.7",
+		"@connectrpc/protoc-gen-connect-es": "^1.7.0",
+		"@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+		"eslint": "^8.57.1",
+		"ts-node": "^10.9.2",
+		"ts-proto": "^2.8.0",
+		"ts-proto-descriptors": "^1.16.0",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@bufbuild/protobuf": "^2.10.0",
+		"@bufbuild/protovalidate": "^1.0.0",
+		"@connectrpc/connect": "^1.7.0"
+	}
+}
