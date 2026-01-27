@@ -105,10 +105,10 @@ namespace IT.WebServices.Content.CMS.Services.Data
             {
                 var record = rdr.ParseContentRecord();
 
-                await Task.WhenAll(
-                        categoryProvider.Load(record),
-                        channelProvider.Load(record)
-                    );
+                //await Task.WhenAll(
+                //        categoryProvider.Load(record),
+                //        channelProvider.Load(record)
+                //    );
 
                 yield return record;
             }
