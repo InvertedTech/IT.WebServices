@@ -5,6 +5,7 @@ package IT.WebServices.Fragments.Authorization.Payment;
 import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/PaymentInterface.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/SharedTypes.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Payment/DataRecords.proto";
 
 service AdminPaymentInterface {
   rpc BulkActionCancel (BulkActionCancelRequest) returns (BulkActionCancelResponse)
@@ -72,6 +73,13 @@ service AdminPaymentInterface {
       post: "/api/payment/admin/user/{UserID}/subscription/{InternalSubscriptionID}/reconcile"
     };
   }
+
+  rpc ListSubscriptions (ListSubscriptionsRequest) returns (ListSubscriptionsResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/payment/admin/subscriptions"
+    };
+  }
 }
 
 message BulkActionCancelRequest {
@@ -124,4 +132,18 @@ message GetOtherOneTimeRecordsRequest {
 message ReconcileOtherSubscriptionRequest {
   string UserID = 1;
   string InternalSubscriptionID = 2;
+}
+
+message ListSubscriptionsRequest {
+    uint32 PageSize = 1;
+    uint32 PageOffset = 2;
+    bool IncludeInactive = 3;
+}
+
+message ListSubscriptionsResponse {
+    string Error = 1;
+    repeated GenericSubscriptionFullRecord Subscriptions = 2;
+    uint32 PageTotalItems = 3;
+    uint32 PageOffsetStart = 4;
+    uint32 PageOffsetEnd = 5;
 }

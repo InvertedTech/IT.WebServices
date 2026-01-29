@@ -1376,11 +1376,10 @@ namespace IT.WebServices.Authentication.Services
                         continue;
 
                 if (possibleRoles != null)
-                    if (
-                        !possibleRoles.Any(possibleRole =>
-                            rec.Normal.Private.Roles.Any(role => possibleRole.Contains(role))
-                        )
-                    )
+
+                    if (!possibleRoles.Any(possibleRole =>
+                        rec.Normal.Private.Roles.Any(role => string.Equals(possibleRole, role, StringComparison.InvariantCultureIgnoreCase))
+                    ))
                         continue;
 
                 if (searchCreatedBefore != null)
