@@ -291,5 +291,47 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                 return new() { Error = "Unknown error" };
             }
         }
+
+        // TODO: Add Date Range Filter
+        public override async Task<ListSubscriptionsResponse> ListSubscriptions(ListSubscriptionsRequest request, ServerCallContext context)
+        {
+
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                var res = new ListSubscriptionsResponse();
+                var list = new List<GenericSubscriptionFullRecord>();
+
+                await foreach (var rec in genericFullProvider.GetAll())
+                {
+                    list.Add(rec);
+                }
+
+                res.Subscriptions.AddRange(list.OrderBy(r => r.LastPaidUTC));
+                res.PageTotalItems = (uint)res.Subscriptions.Count;
+
+                if (request.PageSize > 0)
+                {
+                    res.PageOffsetStart = request.PageOffset;
+                    var page = res.Subscriptions.Skip((int)request.PageOffset)
+                        .Take((int)request.PageSize)
+                        .ToList();
+                    res.Subscriptions.Clear();
+                    res.Subscriptions.AddRange(page);
+                }
+
+                res.PageOffsetEnd = res.PageOffsetStart + (uint)res.Subscriptions.Count;
+
+                return res;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unknown Error");
+                return new() { Error = "Unknown error" };
+            }
+        }
     }
 }
