@@ -5,8 +5,41 @@ package IT.WebServices.Fragments;
 import "google/protobuf/timestamp.proto";
 import "buf/validate/validate.proto";
 
+enum APIErrorReason {
+  ERROR_REASON_NO_ERROR = 0;
+  ERROR_REASON_UNKNOWN = 1;
+
+  ERROR_REASON_UNAUTHENTICATED = 10;
+  ERROR_REASON_UNAUTHORIZED = 11;
+
+  ERROR_REASON_NOT_FOUND = 20;
+  ERROR_REASON_CONFLICT = 21;
+  ERROR_REASON_ALREADY_EXISTS = 22;
+
+  ERROR_REASON_VALIDATION_FAILED = 30;
+  ERROR_REASON_INVALID_REQUEST = 31;
+  ERROR_REASON_INVALID_QUERY = 32;
+  ERROR_REASON_INVALID_CONTENT = 33;
+  ERROR_REASON_INVALID_FORMAT = 34;
+  ERROR_REASON_INVALID_DATE = 35;
+  ERROR_REASON_INVALID_CODE = 36;
+
+  ERROR_REASON_SERVICE_UNAVAILABLE = 50;
+  ERROR_REASON_PROVIDER_UNAVAILABLE = 51;
+  ERROR_REASON_PROVIDER_ERROR = 52;
+
+  ERROR_REASON_DELIVERY_FAILED = 60;
+  ERROR_REASON_TEMPLATE_ERROR = 61;
+}
+
 message ValidationIssue {
   string field = 1;      
   string message = 2;   
   string code = 3;  
+}
+
+message APIError {
+	APIErrorReason Reason = 1;
+	string Message = 2;
+	repeated ValidationIssue Validation = 3;
 }

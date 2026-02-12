@@ -7,8 +7,8 @@ import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Content/AssetRecord.proto";
 import "Protos/IT/WebServices/Fragments/Content/AudioAssetRecord.proto";
 import "Protos/IT/WebServices/Fragments/Content/ImageAssetRecord.proto";
-import "Protos/IT/WebServices/Fragments/Content/ContentError.proto";
 import "buf/validate/validate.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 
 // Service for Asset fragment interface
 service AssetInterface {
@@ -67,7 +67,7 @@ message CreateAssetRequest {
   
 message CreateAssetResponse {
   AssetRecord Record = 1;
-  ContentError Error = 2;
+  APIError Error = 2;
 }
 
 message GetAssetRequest {
@@ -80,7 +80,7 @@ message GetAssetResponse {
     AudioAssetPublicRecord Audio = 1;
     ImageAssetPublicRecord Image = 2;
   }
-  ContentError Error = 3;
+  APIError Error = 3;
 }
   
 message GetAssetAdminRequest {
@@ -89,7 +89,7 @@ message GetAssetAdminRequest {
   
 message GetAssetAdminResponse {
   AssetRecord Record = 1;
-  ContentError Error = 2;
+  APIError Error = 2;
 }
   
 message GetAssetByOldContentIDRequest {
@@ -98,7 +98,7 @@ message GetAssetByOldContentIDRequest {
   
 message GetAssetByOldContentIDResponse {
   AssetRecord Record = 1;
-  ContentError Error = 2;
+  APIError Error = 2;
 }
 
 message GetListOfIDsRequest {
@@ -130,7 +130,7 @@ message SearchAssetResponse {
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
-  ContentError Error = 14;
+  APIError Error = 14;
 }
 
 enum AssetType {

@@ -234,83 +234,6 @@ service UserInterface {
     };
   }
 }
-
-message AuthError {
-    AuthErrorReason Type = 1;
-    string Message = 2;
-    repeated ValidationIssue Validation = 3;
-}
-
-enum AuthErrorReason {
-  // 0s — generic
-  AUTH_REASON_UNSPECIFIED = 0;
-
-  // 1–49: AuthenticateUser (login)
-  LOGIN_ERROR_INVALID_CREDENTIALS = 1;
-  LOGIN_ERROR_MFA_REQUIRED        = 2;
-  LOGIN_ERROR_INVALID_MFA_CODE    = 3;
-  LOGIN_ERROR_SERVICE_UNAVAILABLE = 4;
-
-  // 100–149: ChangeOtherPassword
-  CHANGE_OTHER_PASSWORD_ERROR_USER_NOT_FOUND  = 100;
-  CHANGE_OTHER_PASSWORD_ERROR_BAD_NEW_PASSWORD = 101;
-  CHANGE_OTHER_PASSWORD_ERROR_UNKNOWN          = 149;
-
-  // 200–249: ChangeOtherProfileImage
-  CHANGE_OTHER_PROFILE_IMAGE_ERROR_USER_NOT_FOUND = 200;
-  CHANGE_OTHER_PROFILE_IMAGE_ERROR_BAD_FORMAT     = 201;
-  CHANGE_OTHER_PROFILE_IMAGE_ERROR_UNKNOWN        = 249;
-
-  // 300–349: ChangeOwnPassword
-  CHANGE_OWN_PASSWORD_ERROR_BAD_OLD_PASSWORD = 300;
-  CHANGE_OWN_PASSWORD_ERROR_BAD_NEW_PASSWORD = 301;
-  CHANGE_OWN_PASSWORD_ERROR_UNKNOWN          = 349;
-
-  // 400–449: ChangeOwnProfileImage
-  CHANGE_OWN_PROFILE_IMAGE_ERROR_BAD_FORMAT = 400;
-  CHANGE_OWN_PROFILE_IMAGE_ERROR_UNKNOWN    = 449;
-
-  // 500–549: CreateUser
-  CREATE_USER_ERROR_USERNAME_TAKEN = 500;
-  CREATE_USER_ERROR_EMAIL_TAKEN    = 501;
-  CREATE_USER_ERROR_UNKNOWN        = 549;
-
-  // 600–649: Disable/Enable other user
-  DISABLE_OTHER_USER_ERROR_UNKNOWN = 600;
-  ENABLE_OTHER_USER_ERROR_UNKNOWN  = 601;
-
-  // 700–749: Disable TOTP
-  DISABLE_OTHER_TOTP_ERROR_UNKNOWN = 700;
-  DISABLE_OWN_TOTP_ERROR_UNKNOWN   = 701;
-
-  // 800–849: Generate TOTP
-  GENERATE_OTHER_TOTP_ERROR_UNKNOWN = 800;
-  GENERATE_OWN_TOTP_ERROR_UNKNOWN   = 801;
-
-  // 900–949: ModifyOtherUser
-  MODIFY_OTHER_USER_ERROR_UNAUTHORIZED    = 900;
-  MODIFY_OTHER_USER_ERROR_USER_NOT_FOUND  = 901;
-  MODIFY_OTHER_USER_ERROR_USERNAME_TAKEN  = 902;
-  MODIFY_OTHER_USER_ERROR_EMAIL_TAKEN     = 903;
-  MODIFY_OTHER_USER_ERROR_SERVICE_OFFLINE = 904;
-  MODIFY_OTHER_USER_ERROR_UNKNOWN         = 949;
-
-  // 950–999: ModifyOtherUserRoles
-  MODIFY_OTHER_USER_ROLES_ERROR_UNKNOWN = 950;
-
-  // 1000–1049: ModifyOwnUser
-  MODIFY_OWN_USER_ERROR_UNKNOWN = 1000;
-
-  // 1100–1149: Verify TOTP
-  VERIFY_OTHER_TOTP_ERROR_INVALID_CODE = 1100;
-  VERIFY_OTHER_TOTP_ERROR_UNKNOWN      = 1149;
-  VERIFY_OWN_TOTP_ERROR_INVALID_CODE   = 1150;
-  VERIFY_OWN_TOTP_ERROR_UNKNOWN        = 1199;
-
-  // 1200–1249: RenewToken
-  RENEW_TOKEN_ERROR_UNAUTHENTICATED = 1200;
-  RENEW_TOKEN_ERROR_UNKNOWN         = 1249;
-}
   
 message AuthenticateUserRequest {
   string UserName = 1 [(buf.validate.field).required = true];
@@ -322,7 +245,7 @@ message AuthenticateUserResponse {
   bool ok = 1; 
   string BearerToken = 2;
   UserNormalRecord UserRecord = 3;
-  AuthError Error = 4;
+  APIError Error = 4;
 }
   
 message ChangeOtherPasswordRequest {
@@ -331,7 +254,7 @@ message ChangeOtherPasswordRequest {
 }
   
 message ChangeOtherPasswordResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
   
 message ChangeOtherProfileImageRequest {
@@ -340,7 +263,7 @@ message ChangeOtherProfileImageRequest {
 }
   
 message ChangeOtherProfileImageResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
   
 message ChangeOwnPasswordRequest {
@@ -349,7 +272,7 @@ message ChangeOwnPasswordRequest {
 }
   
 message ChangeOwnPasswordResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
 
 message ChangeOwnProfileImageRequest {
@@ -357,7 +280,7 @@ message ChangeOwnProfileImageRequest {
 }
   
 message ChangeOwnProfileImageResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
 
 message CreateUserRequest {
@@ -373,7 +296,7 @@ message CreateUserRequest {
   
 message CreateUserResponse {
   string BearerToken = 1;
-  AuthError Error = 2;
+  APIError Error = 2;
 }
 
 message DisableEnableOtherUserRequest {
@@ -381,12 +304,7 @@ message DisableEnableOtherUserRequest {
 }
   
 message DisableEnableOtherUserResponse {
-  AuthError Error = 10;
-
-  enum DisableEnableOtherUserResponseErrorType {
-    NoError = 0;
-    UnknownError = -1;
-  }
+  APIError Error = 10;
 }
 
 message DisableOtherTotpRequest {
@@ -395,7 +313,7 @@ message DisableOtherTotpRequest {
 }
 
 message DisableOtherTotpResponse {
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 
 message DisableOwnTotpRequest {
@@ -403,7 +321,7 @@ message DisableOwnTotpRequest {
 }
 
 message DisableOwnTotpResponse {
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 
 message GenerateOtherTotpRequest {
@@ -415,7 +333,7 @@ message GenerateOtherTotpResponse {
   string TotpID = 1;
   string Key = 2;
   string QRCode = 3;
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 
 message GenerateOwnTotpRequest {
@@ -426,7 +344,7 @@ message GenerateOwnTotpResponse {
   string TotpID = 1;
   string Key = 2;
   string QRCode = 3;
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 
 message GetAllUsersRequest {
@@ -522,7 +440,7 @@ message ModifyOtherUserRequest {
 }
   
 message ModifyOtherUserResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyOtherUserRolesRequest {
@@ -531,7 +449,7 @@ message ModifyOtherUserRolesRequest {
 }
   
 message ModifyOtherUserRolesResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyOwnUserRequest {
@@ -545,7 +463,7 @@ message ModifyOwnUserRequest {
 }
   
 message ModifyOwnUserResponse {
-  AuthError Error = 1;
+  APIError Error = 1;
   string BearerToken = 2;
 }
 
@@ -598,7 +516,7 @@ message VerifyOtherTotpRequest {
 }
 
 message VerifyOtherTotpResponse {
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 
 message VerifyOwnTotpRequest {
@@ -607,6 +525,6 @@ message VerifyOwnTotpRequest {
 }
 
 message VerifyOwnTotpResponse {
-  AuthError Error = 10;
+  APIError Error = 10;
 }
 

@@ -1,45 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using IT.WebServices.Fragments.Authentication;
 using ProtoValidate;
 
 namespace IT.WebServices.Fragments
 {
-    public static class ErrorExtensions
+    public static class GenericErrorExtensions
     {
-        public static AuthError CreateError(AuthErrorReason errorType, string message)
+        public static APIError Create(APIErrorReason reason, string message)
         {
-            return new AuthError
+            return new APIError
             {
-                Type = errorType,
+                Reason = reason,
                 Message = message ?? string.Empty
             };
         }
 
-        public static AuthError AddValidationIssue(this AuthError error, string field, string message, string code = "")
+        public static APIError CreateError(APIErrorReason reason, string message) => Create(reason, message);
+
+        public static APIError CreateNoError(string message = "No Error") => Create(APIErrorReason.ErrorReasonNoError, message);
+
+        public static APIError AddValidationIssue(this APIError error, string field, string message, string code = "")
         {
             if (error == null)
                 throw new ArgumentNullException(nameof(error));
 
-            error.Validation.Add(new ValidationIssue
-            {
-                Field = field ?? string.Empty,
-                Message = message ?? string.Empty,
-                Code = code ?? string.Empty
-            });
+            error.Validation.Add(
+                new ValidationIssue
+                {
+                    Field = field ?? string.Empty,
+                    Message = message ?? string.Empty,
+                    Code = code ?? string.Empty
+                }
+            );
 
             return error;
         }
 
-        public static AuthError FromProtoValidateResult(ValidationResult validationResult, AuthErrorReason errorType, string message = "Validation failed")
+        public static APIError FromProtoValidateResult(ValidationResult validationResult, APIErrorReason errorType, string message = "Validation failed")
         {
             if (validationResult == null)
                 throw new ArgumentNullException(nameof(validationResult));
 
-            var error = new AuthError
+            var error = new APIError
             {
-                Type = errorType,
+                Reason = errorType,
                 Message = message ?? "Validation failed"
             };
 
@@ -89,6 +93,7 @@ namespace IT.WebServices.Fragments
             var simple = GetStringProperty(violation, "Field", "Path");
             if (!string.IsNullOrWhiteSpace(simple))
                 return simple;
+
             var fieldPathProperty = violation.GetType().GetProperty("FieldPath");
             var fieldPath = fieldPathProperty?.GetValue(violation);
             if (fieldPath != null)
@@ -96,7 +101,6 @@ namespace IT.WebServices.Fragments
                 var fieldPathString = fieldPath.ToString();
                 if (!string.IsNullOrWhiteSpace(fieldPathString))
                     return fieldPathString;
-
 
                 var segmentsProperty = fieldPath.GetType().GetProperty("Segments");
                 var segments = segmentsProperty?.GetValue(fieldPath) as System.Collections.IEnumerable;
@@ -109,6 +113,7 @@ namespace IT.WebServices.Fragments
                         if (!string.IsNullOrWhiteSpace(name))
                             parts.Add(name);
                     }
+
                     if (parts.Count > 0)
                         return string.Join(".", parts);
                 }
@@ -125,6 +130,7 @@ namespace IT.WebServices.Fragments
             var id = GetStringProperty(violation, "ConstraintId", "RuleId");
             if (!string.IsNullOrWhiteSpace(id))
                 return id;
+
             var ruleProperty = violation.GetType().GetProperty("Rule");
             var rule = ruleProperty?.GetValue(violation);
             if (rule != null)
@@ -136,9 +142,5 @@ namespace IT.WebServices.Fragments
 
             return string.Empty;
         }
-
-
-
-
     }
 }

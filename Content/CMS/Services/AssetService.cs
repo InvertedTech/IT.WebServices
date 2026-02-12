@@ -8,6 +8,7 @@ using IT.WebServices.Authentication;
 using IT.WebServices.Content.CMS.Services.Data;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Fragments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
@@ -32,11 +33,17 @@ namespace IT.WebServices.Content.CMS.Services
         )
         {
             if (!IsValid(request))
-                return new();
+                return CreateAssetError(
+                    APIErrorReason.ErrorReasonValidationFailed,
+                    "Invalid Request Body"
+                );
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
-                return new();
+                return CreateAssetError(
+                    APIErrorReason.ErrorReasonUnauthenticated,
+                    "Not Authenticated"
+                );
 
             AssetRecord record = new();
 
@@ -47,7 +54,10 @@ namespace IT.WebServices.Content.CMS.Services
                 case CreateAssetRequest.CreateAssetRequestOneofOneofCase.Image:
                     return await CreateImage(request.Image, user);
                 default:
-                    return new();
+                    return CreateAssetError(
+                        APIErrorReason.ErrorReasonInvalidContent,
+                        "Unsupported Asset Type"
+                    );
             }
         }
 
@@ -101,11 +111,11 @@ namespace IT.WebServices.Content.CMS.Services
         {
             Guid contentId = request.AssetID.ToGuid();
             if (contentId == Guid.Empty)
-                return new();
+                return GetAssetError(APIErrorReason.ErrorReasonInvalidContent, "Invalid AssetID");
 
             var rec = await dataProvider.GetById(contentId);
             if (rec == null)
-                return new();
+                return GetAssetError(APIErrorReason.ErrorReasonNotFound, "Asset Not Found");
 
             switch (rec.AssetRecordOneofCase)
             {
@@ -114,7 +124,10 @@ namespace IT.WebServices.Content.CMS.Services
                 case AssetRecord.AssetRecordOneofOneofCase.Image:
                     return new() { Image = rec.Image.Public };
                 default:
-                    return new();
+                    return GetAssetError(
+                        APIErrorReason.ErrorReasonInvalidContent,
+                        "Unsupported Asset Type"
+                    );
             }
         }
 
@@ -126,11 +139,14 @@ namespace IT.WebServices.Content.CMS.Services
         {
             Guid contentId = request.AssetID.ToGuid();
             if (contentId == Guid.Empty)
-                return new();
+                return GetAssetAdminError(
+                    APIErrorReason.ErrorReasonInvalidContent,
+                    "Invalid AssetID"
+                );
 
             var rec = await dataProvider.GetById(contentId);
             if (rec == null)
-                return new();
+                return GetAssetAdminError(APIErrorReason.ErrorReasonNotFound, "Asset Not Found");
 
             return new() { Record = rec };
         }
@@ -143,11 +159,17 @@ namespace IT.WebServices.Content.CMS.Services
         {
             var oldId = request.OldAssetID;
             if (oldId == "")
-                return new();
+                return GetAssetByOldContentIDError(
+                    APIErrorReason.ErrorReasonInvalidContent,
+                    "OldAssetID is required"
+                );
 
             var rec = await dataProvider.GetByOldAssetId(oldId);
             if (rec == null)
-                return new();
+                return GetAssetByOldContentIDError(
+                    APIErrorReason.ErrorReasonNotFound,
+                    "Asset Not Found"
+                );
 
             return new() { Record = rec };
         }
@@ -406,5 +428,19 @@ namespace IT.WebServices.Content.CMS.Services
                     return true;
             return false;
         }
+
+        private static CreateAssetResponse CreateAssetError(APIErrorReason reason, string message) =>
+            new() { Error = GenericErrorExtensions.CreateError(reason, message) };
+
+        private static GetAssetResponse GetAssetError(APIErrorReason reason, string message) =>
+            new() { Error = GenericErrorExtensions.CreateError(reason, message) };
+
+        private static GetAssetAdminResponse GetAssetAdminError(APIErrorReason reason, string message) =>
+            new() { Error = GenericErrorExtensions.CreateError(reason, message) };
+
+        private static GetAssetByOldContentIDResponse GetAssetByOldContentIDError(
+            APIErrorReason reason,
+            string message
+        ) => new() { Error = GenericErrorExtensions.CreateError(reason, message) };
     }
 }

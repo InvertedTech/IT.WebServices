@@ -1,5 +1,23 @@
 # @inverted-tech/fragments
 
+## 0.9.2
+
+### Patch Changes
+
+- Add Error Proto To Content and Asset Services
+
+## 0.9.1
+
+### Patch Changes
+
+- Add Error Proto To Package Export
+
+## 0.9.0
+
+### Minor Changes
+
+- Unify Auth Error Protos With New Generic Error Proto
+
 ## 0.8.0
 
 ### Minor Changes

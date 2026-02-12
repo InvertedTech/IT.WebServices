@@ -638,6 +638,11 @@ for (const e of await fsp.readdir(tsGenDir, { withFileTypes: true })) {
   // ⬇️ Fix the remaining protovalidate import path mismatch
   await fixProtovalidateImportPath();
 
+  // Build ./protos/* shim surface before relocating/removing the deep Protos tree.
+  log('Building protos shim surface...');
+  await buildProtosFlatShims();
+  log('Protos shims built.');
+
   // Relocate generated files to ts-gen/{Module} and remove deep tree
   log('Relocating generated files to top-level modules...');
   await relocateFragmentsTopLevel();

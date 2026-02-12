@@ -11,6 +11,7 @@ using IT.WebServices.Content.CMS.Services.Data;
 using IT.WebServices.Content.CMS.Services.Helpers;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Content.CMS.Services
 {
@@ -32,32 +33,61 @@ namespace IT.WebServices.Content.CMS.Services
         public override async Task<AnnounceContentResponse> AnnounceContent(AnnounceContentRequest request, ServerCallContext context)
         {
             if (request.AnnounceOnUTC == null)
-                return new();
+            {
+                var error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Validation Failed");
+                error.Validation.Add(new ValidationIssue
+                {
+                    Field = "AnnounceOnUTC",
+                    Message = "AnnounceOnUTC is required",
+                    Code = "required"
+                });
+
+                return new AnnounceContentResponse
+                {
+                    Error = error
+                };
+            }
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
 
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+            {
+                return new AnnounceContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
+            }
 
             record.Public.AnnounceOnUTC = request.AnnounceOnUTC;
             record.Private.AnnouncedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<CreateContentResponse> CreateContent(CreateContentRequest request, ServerCallContext context)
         {
-            if (!IsValid(request.Public, request.Private))
-                return new();
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
-                return new();
+            {
+                return new CreateContentResponse()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not Authenticated")
+                };
+            }
+
+            if (!IsValid(request.Public, request.Private))
+            {
+                return new CreateContentResponse()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Invalid Request Body")
+                };
+            }
 
             var record = new ContentRecord
             {
@@ -76,7 +106,7 @@ namespace IT.WebServices.Content.CMS.Services
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
@@ -87,14 +117,19 @@ namespace IT.WebServices.Content.CMS.Services
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+            {
+                return new DeleteContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
+            }
 
             record.Public.DeletedOnUTC = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
             record.Private.DeletedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [AllowAnonymous]
@@ -450,14 +485,23 @@ namespace IT.WebServices.Content.CMS.Services
         public override async Task<ModifyContentResponse> ModifyContent(ModifyContentRequest request, ServerCallContext context)
         {
             if (!IsValid(request.Public, request.Private))
-                return new();
+            {
+                return new ModifyContentResponse()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Invalid Body")
+                };
+            }
+            
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
 
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+                return new ModifyContentResponse()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
 
             record.Public.Data = request.Public;
             record.Private.Data = request.Private;
@@ -466,28 +510,37 @@ namespace IT.WebServices.Content.CMS.Services
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
         public override async Task<PublishContentResponse> PublishContent(PublishContentRequest request, ServerCallContext context)
         {
             if (request.PublishOnUTC == null)
-                return new();
-
+            {
+                var error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Invalid Body");
+                error.AddValidationIssue("PublishOnUTC", "PublishOnUTC is required", "required");
+                return new()
+                {
+                    Error = error,
+                };
+            }
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
 
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+                return new PublishContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
 
             record.Public.PublishOnUTC = request.PublishOnUTC;
             record.Private.PublishedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [AllowAnonymous]
@@ -583,14 +636,19 @@ namespace IT.WebServices.Content.CMS.Services
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+            {
+                return new UnannounceContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
+            }
 
             record.Public.AnnounceOnUTC = null;
             record.Private.AnnouncedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
@@ -601,14 +659,19 @@ namespace IT.WebServices.Content.CMS.Services
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+            {
+                return new UndeleteContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
+            }
 
             record.Public.DeletedOnUTC = null;
             record.Private.DeletedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
@@ -619,14 +682,19 @@ namespace IT.WebServices.Content.CMS.Services
             var contentId = request.ContentID.ToGuid();
             var record = await dataProvider.GetById(contentId);
             if (record == null)
-                return new();
+            {
+                return new UnpublishContentResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
+                };
+            }
 
             record.Public.PublishOnUTC = null;
             record.Private.PublishedBy = user.Id.ToString();
 
             await dataProvider.Save(record);
 
-            return new() { Record = record };
+            return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
         private bool CanShowContent(ContentRecord rec, ONUser user)
