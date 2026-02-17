@@ -51,12 +51,19 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             this.settingsClient = settingsClient;
             this.recordProvider = recordProvider;
 
-            // Set Client Secret
-            StripeConfiguration.ApiKey = settingsClient?.OwnerData?.Subscription?.Stripe?.ClientSecret ?? "";
+            if (IsEnabled)
+            {
+                // Set Client Secret
+                StripeConfiguration.ApiKey = settingsClient?.OwnerData?.Subscription?.Stripe?.ClientSecret ?? "";
 
-            Products = recordProvider.GetAll().Result;
-            EnsureProducts();
+                Products = recordProvider.GetAll().Result;
+                EnsureProducts();
+            }
         }
+
+        public bool IsEnabled => settingsClient?.PublicData?.Subscription?.Stripe?.Enabled ?? false && IsSettingsValid;
+        private bool IsSettingsValid => settingsClient?.OwnerData?.Subscription?.Stripe?.IsValid() ?? false;
+
 
         public async Task<Product?> EnsureOneTimeProduct(StripeEnsureOneTimeProductRequest request)
         {
@@ -249,6 +256,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<StripeNewDetails?> GetNewDetails(uint level, ONUser userToken, string successUrl, string cancelUrl)
         {
+            if (!IsEnabled)
+                return null;
+
             var product = Products.Records.FirstOrDefault(r => r.Price == level);
             if (product == null)
                 return null;
@@ -264,6 +274,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<StripeNewOneTimeDetails?> GetNewOneTimeDetails(string internalId, ONUser userToken, string successUrl, string cancelUrl, uint differentPresetPriceCents)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var product = await GetProduct(internalId);
@@ -306,6 +319,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<string?> CreateOneTimeCheckoutSession(string priceId, string contentId, ONUser userToken, string successUrl, string cancelUrl)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var customer = await EnsureCustomerByUserId(userToken.Id);
@@ -337,6 +353,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<string?> CreateCheckoutSession(ProductRecord product, ONUser userToken, string successUrl, string cancelUrl)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var customer = await EnsureCustomerByUserId(userToken.Id);
@@ -379,6 +398,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<Customer?> EnsureCustomerByUserId(Guid userId)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var customer = await GetCustomerByUserId(userId);
@@ -397,6 +419,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<List<GenericPaymentRecord>> GetAllPaymentsForCustomer(string processorCustomerId)
         {
+            if (!IsEnabled)
+                return new();
+
             List<GenericPaymentRecord> list = new();
             try
             {
@@ -422,6 +447,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async IAsyncEnumerable<GenericPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range)
         {
+            if (!IsEnabled)
+                yield break;
+
             var chargeService = new InvoiceService();
             var options = new InvoiceSearchOptions()
             {
@@ -440,6 +468,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionId)
         {
+            if (!IsEnabled)
+                return new();
+
             List<GenericPaymentRecord> list = new();
             try
             {
@@ -465,6 +496,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<List<GenericSubscriptionRecord>> GetAllSubscriptions()
         {
+            if (!IsEnabled)
+                return new();
+
             List<GenericSubscriptionRecord> list = new();
             try
             {
@@ -490,6 +524,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<Customer?> GetCustomerByUserId(Guid userId)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var res = await customerService.SearchAsync(
@@ -504,6 +541,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord subscription)
         {
+            if (!IsEnabled)
+                return Guid.Empty;
+
             try
             {
                 var customer = await customerService.GetAsync(subscription.ProcessorCustomerID);
@@ -538,6 +578,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<Session?> GetCheckoutSessionById(string checkoutSessionId)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var session = await checkoutService.GetAsync(checkoutSessionId);
@@ -721,6 +764,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var sub = await subService.GetAsync(processorSubscriptionID, new());
@@ -733,6 +779,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var sub = await GetSubscription(processorSubscriptionID);
@@ -755,6 +804,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<List<GenericSubscriptionRecord>> GetSubscriptionsByCustomerId(string id)
         {
+            if (!IsEnabled)
+                return new();
+
             try
             {
                 var customer = await customerService.GetAsync(
@@ -770,6 +822,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         public async Task<List<PaymentIntent>> GetOneTimePaymentsByCustomerId(string id)
         {
+            if (!IsEnabled)
+                return new();
+
             try
             {
                 var payments = await paymentService.ListAsync(
@@ -785,6 +840,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         internal async Task<bool> CancelSubscription(string id, string reason)
         {
+            if (!IsEnabled)
+                return false;
+
             try
             {
                 var sub = await subService.CancelAsync(
@@ -798,8 +856,11 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return false;
         }
 
-        internal async Task<global::Stripe.Checkout.Session?> GetCheckoutSessionByPaymentIntentId(string paymentIntentId)
+        internal async Task<Session?> GetCheckoutSessionByPaymentIntentId(string paymentIntentId)
         {
+            if (!IsEnabled)
+                return null;
+
             try
             {
                 var sessions = await checkoutService.ListAsync(new() { PaymentIntent = paymentIntentId, Expand = new() { "data.line_items" } });
