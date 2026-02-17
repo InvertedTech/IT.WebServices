@@ -52,7 +52,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             this.recordProvider = recordProvider;
 
             // Set Client Secret
-            StripeConfiguration.ApiKey = settingsClient.OwnerData.Subscription.Stripe.ClientSecret;
+            StripeConfiguration.ApiKey = settingsClient?.OwnerData?.Subscription?.Stripe?.ClientSecret ?? "";
 
             Products = recordProvider.GetAll().Result;
             EnsureProducts();
