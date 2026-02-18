@@ -5,6 +5,7 @@ using IT.WebServices.Authentication;
 using IT.WebServices.Authorization.Events.Data;
 using IT.WebServices.Authorization.Events.Extensions;
 using IT.WebServices.Authorization.Events.Helpers;
+using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Authorization.Events;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
@@ -51,7 +52,7 @@ namespace IT.WebServices.Authorization.Events.Services
             if (eventId == Guid.Empty)
                 return new GetEventResponse()
                 {
-                    Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Event ID")
+                    Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonInvalidRequest, "Invalid Event ID")
                 };
 
             var rec = await _eventProvider.GetById(eventId);
@@ -59,7 +60,7 @@ namespace IT.WebServices.Authorization.Events.Services
             {
                 return new GetEventResponse()
                 {
-                    Error = EventErrorExtensions.CreateEventNotFoundError(eventId.ToString())
+                    Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonNotFound, $"Event '{eventId}' not found")
                 };
             }
 
@@ -135,7 +136,7 @@ namespace IT.WebServices.Authorization.Events.Services
             var foundTicket = tickets.FirstOrDefault(t => t.TicketId == request.TicketId);
             if (foundTicket == null)
             {
-                res.Error = EventErrorExtensions.CreateTicketNotFoundError(request.TicketId);
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonNotFound, $"Ticket '{request.TicketId}' not found");
                 return res;
             }
 
@@ -144,7 +145,7 @@ namespace IT.WebServices.Authorization.Events.Services
            var success = await _ticketProvider.Update(foundTicket);
             if (!success)
             {
-                res.Error = EventErrorExtensions.CreateError(EventErrorReason.CancelTicketErrorUnknown, "Unknown error occurred while canceling ticket");
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred while canceling ticket");
                 return res;
             }
             res.Error = null; // Success case - no error
@@ -158,28 +159,28 @@ namespace IT.WebServices.Authorization.Events.Services
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
             {
-                res.Error = EventErrorExtensions.CreateUnauthorizedTicketError("reserve ticket");
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonUnauthorized, "Unauthorized to reserve ticket");
                 return res;
             }
 
             Guid.TryParse(request.EventId, out var eventId);
             if (eventId == Guid.Empty)
             {
-                res.Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Event ID");
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonInvalidRequest, "Invalid Event ID");
                 return res;
             }
 
             var eventRecord = await _eventProvider.GetById(eventId);
             if (eventRecord == null)
             {
-                res.Error = EventErrorExtensions.CreateEventNotFoundError(eventId.ToString());
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonNotFound, $"Event '{eventId}' not found");
                 return res;
             }
 
             var ticketClass = _ticketClassHelper.GetById(request.TicketClassId);
             if (ticketClass == null)
             {
-                res.Error = EventErrorExtensions.CreateInvalidRequestError("Invalid Ticket Class ID");
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonInvalidRequest, "Invalid Ticket Class ID");
                 return res;
             }
 
@@ -262,25 +263,25 @@ namespace IT.WebServices.Authorization.Events.Services
 
             if (foundTicket == null)
             {
-                res.Error = EventErrorExtensions.CreateTicketNotFoundError(request.TicketId);
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonNotFound, $"Ticket '{request.TicketId}' not found");
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusUsed)
             {
-                res.Error = EventErrorExtensions.CreateTicketAlreadyUsedError(request.TicketId);
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonConflict, $"Ticket '{request.TicketId}' is already used");
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusCanceled)
             {
-                res.Error = EventErrorExtensions.CreateTicketCanceledError(request.TicketId);
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonConflict, $"Ticket '{request.TicketId}' is canceled");
                 return res;
             }
 
             if (foundTicket.Public.Status == EventTicketStatus.TicketStatusExpired)
             {
-                res.Error = EventErrorExtensions.CreateTicketExpiredError(request.TicketId);
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonInvalidDate, $"Ticket '{request.TicketId}' is expired");
                 return res;
             }
 
@@ -289,7 +290,7 @@ namespace IT.WebServices.Authorization.Events.Services
             var success = await _ticketProvider.Update(foundTicket);
             if (!success)
             {
-                res.Error = EventErrorExtensions.CreateError(EventErrorReason.UseTicketErrorUnknown, "Unknown error occurred while using ticket");
+                res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred while using ticket");
                 return res;
             }
 

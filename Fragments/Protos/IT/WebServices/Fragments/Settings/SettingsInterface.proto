@@ -5,7 +5,7 @@ package IT.WebServices.Fragments.Settings;
 import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
-import "Protos/IT/WebServices/Fragments/Settings/SettingsError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
 
@@ -278,7 +278,7 @@ message ModifyCMSPublicDataRequest {
 }
 
 message ModifyCMSPublicDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyCMSPrivateDataRequest {
@@ -286,7 +286,7 @@ message ModifyCMSPrivateDataRequest {
 }
 
 message ModifyCMSPrivateDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyCMSOwnerDataRequest {
@@ -294,7 +294,7 @@ message ModifyCMSOwnerDataRequest {
 }
 
 message ModifyCMSOwnerDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyPersonalizationPublicDataRequest {
@@ -302,7 +302,7 @@ message ModifyPersonalizationPublicDataRequest {
 }
 
 message ModifyPersonalizationPublicDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyPersonalizationPrivateDataRequest {
@@ -310,7 +310,7 @@ message ModifyPersonalizationPrivateDataRequest {
 }
 
 message ModifyPersonalizationPrivateDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyPersonalizationOwnerDataRequest {
@@ -318,7 +318,7 @@ message ModifyPersonalizationOwnerDataRequest {
 }
 
 message ModifyPersonalizationOwnerDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifySubscriptionPublicDataRequest {
@@ -326,7 +326,7 @@ message ModifySubscriptionPublicDataRequest {
 }
 
 message ModifySubscriptionPublicDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifySubscriptionPrivateDataRequest {
@@ -334,7 +334,7 @@ message ModifySubscriptionPrivateDataRequest {
 }
 
 message ModifySubscriptionPrivateDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifySubscriptionOwnerDataRequest {
@@ -342,7 +342,7 @@ message ModifySubscriptionOwnerDataRequest {
 }
 
 message ModifySubscriptionOwnerDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyCommentsPublicDataRequest {
@@ -350,7 +350,7 @@ message ModifyCommentsPublicDataRequest {
 }
 
 message ModifyCommentsPublicDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyCommentsPrivateDataRequest {
@@ -358,7 +358,7 @@ message ModifyCommentsPrivateDataRequest {
 }
 
 message ModifyCommentsPrivateDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyCommentsOwnerDataRequest {
@@ -366,7 +366,7 @@ message ModifyCommentsOwnerDataRequest {
 }
 
 message ModifyCommentsOwnerDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyNotificationPublicDataRequest {
@@ -374,7 +374,7 @@ message ModifyNotificationPublicDataRequest {
 }
 
 message ModifyNotificationPublicDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyNotificationPrivateDataRequest {
@@ -382,7 +382,7 @@ message ModifyNotificationPrivateDataRequest {
 }
 
 message ModifyNotificationPrivateDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyNotificationOwnerDataRequest {
@@ -390,7 +390,7 @@ message ModifyNotificationOwnerDataRequest {
 }
 
 message ModifyNotificationOwnerDataResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyEventPublicSettingsRequest {
@@ -398,7 +398,7 @@ message ModifyEventPublicSettingsRequest {
 }
 
 message ModifyEventPublicSettingsResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyEventPrivateSettingsRequest {
@@ -406,7 +406,7 @@ message ModifyEventPrivateSettingsRequest {
 }
 
 message ModifyEventPrivateSettingsResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 
 message ModifyEventOwnerSettingsRequest {
@@ -414,6 +414,6 @@ message ModifyEventOwnerSettingsRequest {
 }
 
 message ModifyEventOwnerSettingsResponse {
-  SettingsError Error = 1;
+  APIError Error = 1;
 }
 

@@ -5,7 +5,7 @@ package IT.WebServices.Fragments.Page;
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Page/PageRecord.proto";
-import "Protos/IT/WebServices/Fragments/Page/PageError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 
 // Service for Page fragment interface
 service PageInterface {
@@ -93,7 +93,7 @@ message CreatePageRequest {
   
 message CreatePageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
 
 message DeletePageRequest {
@@ -102,7 +102,7 @@ message DeletePageRequest {
   
 message DeletePageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message GetAllPagesRequest {
@@ -121,7 +121,7 @@ message GetAllPagesResponse {
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
-  PageError Error = 14;
+  APIError Error = 14;
 }
   
 message GetAllPagesAdminRequest {
@@ -138,7 +138,7 @@ message GetAllPagesAdminResponse {
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
-  PageError Error = 14;
+  APIError Error = 14;
 }
   
 message GetPageRequest {
@@ -147,7 +147,7 @@ message GetPageRequest {
   
 message GetPageResponse {
   PagePublicRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message GetPageByUrlRequest {
@@ -156,7 +156,7 @@ message GetPageByUrlRequest {
   
 message GetPageByUrlResponse {
   PagePublicRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message GetPageAdminRequest {
@@ -165,7 +165,7 @@ message GetPageAdminRequest {
   
 message GetPageAdminResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
 
 message ModifyPageRequest {
@@ -176,7 +176,7 @@ message ModifyPageRequest {
   
 message ModifyPageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
 
 message PageListRecord {
@@ -200,7 +200,7 @@ message PublishPageRequest {
   
 message PublishPageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message SearchPageRequest {
@@ -216,7 +216,7 @@ message SearchPageResponse {
   uint32 PageOffsetStart = 11;
   uint32 PageOffsetEnd = 12;
   uint32 PageTotalItems = 13;
-  PageError Error = 14;
+  APIError Error = 14;
 }
   
 message UndeletePageRequest {
@@ -225,7 +225,7 @@ message UndeletePageRequest {
   
 message UndeletePageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message UnpublishPageRequest {
@@ -234,7 +234,7 @@ message UnpublishPageRequest {
   
 message UnpublishPageResponse {
   PageRecord Record = 1;
-  PageError Error = 2;
+  APIError Error = 2;
 }
   
 message SubscriptionLevelSearch {

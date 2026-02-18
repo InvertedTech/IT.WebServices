@@ -3,7 +3,7 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Content.Stats;
 
 import "google/api/annotations.proto";
-import "Protos/IT/WebServices/Fragments/Content/ContentError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 
 service StatsProgressInterface {
   rpc LogProgressContent (LogProgressContentRequest) returns (LogProgressContentResponse)
@@ -21,7 +21,7 @@ message LogProgressContentRequest {
 }
   
 message LogProgressContentResponse {
-  ContentError Error = 1;
+  APIError Error = 1;
 }
 
 message ProgressContentEvent {

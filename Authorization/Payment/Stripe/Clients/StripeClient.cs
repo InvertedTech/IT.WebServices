@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 {
@@ -103,7 +104,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             }
             catch (Exception ex)
             {
-                return new() { Error = PaymentErrorExtensions.CreateProviderError("Stripe", ex.Message).Message };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderError, ex.Message).Message };
             }
         }
 

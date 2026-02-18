@@ -7,7 +7,7 @@ import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventRecord.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/TicketClassRecord.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Events/EventError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/CommonTypes.proto";
 
 service AdminEventInterface {
@@ -98,7 +98,7 @@ message AdminCreateEventRequest {
 }
 
 message AdminCreateEventResponse {
-	EventError Error = 1; // Error information if creation failed
+	APIError Error = 1; // Error information if creation failed
 	EventRecord Event = 2; // The created event record if successful
 }
 
@@ -113,7 +113,7 @@ message AdminGetEventRequest {
 }
 
 message AdminGetEventResponse {
-	EventError Error = 1; // Error information if retrieval failed
+	APIError Error = 1; // Error information if retrieval failed
 	EventRecord Event = 2;
 }
 
@@ -124,7 +124,7 @@ message AdminGetEventsRequest {
 }
 
 message AdminGetEventsResponse {
-	EventError Error = 1; // Error information if retrieval failed
+	APIError Error = 1; // Error information if retrieval failed
 	repeated EventRecord Events = 2;
 	Pagination Pagination = 3; // Pagination information for the list of events
 }
@@ -135,7 +135,7 @@ message AdminModifyEventRequest {
 }
 
 message AdminModifyEventResponse {
-	EventError Error = 1; // Error information if modification failed
+	APIError Error = 1; // Error information if modification failed
 }
 
 message AdminModifyRecurringEventRequest {
@@ -145,7 +145,7 @@ message AdminModifyRecurringEventRequest {
 }
 
 message AdminModifyRecurringEventResponse {
-	EventError Error = 1; // Error information if modification failed
+	APIError Error = 1; // Error information if modification failed
 }
 
 message AdminCancelEventRequest {
@@ -154,7 +154,7 @@ message AdminCancelEventRequest {
 }
 
 message AdminCancelEventResponse {
-	EventError Error = 1; // Error information if cancellation failed
+	APIError Error = 1; // Error information if cancellation failed
 }
 
 message AdminCancelAllRecurringEventsRequest {
@@ -163,7 +163,7 @@ message AdminCancelAllRecurringEventsRequest {
 }
 
 message AdminCancelAllRecurringEventsResponse {
-	EventError Error = 1; // Error information if cancellation failed
+	APIError Error = 1; // Error information if cancellation failed
 }
 
 message AdminGetTicketRequest {
@@ -191,7 +191,7 @@ message AdminCancelOtherTicketRequest {
 }
 
 message AdminCancelOtherTicketResponse {
-	EventError Error = 1;
+	APIError Error = 1;
 }
 
 message AdminReserveEventTicketForUserRequest {
@@ -202,6 +202,6 @@ message AdminReserveEventTicketForUserRequest {
 }
 
 message AdminReserveEventTicketForUserResponse {
-	EventError Error = 1; // Error information if reservation failed
+	APIError Error = 1; // Error information if reservation failed
 	repeated EventTicketRecord Tickets = 2; // List of reserved tickets if successful
 }

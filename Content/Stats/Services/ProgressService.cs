@@ -7,6 +7,7 @@ using IT.WebServices.Fragments.Content.Stats;
 using IT.WebServices.Fragments.Content;
 using System;
 using System.Threading.Tasks;
+using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Content.Stats.Services
 {
@@ -27,13 +28,13 @@ namespace IT.WebServices.Content.Stats.Services
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
             if (!Guid.TryParse(request.ContentID, out var contentId))
-                return new() { Error = ContentErrorExtensions.CreateValidationError("ContentID not valid Guid") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "ContentID not valid Guid") };
 
             if (float.IsNaN(request.Progress))
-                return new() { Error = ContentErrorExtensions.CreateValidationError("Progress must be between 0 and 1") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Progress must be between 0 and 1") };
 
             if (request.Progress < 0 || request.Progress > 1)
-                return new() { Error = ContentErrorExtensions.CreateValidationError("Progress must be between 0 and 1") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Progress must be between 0 and 1") };
 
             await dataProvider.LogProgress(userToken?.Id ?? Guid.Empty, contentId, request.Progress);
 

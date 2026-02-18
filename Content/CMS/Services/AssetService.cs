@@ -329,43 +329,52 @@ namespace IT.WebServices.Content.CMS.Services
             ServerCallContext context
         )
         {
-            var searchQueryBits = Array.Empty<string>();
-
-            if (!string.IsNullOrWhiteSpace(request.Query))
-                searchQueryBits = request
-                    .Query.ToLower()
-                    .Replace("\"", " ")
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                    .ToArray();
-
-            var res = new SearchAssetResponse();
-            var list = await this.dataProvider.GetByAssetTypeAsync(AssetType.AssetImage);
-
-            if (list == null)
-                return res;
-
-            var filtered = list.Where(r =>
-                    searchQueryBits.Length == 0 || MeetsQuery(searchQueryBits, r)
-                )
-                .OrderByDescending(r => r.CreatedOnUTC)
-                .ToList();
-
-            res.PageTotalItems = (uint)filtered.Count;
-
-            // Pagination
-            if (request.PageSize > 0)
+            try
             {
-                res.PageOffsetStart = request.PageOffset;
-                filtered = filtered
-                    .Skip((int)request.PageOffset)
-                    .Take((int)request.PageSize)
+
+                var searchQueryBits = Array.Empty<string>();
+
+                if (!string.IsNullOrWhiteSpace(request.Query))
+                    searchQueryBits = request
+                        .Query.ToLower()
+                        .Replace("\"", " ")
+                        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .ToArray();
+
+                var res = new SearchAssetResponse();
+                var list = await this.dataProvider.GetByAssetTypeAsync(AssetType.AssetImage);
+
+                if (list == null)
+                    return res;
+
+                var filtered = list.Where(r =>
+                        searchQueryBits.Length == 0 || MeetsQuery(searchQueryBits, r)
+                    )
+                    .OrderByDescending(r => r.CreatedOnUTC)
                     .ToList();
+
+                res.PageTotalItems = (uint)filtered.Count;
+
+                // Pagination
+                if (request.PageSize > 0)
+                {
+                    res.PageOffsetStart = request.PageOffset;
+                    filtered = filtered
+                        .Skip((int)request.PageOffset)
+                        .Take((int)request.PageSize)
+                        .ToList();
+                }
+
+                res.Records.AddRange(filtered);
+                res.PageOffsetEnd = res.PageOffsetStart + (uint)res.Records.Count;
+
+                return res;
+            } 
+            catch (Exception e)
+            {
+                logger.LogError(e.Message);
+                return new();
             }
-
-            res.Records.AddRange(filtered);
-            res.PageOffsetEnd = res.PageOffsetStart + (uint)res.Records.Count;
-
-            return res;
         }
 
         private bool IsValid(CreateAssetRequest request)

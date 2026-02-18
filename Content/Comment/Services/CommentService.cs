@@ -18,6 +18,7 @@ using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Settings;
 using static System.Net.Mime.MediaTypeNames;
 using static Google.Rpc.Context.AttributeContext.Types;
+using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Content.Comment.Services
 {
@@ -119,18 +120,18 @@ namespace IT.WebServices.Content.Comment.Services
         {
             var contentId = request.ContentID.ToGuid();
             if (contentId == Guid.Empty)
-                return new() { Error = CommentErrorExtensions.CreateError(CommentErrorReason.CreateCommentErrorContentNotFound, "ContentID missing") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "ContentID missing") };
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (!CanCreateComment(user))
-                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("create comment") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "create comment") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, $"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             CommentRecord record = new()
             {
@@ -166,18 +167,18 @@ namespace IT.WebServices.Content.Comment.Services
             var parentId = request.ParentCommentID.ToGuid();
             var parent = await dataProvider.Get(parentId);
             if (parent == null)
-                return new() { Error = CommentErrorExtensions.CreateParentCommentNotFoundError(parentId.ToString()) };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, $"Couldn't Find Comment ${parentId.ToString()}") };
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (!CanCreateComment(user))
-                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("create comment") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not Authorized To Create Comment") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, $"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             CommentRecord record = new()
             {
@@ -235,22 +236,22 @@ namespace IT.WebServices.Content.Comment.Services
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
             if (user == null)
-                return new() { Error = CommentErrorExtensions.CreateUnauthorizedError("edit comment") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not authorized to edit comment") };
 
             var commentId = request.CommentID.ToGuid();
             var record = await dataProvider.Get(commentId);
             if (record == null)
-                return new() { Error = CommentErrorExtensions.CreateCommentNotFoundError(commentId.ToString()) };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, $"Comment not found ${commentId.ToString()}") };
 
             if (record.Public.UserID != user.Id.ToString())
-                return new() { Error = CommentErrorExtensions.CreateUnauthorizedCommentError("edit") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "not authorized to edit comment") };
 
             var text = CleanText(request.Text).Trim();
             if (text.Length == 0)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError("No comment text provided") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "No comment text provided") };
 
             if (text.Length > MAX_COMMENT_LENGTH)
-                return new() { Error = CommentErrorExtensions.CreateInvalidTextError($"Length must be less than {MAX_COMMENT_LENGTH}") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, $"Length must be less than {MAX_COMMENT_LENGTH}") };
 
             record.Public.Data.CommentText = text;
             record.Public.Data.Likes = 0;

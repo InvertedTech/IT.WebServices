@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Notification.Services.Clients;
+using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Notification.Services
 {
@@ -26,13 +27,13 @@ namespace IT.WebServices.Notification.Services
             {
                 var error = await sendgridClient.SendEmail(request);
                 if (error != null)
-                    return new() { Error = NotificationErrorExtensions.CreateDeliveryFailedError(error) };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonDeliveryFailed, error) };
 
                 return new();
             }
             catch
             {
-                return new() { Error = NotificationErrorExtensions.CreateError(NotificationErrorReason.NotificationErrorUnknown, "Unknown Error") };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Unknown Error") };
             }
         }
     }

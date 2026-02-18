@@ -1267,10 +1267,10 @@ namespace IT.WebServices.Authentication.Services
                 if (!await AmIReallyAdmin(context))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                if (!userToken.CanManageMembers)
-                {
-                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
-                }
+                //if (!userToken.CanManageMembers)
+                //{
+                //    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
+                //}
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)

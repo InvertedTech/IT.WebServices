@@ -4,7 +4,7 @@ package IT.WebServices.Fragments.Notification;
 
 import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Notification/UserNotificationSettingsRecord.proto";
-import "Protos/IT/WebServices/Fragments/Notification/NotificationError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 
 // Service for User Notification fragment interface
 service UserNotificationInterface {
@@ -68,7 +68,7 @@ message ModifyNormalRecordRequest {
 }
   
 message ModifyNormalRecordResponse {
-  NotificationError Error = 1;
+  APIError Error = 1;
 }
 
 message RegisterNewTokenRequest {
@@ -76,7 +76,7 @@ message RegisterNewTokenRequest {
 }
   
 message RegisterNewTokenResponse {
-  NotificationError Error = 1;
+  APIError Error = 1;
 }
 
 message UnRegisterNewTokenRequest {
@@ -84,5 +84,5 @@ message UnRegisterNewTokenRequest {
 }
   
 message UnRegisterNewTokenResponse {
-  NotificationError Error = 1;
+  APIError Error = 1;
 }

@@ -5,7 +5,7 @@ package IT.WebServices.Fragments.Authorization.Events;
 import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventRecord.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Events/EventError.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/CommonTypes.proto";
 
 service EventInterface {
@@ -58,7 +58,7 @@ message GetEventRequest {
 }
 
 message GetEventResponse {
-	EventError Error = 1; // Error information if retrieval failed
+	APIError Error = 1; // Error information if retrieval failed
 	EventPublicRecord Event = 2; // The event record if successful
 }
 
@@ -68,7 +68,7 @@ message GetEventsRequest {
 }
 
 message GetEventsResponse {
-	EventError Error = 1; // Error information if retrieval failed
+	APIError Error = 1; // Error information if retrieval failed
 	repeated EventPublicRecord Events = 2; // List of events retrieved
 	Pagination Pagination = 3; // Pagination information for the list of events
 }
@@ -80,7 +80,7 @@ message GetOwnTicketRequest {
 
 message GetOwnTicketResponse {
 	EventTicketPublicRecord Record = 1;
-	EventError Error = 2;
+	APIError Error = 2;
 }
 
 message GetOwnTicketsRequest {
@@ -92,7 +92,7 @@ message GetOwnTicketsRequest {
 
 message GetOwnTicketsResponse {
 	repeated EventTicketPublicRecord Records = 1;
-	EventError Error = 2;
+	APIError Error = 2;
 }
 
 message CancelOwnTicketRequest {
@@ -102,7 +102,7 @@ message CancelOwnTicketRequest {
 }
 
 message CancelOwnTicketResponse {
-	EventError Error = 1;
+	APIError Error = 1;
 }
 
 message ReserveTicketForEventRequest {
@@ -112,7 +112,7 @@ message ReserveTicketForEventRequest {
 }
 
 message ReserveTicketForEventResponse {
-	EventError Error = 1; // Error information if reservation failed
+	APIError Error = 1; // Error information if reservation failed
 	repeated EventTicketRecord Tickets = 2; // The reserved ticket record if successful
 }
 
@@ -121,5 +121,5 @@ message UseTicketRequest {
 }
 
 message UseTicketResponse {
-	EventError Error = 1; // Error information if using the ticket failed
+	APIError Error = 1; // Error information if using the ticket failed
 }

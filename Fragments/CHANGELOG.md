@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.0
+
+### Minor Changes
+
+- Unify Remaining Service Level Error Protos for Generic Error Proto
+
 ## 0.9.2
 
 ### Patch Changes
