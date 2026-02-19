@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.1
+
+### Patch Changes
+
+- Added Field Validation To New FirstName, LastName, and PostalCode Fields in CreateUser
+
 ## 0.10.0
 
 ### Minor Changes

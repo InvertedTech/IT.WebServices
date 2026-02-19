@@ -19,6 +19,8 @@ namespace IT.WebServices.Fragments
 
         public static APIError CreateNoError(string message = "No Error") => Create(APIErrorReason.ErrorReasonNoError, message);
 
+        public static APIError CreateOfflineError(string message = "Service Is Offline") => Create(APIErrorReason.ErrorReasonDeliveryFailed, message);
+
         public static APIError AddValidationIssue(this APIError error, string field, string message, string code = "")
         {
             if (error == null)

@@ -65,12 +65,10 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new AuthenticateUserResponse {
+                return new AuthenticateUserResponse
+                {
                     Ok = false,
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Server Unavailable, Try Again Later"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
             
             var validationIssues = new List<ValidationIssue>();
@@ -159,10 +157,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new ChangeOtherPasswordResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -227,10 +222,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new ChangeOtherProfileImageResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -322,10 +314,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new ChangeOwnPasswordResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -397,10 +386,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new ChangeOwnProfileImageResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -493,10 +479,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new CreateUserResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             if (request is null)
@@ -608,10 +591,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new DisableEnableOtherUserResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is currently offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -668,7 +648,10 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new();
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
 
             try
             {
@@ -719,7 +702,10 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new();
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
 
             try
             {
@@ -770,10 +756,7 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return new DisableEnableOtherUserResponse
                 {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonServiceUnavailable,
-                        "Service is currently offline"
-                    )
+                    Error = GenericErrorExtensions.CreateOfflineError()
                 };
 
             try
@@ -829,7 +812,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonServiceUnavailable, "Offline") };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -906,7 +889,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonServiceUnavailable, "Offline") };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError()};
 
             try
             {
@@ -1189,7 +1172,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonServiceUnavailable, "Service Offline") };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -1253,6 +1236,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
+        // TODO: Make Role Member Manager Or Higher If They Should Edit Roles
         [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyOtherUserRolesResponse> ModifyOtherUserRoles(
             ModifyOtherUserRolesRequest request,
@@ -1260,7 +1244,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonServiceUnavailable, "Service Offline") };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -1299,7 +1283,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonServiceUnavailable, "Service Offline") };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -1467,7 +1451,10 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new();
+                return new VerifyOtherTotpResponse
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
 
             try
             {
@@ -1504,7 +1491,10 @@ namespace IT.WebServices.Authentication.Services
 
                 await dataProvider.Save(record);
 
-                return new();
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
             }
             catch (Exception ex)
             {
@@ -1519,7 +1509,10 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new();
+                return new VerifyOwnTotpResponse
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
 
             try
             {
@@ -1553,7 +1546,10 @@ namespace IT.WebServices.Authentication.Services
 
                 await dataProvider.Save(record);
 
-                return new();
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
             }
             catch (Exception ex)
             {
