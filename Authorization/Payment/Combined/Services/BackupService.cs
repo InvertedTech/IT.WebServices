@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IT.WebServices.Authorization.Payment
 {
-    [Authorize(Roles = ONUser.ROLE_CAN_BACKUP)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_BACKUP)]
     public class BackupService : Fragments.Authorization.Payment.BackupInterface.BackupInterfaceBase
     {
         private readonly IGenericSubscriptionFullRecordProvider fullProvider;
@@ -29,7 +29,7 @@ namespace IT.WebServices.Authorization.Payment
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                if (userToken == null || !userToken.Roles.Contains(ONUser.ROLE_BACKUP))
+                if (userToken == null || !userToken.Roles.Contains(RoleAbilities.ROLE_BACKUP))
                     return;
 
                 var encKey = EcdhHelper.DeriveKeyServer(request.ClientPublicJwk.DecodeJsonWebKey(), out string serverPubKey);

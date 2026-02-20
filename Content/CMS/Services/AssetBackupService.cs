@@ -15,7 +15,7 @@ using IT.WebServices.Crypto;
 
 namespace IT.WebServices.Content.CMS.Services
 {
-    [Authorize(Roles = ONUser.ROLE_CAN_BACKUP)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_BACKUP)]
     public class AssetBackupService : Asset.AssetBackupInterface.AssetBackupInterfaceBase
     {
         private readonly IAssetDataProvider dataProvider;

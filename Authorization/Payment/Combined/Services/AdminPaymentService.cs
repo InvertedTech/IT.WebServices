@@ -13,7 +13,7 @@ using IT.WebServices.Authorization.Payment.Helpers;
 
 namespace IT.WebServices.Authorization.Payment.Combined.Services
 {
-    [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
+    [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
     public class AdminPaymentService : AdminPaymentInterface.AdminPaymentInterfaceBase
     {
         private readonly ILogger logger;
@@ -46,7 +46,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             this.reconcileHelper = reconcileHelper;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override Task<BulkActionCancelResponse> BulkActionCancel(BulkActionCancelRequest request, ServerCallContext context)
         {
             try
@@ -65,7 +65,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override Task<BulkActionStartResponse> BulkActionStart(BulkActionStartRequest request, ServerCallContext context)
         {
             try
@@ -84,7 +84,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override Task<BulkActionStatusResponse> BulkActionStatus(BulkActionStatusRequest request, ServerCallContext context)
         {
             try
@@ -103,7 +103,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
         public override async Task<CancelSubscriptionResponse> CancelOtherSubscription(CancelOtherSubscriptionRequest request, ServerCallContext context)
         {
             try
@@ -134,7 +134,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
         public override async Task<GetOneTimeRecordResponse> GetOtherOneTimeRecord(GetOtherOneTimeRecordRequest request, ServerCallContext context)
         {
             try
@@ -165,7 +165,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
         public override async Task<GetOneTimeRecordsResponse> GetOtherOneTimeRecords(GetOtherOneTimeRecordsRequest request, ServerCallContext context)
         {
             try
@@ -192,7 +192,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
         public override async Task<GetSubscriptionRecordResponse> GetOtherSubscriptionRecord(GetOtherSubscriptionRecordRequest request, ServerCallContext context)
         {
             try
@@ -232,7 +232,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
         }
 
 
-        [Authorize(Roles = ONUser.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
         public override async Task<GetSubscriptionRecordsResponse> GetOtherSubscriptionRecords(GetOtherSubscriptionRecordsRequest request, ServerCallContext context)
         {
             try

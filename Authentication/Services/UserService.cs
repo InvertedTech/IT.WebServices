@@ -70,7 +70,7 @@ namespace IT.WebServices.Authentication.Services
                     Ok = false,
                     Error = GenericErrorExtensions.CreateOfflineError()
                 };
-            
+
             var validationIssues = new List<ValidationIssue>();
 
             if (string.IsNullOrWhiteSpace(request.UserName))
@@ -148,7 +148,7 @@ namespace IT.WebServices.Authentication.Services
             };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<ChangeOtherPasswordResponse> ChangeOtherPassword(
             ChangeOtherPasswordRequest request,
             ServerCallContext context
@@ -162,19 +162,20 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                // TODO: Reimplement This
-                //if (!await AmIReallyAdmin(context))
-                //    return new ChangeOtherPasswordResponse
-                //    {
-                //        Error = ErrorExtensions.CreateError(
-                //            APIErrorReason.ChangeOtherPasswordErrorUnknown,
-                //            "Admin access required"
-                //        )
-                //    };
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
+                    return new ChangeOtherPasswordResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonUnauthorized,
+                            "Insufficient Permissions"
+                        )
+                    };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new ChangeOtherPasswordResponse
                     {
@@ -183,6 +184,10 @@ namespace IT.WebServices.Authentication.Services
                             "User not found"
                         )
                     };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 record.Server.PasswordSalt = ByteString.CopyFrom(salt);
@@ -213,7 +218,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<ChangeOtherProfileImageResponse> ChangeOtherProfileImage(
             ChangeOtherProfileImageRequest request,
             ServerCallContext context
@@ -227,7 +232,8 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new ChangeOtherProfileImageResponse
                     {
                         Error = GenericErrorExtensions.CreateError(
@@ -238,7 +244,8 @@ namespace IT.WebServices.Authentication.Services
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new ChangeOtherProfileImageResponse
                     {
@@ -247,6 +254,10 @@ namespace IT.WebServices.Authentication.Services
                             "User not found"
                         )
                     };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 if (request?.ProfileImage == null || request.ProfileImage.IsEmpty)
                     return new ChangeOtherProfileImageResponse
@@ -582,7 +593,7 @@ namespace IT.WebServices.Authentication.Services
             return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null) };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(
             DisableEnableOtherUserRequest request,
             ServerCallContext context
@@ -596,7 +607,8 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new DisableEnableOtherUserResponse
                     {
                         Error = GenericErrorExtensions.CreateError(
@@ -607,7 +619,8 @@ namespace IT.WebServices.Authentication.Services
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new DisableEnableOtherUserResponse
                     {
@@ -617,8 +630,11 @@ namespace IT.WebServices.Authentication.Services
                         )
                     };
 
-                record.Normal.Public.DisabledOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
+
+                record.Normal.Public.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.DisabledBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -641,7 +657,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<DisableOtherTotpResponse> DisableOtherTotp(
             DisableOtherTotpRequest request,
             ServerCallContext context
@@ -655,16 +671,22 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin only") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not logged in") };
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
                     r.TotpID == request.TotpID
@@ -747,7 +769,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<DisableEnableOtherUserResponse> EnableOtherUser(
             DisableEnableOtherUserRequest request,
             ServerCallContext context
@@ -761,7 +783,8 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new DisableEnableOtherUserResponse
                     {
                         Error = GenericErrorExtensions.CreateError(
@@ -772,7 +795,8 @@ namespace IT.WebServices.Authentication.Services
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new DisableEnableOtherUserResponse
                     {
@@ -781,6 +805,10 @@ namespace IT.WebServices.Authentication.Services
                             "User not found"
                         )
                     };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 record.Normal.Public.DisabledOnUTC = null;
                 record.Normal.Private.DisabledBy = userToken.Id.ToString();
@@ -805,7 +833,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<GenerateOtherTotpResponse> GenerateOtherTotp(
             GenerateOtherTotpRequest request,
             ServerCallContext context
@@ -816,7 +844,8 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin only") };
 
                 var deviceName = request.DeviceName?.Trim();
@@ -827,9 +856,14 @@ namespace IT.WebServices.Authentication.Services
                 if (userToken == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not logged in") };
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 if (
                     record
@@ -889,7 +923,7 @@ namespace IT.WebServices.Authentication.Services
         )
         {
             if (offlineHelper.IsOffline)
-                return new() { Error = GenericErrorExtensions.CreateOfflineError()};
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -957,7 +991,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<GetAllUsersResponse> GetAllUsers(
             GetAllUsersRequest request,
             ServerCallContext context
@@ -971,7 +1005,8 @@ namespace IT.WebServices.Authentication.Services
             var ret = new GetAllUsersResponse();
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var dbRoles = await GetRolesFromDB(context);
+                if (!dbRoles.CanManageMembers)
                     return ret;
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -999,7 +1034,7 @@ namespace IT.WebServices.Authentication.Services
             return ret;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task GetListOfOldUserIDs(
             GetListOfOldUserIDsRequest request,
             IServerStreamWriter<GetListOfOldUserIDsResponse> responseStream,
@@ -1009,7 +1044,8 @@ namespace IT.WebServices.Authentication.Services
             if (offlineHelper.IsOffline)
                 return;
 
-            if (!await AmIReallyAdmin(context))
+            var dbRoles = await GetRolesFromDB(context);
+            if (!dbRoles.CanManageMembers)
                 return;
 
             try
@@ -1030,7 +1066,7 @@ namespace IT.WebServices.Authentication.Services
             catch { }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<GetOtherUserResponse> GetOtherUser(
             GetOtherUserRequest request,
             ServerCallContext context
@@ -1074,7 +1110,7 @@ namespace IT.WebServices.Authentication.Services
             return new() { Record = record?.Normal.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<GetOtherTotpListResponse> GetOtherTotpList(
             GetOtherTotpListRequest request,
             ServerCallContext context
@@ -1085,11 +1121,17 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
                     return new();
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
+                    return new();
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new();
 
                 var ret = new GetOtherTotpListResponse();
@@ -1165,7 +1207,7 @@ namespace IT.WebServices.Authentication.Services
             return userServiceInternal.GetUserIdListInternal();
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<ModifyOtherUserResponse> ModifyOtherUser(
             ModifyOtherUserRequest request,
             ServerCallContext context
@@ -1176,14 +1218,19 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                //if (!await AmIReallyAdmin(context))
-                //    return new() { Error = ErrorExtensions.CreateError(APIErrorReason.ModifyOtherUserErrorUnauthorized, "Not an admin") };
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not an admin") };
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new();
 
                 if (!IsUserNameValid(request.UserName))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "User Name not valid") };
@@ -1237,7 +1284,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         // TODO: Make Role Member Manager Or Higher If They Should Edit Roles
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyOtherUserRolesResponse> ModifyOtherUserRoles(
             ModifyOtherUserRolesRequest request,
             ServerCallContext context
@@ -1248,22 +1295,24 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
-                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                //if (!userToken.CanManageMembers)
-                //{
-                //    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
-                //}
+
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.IsAdminOrHigher)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not an admin") };
+
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanChangeRolesOfOtherUser(otherDbRoles))
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
+
                 record.Normal.Private.Roles.Clear();
                 record.Normal.Private.Roles.AddRange(request.Roles);
 
@@ -1356,7 +1405,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<SearchUsersAdminResponse> SearchUsersAdmin(
             SearchUsersAdminRequest request,
             ServerCallContext context
@@ -1444,7 +1493,7 @@ namespace IT.WebServices.Authentication.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<VerifyOtherTotpResponse> VerifyOtherTotp(
             VerifyOtherTotpRequest request,
             ServerCallContext context
@@ -1458,7 +1507,8 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                if (!await AmIReallyAdmin(context))
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.IsAdminOrHigher)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin only") };
 
                 if (string.IsNullOrWhiteSpace(request?.Code))
@@ -1468,9 +1518,14 @@ namespace IT.WebServices.Authentication.Services
                 if (userToken == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not logged in") };
 
-                var record = await dataProvider.GetById(request.UserID.ToGuid());
+                var userId = request.UserID.ToGuid();
+                var record = await dataProvider.GetById(userId);
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
+
+                var otherDbRoles = await GetRolesFromDB(userId);
+                if (!myDbRoles.CanManageOtherUser(otherDbRoles))
+                    return new();
 
                 var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
                     r.TotpID == request.TotpID
@@ -1558,22 +1613,23 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        // TODO: Add New Roles Or New Method To Support New Roles
-        private async Task<bool> AmIReallyAdmin(ServerCallContext context)
+        private async Task<RoleAbilities> GetRolesFromDB(ServerCallContext context)
         {
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
             if (userToken == null)
-                return false;
+                return new RoleAbilities();
 
-            var record = await dataProvider.GetById(userToken.Id);
+            return await GetRolesFromDB(userToken.Id);
+        }
+
+        private async Task<RoleAbilities> GetRolesFromDB(Guid userId)
+        {
+            var record = await dataProvider.GetById(userId);
             if (record == null)
-                return false;
+                return new RoleAbilities();
 
             var roles = record.Normal.Private.Roles;
-            if (!(roles.Contains(ONUser.ROLE_OWNER) || roles.Contains(ONUser.ROLE_ADMIN)))
-                return false;
-
-            return true;
+            return new RoleAbilities(roles.ToArray());
         }
 
         private async Task<bool> IsPasswordCorrect(string password, UserRecord user)
@@ -1718,7 +1774,7 @@ namespace IT.WebServices.Authentication.Services
                 Server = new(),
             };
 
-            record.Normal.Private.Roles.Add(ONUser.ROLE_OWNER);
+            record.Normal.Private.Roles.Add(RoleAbilities.ROLE_OWNER);
 
             byte[] salt = RandomNumberGenerator.GetBytes(16);
             record.Server.PasswordSalt = ByteString.CopyFrom(salt);

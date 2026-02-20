@@ -43,7 +43,7 @@ namespace IT.WebServices.Content.Comment.Services
             commentRestrictionMinimum = settingsService.GetAdminDataInternal().Result.Public.Comments.DefaultRestriction;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_MODERATE_COMMENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_MODERATE_COMMENT)]
         public override async Task<AdminDeleteCommentResponse> AdminDeleteComment(AdminDeleteCommentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -61,7 +61,7 @@ namespace IT.WebServices.Content.Comment.Services
             return new() { Record = record.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_MODERATE_COMMENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_MODERATE_COMMENT)]
         public override async Task<AdminPinCommentResponse> AdminPinComment(AdminPinCommentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -79,7 +79,7 @@ namespace IT.WebServices.Content.Comment.Services
             return new() { Record = record.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_MODERATE_COMMENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_MODERATE_COMMENT)]
         public override async Task<AdminUnDeleteCommentResponse> AdminUnDeleteComment(AdminUnDeleteCommentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -97,7 +97,7 @@ namespace IT.WebServices.Content.Comment.Services
             return new() { Record = record.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_MODERATE_COMMENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_MODERATE_COMMENT)]
         public override async Task<AdminUnPinCommentResponse> AdminUnPinComment(AdminUnPinCommentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -432,7 +432,7 @@ namespace IT.WebServices.Content.Comment.Services
 
         private bool CanCreateComment(ONUser user)
         {
-            if (user?.IsAdminOrHigher == true)
+            if (user?.RoleAbilities.IsAdminOrHigher == true)
                 return true;
 
             switch (commentRestrictionMinimum.Minimum)
@@ -444,7 +444,7 @@ namespace IT.WebServices.Content.Comment.Services
                 case CommentRestrictionMinimumEnum.PaidSubscriber:
                     return commentRestrictionMinimum.Level <= (user?.SubscriptionLevel ?? 0);
                 case CommentRestrictionMinimumEnum.CommentModerator:
-                    return user.IsCommentModeratorOrHigher;
+                    return user?.RoleAbilities.IsCommentModeratorOrHigher ?? false;
                 case CommentRestrictionMinimumEnum.AdminOnly:
                     return false;
             }

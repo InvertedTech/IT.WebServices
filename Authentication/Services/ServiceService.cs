@@ -52,7 +52,7 @@ namespace IT.WebServices.Authentication.Services
                 DisplayName = "",
             };
 
-            onUser.Roles.Add(ONUser.ROLE_SERVICE);
+            onUser.Roles.Add(RoleAbilities.ROLE_SERVICE);
 
             return GenerateToken(onUser);
         }

@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace IT.WebServices.Settings.Services.Controllers
 {
-    [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+    [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
     [Route("/api/settings/channel")]
     [ApiController]
     public class ChannelApiController : Controller

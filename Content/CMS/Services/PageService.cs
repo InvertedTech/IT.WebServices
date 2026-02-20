@@ -28,7 +28,7 @@ namespace IT.WebServices.Content.CMS.Services
             this.statsClient = statsClient;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<CreatePageResponse> CreatePage(CreatePageRequest request, ServerCallContext context)
         {
             if (!IsValid(request.Public, request.Private))
@@ -58,7 +58,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<DeletePageResponse> DeletePage(DeletePageRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -150,7 +150,7 @@ namespace IT.WebServices.Content.CMS.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<GetAllPagesAdminResponse> GetAllPagesAdmin(GetAllPagesAdminRequest request, ServerCallContext context)
         {
             var possiblyIDs = request.PossiblePageIDs.ToList();
@@ -270,7 +270,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = rec.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<GetPageAdminResponse> GetPageAdmin(GetPageAdminRequest request, ServerCallContext context)
         {
             Guid pageId = request.PageID.ToGuid();
@@ -284,7 +284,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = rec };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<ModifyPageResponse> ModifyPage(ModifyPageRequest request, ServerCallContext context)
         {
             if (!IsValid(request.Public, request.Private))
@@ -307,7 +307,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<PublishPageResponse> PublishPage(PublishPageRequest request, ServerCallContext context)
         {
             if (request.PublishOnUTC == null)
@@ -388,7 +388,7 @@ namespace IT.WebServices.Content.CMS.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<UndeletePageResponse> UndeletePage(UndeletePageRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -406,7 +406,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<UnpublishPageResponse> UnpublishPage(UnpublishPageRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -426,7 +426,7 @@ namespace IT.WebServices.Content.CMS.Services
 
         private bool CanShowPage(PageRecord rec, ONUser user)
         {
-            if (user?.IsWriterOrHigher ?? false)
+            if (user?.RoleAbilities.IsWriterOrHigher ?? false)
                 return true;
 
             if (!CanShowInList(rec, user))
@@ -444,7 +444,7 @@ namespace IT.WebServices.Content.CMS.Services
             if (rec.Public.DeletedOnUTC != null)
                 return false;
 
-            if (user?.CanCreateContent ?? false)
+            if (user?.RoleAbilities.CanCreateContent ?? false)
                 return true;
 
             if (rec.Public.PublishOnUTC == null || rec.Public.PublishOnUTC > Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow))

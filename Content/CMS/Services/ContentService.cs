@@ -29,7 +29,7 @@ namespace IT.WebServices.Content.CMS.Services
             this.statsClient = statsClient;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<AnnounceContentResponse> AnnounceContent(AnnounceContentRequest request, ServerCallContext context)
         {
             if (request.AnnounceOnUTC == null)
@@ -68,7 +68,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<CreateContentResponse> CreateContent(CreateContentRequest request, ServerCallContext context)
         {
 
@@ -109,7 +109,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<DeleteContentResponse> DeleteContent(DeleteContentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -231,7 +231,7 @@ namespace IT.WebServices.Content.CMS.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<GetAllContentAdminResponse> GetAllContentAdmin(GetAllContentAdminRequest request, ServerCallContext context)
         {
             var possiblyIDs = request.PossibleContentIDs.ToList();
@@ -376,7 +376,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = rec.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<GetContentAdminResponse> GetContentAdmin(GetContentAdminRequest request, ServerCallContext context)
         {
             Guid contentId = request.ContentID.ToGuid();
@@ -481,7 +481,7 @@ namespace IT.WebServices.Content.CMS.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<ModifyContentResponse> ModifyContent(ModifyContentRequest request, ServerCallContext context)
         {
             if (!IsValid(request.Public, request.Private))
@@ -513,7 +513,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<PublishContentResponse> PublishContent(PublishContentRequest request, ServerCallContext context)
         {
             if (request.PublishOnUTC == null)
@@ -628,7 +628,7 @@ namespace IT.WebServices.Content.CMS.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<UnannounceContentResponse> UnannounceContent(UnannounceContentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -651,7 +651,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<UndeleteContentResponse> UndeleteContent(UndeleteContentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -674,7 +674,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_PUBLISH)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
         public override async Task<UnpublishContentResponse> UnpublishContent(UnpublishContentRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -699,7 +699,7 @@ namespace IT.WebServices.Content.CMS.Services
 
         private bool CanShowContent(ContentRecord rec, ONUser user)
         {
-            if (user?.IsWriterOrHigher ?? false)
+            if (user?.RoleAbilities.IsWriterOrHigher ?? false)
                 return true;
 
             if (!CanShowInList(rec, user))
@@ -717,7 +717,7 @@ namespace IT.WebServices.Content.CMS.Services
             if (rec.Public.DeletedOnUTC != null)
                 return false;
 
-            if (user?.CanCreateContent ?? false)
+            if (user?.RoleAbilities.CanCreateContent ?? false)
                 return true;
 
             if (rec.Public.PublishOnUTC == null || rec.Public.PublishOnUTC > Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow))

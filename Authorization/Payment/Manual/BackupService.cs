@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace IT.WebServices.Authorization.Payment.Manual
 {
-    [Authorize(Roles = ONUser.ROLE_CAN_BACKUP)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_BACKUP)]
     public class BackupService : BackupInterface.BackupInterfaceBase
     {
         private readonly ISubscriptionRecordProvider dataProvider;
@@ -28,7 +28,7 @@ namespace IT.WebServices.Authorization.Payment.Manual
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                if (userToken == null || !userToken.Roles.Contains(ONUser.ROLE_BACKUP))
+                if (userToken == null || !userToken.Roles.Contains(RoleAbilities.ROLE_BACKUP))
                     return;
 
                 var encKey = EcdhHelper.DeriveKeyServer(request.ClientPublicJwk.DecodeJsonWebKey(), out string serverPubKey);

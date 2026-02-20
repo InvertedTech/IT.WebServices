@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IT.WebServices.Content.CMS.Services
 {
-    [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
     public class AssetService : AssetInterface.AssetInterfaceBase
     {
         private readonly ILogger logger;
@@ -26,7 +26,7 @@ namespace IT.WebServices.Content.CMS.Services
             this.dataProvider = dataProvider;
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<CreateAssetResponse> CreateAsset(
             CreateAssetRequest request,
             ServerCallContext context
@@ -131,7 +131,7 @@ namespace IT.WebServices.Content.CMS.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<GetAssetAdminResponse> GetAssetAdmin(
             GetAssetAdminRequest request,
             ServerCallContext context
@@ -151,7 +151,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = rec };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<GetAssetByOldContentIDResponse> GetAssetByOldContentID(
             GetAssetByOldContentIDRequest request,
             ServerCallContext context
@@ -174,7 +174,7 @@ namespace IT.WebServices.Content.CMS.Services
             return new() { Record = rec };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task GetListOfIDs(
             GetListOfIDsRequest request,
             IServerStreamWriter<GetListOfIDsResponse> responseStream,
@@ -213,7 +213,7 @@ namespace IT.WebServices.Content.CMS.Services
             catch { }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task GetListOfOldContentIDs(
             GetListOfOldContentIDsRequest request,
             IServerStreamWriter<GetListOfOldContentIDsResponse> responseStream,
@@ -254,7 +254,7 @@ namespace IT.WebServices.Content.CMS.Services
             catch { }
         }
 
-        [Authorize(Roles = ONUser.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         public override async Task<SearchAssetResponse> SearchAsset(
             SearchAssetRequest request,
             ServerCallContext context

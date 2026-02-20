@@ -50,7 +50,7 @@ namespace IT.WebServices.Settings.Services
             EnsureStockSettings().Wait();
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE)]
         public override Task<GetAdminDataResponse> GetAdminData(
             GetAdminDataRequest request,
             ServerCallContext context
@@ -68,7 +68,7 @@ namespace IT.WebServices.Settings.Services
             return new() { Public = record.Public, Private = record.Private };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE)]
         public override async Task<GetAdminNewerDataResponse> GetAdminNewerData(
             GetAdminNewerDataRequest request,
             ServerCallContext context
@@ -84,7 +84,7 @@ namespace IT.WebServices.Settings.Services
             return new() { Public = record?.Public, Private = record?.Private };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_OWNER_OR_SERVICE)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_OWNER_OR_SERVICE)]
         public override Task<GetOwnerDataResponse> GetOwnerData(
             GetOwnerDataRequest request,
             ServerCallContext context
@@ -107,7 +107,7 @@ namespace IT.WebServices.Settings.Services
             };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_OWNER_OR_SERVICE)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_OWNER_OR_SERVICE)]
         public override async Task<GetOwnerNewerDataResponse> GetOwnerNewerData(
             GetOwnerNewerDataRequest request,
             ServerCallContext context
@@ -157,7 +157,7 @@ namespace IT.WebServices.Settings.Services
             return new() { Public = record?.Public };
         }
 
-        [Authorize(Roles = ONUser.ROLE_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifyCMSOwnerDataResponse> ModifyCMSOwnerData(
             ModifyCMSOwnerDataRequest request,
             ServerCallContext context
@@ -189,7 +189,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyCMSPrivateDataResponse> ModifyCMSPrivateData(
             ModifyCMSPrivateDataRequest request,
             ServerCallContext context
@@ -221,7 +221,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyCMSPublicDataResponse> ModifyCMSPublicData(
             ModifyCMSPublicDataRequest request,
             ServerCallContext context
@@ -253,7 +253,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifyCommentsOwnerDataResponse> ModifyCommentsOwnerData(
             ModifyCommentsOwnerDataRequest request,
             ServerCallContext context
@@ -285,7 +285,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyCommentsPrivateDataResponse> ModifyCommentsPrivateData(
             ModifyCommentsPrivateDataRequest request,
             ServerCallContext context
@@ -317,7 +317,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyCommentsPublicDataResponse> ModifyCommentsPublicData(
             ModifyCommentsPublicDataRequest request,
             ServerCallContext context
@@ -349,7 +349,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifyNotificationOwnerDataResponse> ModifyNotificationOwnerData(
             ModifyNotificationOwnerDataRequest request,
             ServerCallContext context
@@ -381,7 +381,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyNotificationPrivateDataResponse> ModifyNotificationPrivateData(
             ModifyNotificationPrivateDataRequest request,
             ServerCallContext context
@@ -413,7 +413,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyNotificationPublicDataResponse> ModifyNotificationPublicData(
             ModifyNotificationPublicDataRequest request,
             ServerCallContext context
@@ -445,7 +445,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifyPersonalizationOwnerDataResponse> ModifyPersonalizationOwnerData(
             ModifyPersonalizationOwnerDataRequest request,
             ServerCallContext context
@@ -477,7 +477,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyPersonalizationPrivateDataResponse> ModifyPersonalizationPrivateData(
             ModifyPersonalizationPrivateDataRequest request,
             ServerCallContext context
@@ -509,7 +509,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyPersonalizationPublicDataResponse> ModifyPersonalizationPublicData(
             ModifyPersonalizationPublicDataRequest request,
             ServerCallContext context
@@ -541,7 +541,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifySubscriptionOwnerDataResponse> ModifySubscriptionOwnerData(
             ModifySubscriptionOwnerDataRequest request,
             ServerCallContext context
@@ -573,7 +573,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifySubscriptionPrivateDataResponse> ModifySubscriptionPrivateData(
             ModifySubscriptionPrivateDataRequest request,
             ServerCallContext context
@@ -605,7 +605,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifySubscriptionPublicDataResponse> ModifySubscriptionPublicData(
             ModifySubscriptionPublicDataRequest request,
             ServerCallContext context
@@ -774,7 +774,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyEventPublicSettingsResponse> ModifyEventPublicSettings(
             ModifyEventPublicSettingsRequest request,
             ServerCallContext context
@@ -803,7 +803,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyEventPrivateSettingsResponse> ModifyEventPrivateSettings(
             ModifyEventPrivateSettingsRequest request,
             ServerCallContext context
@@ -830,7 +830,7 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyEventOwnerSettingsResponse> ModifyEventOwnerSettings(
             ModifyEventOwnerSettingsRequest request,
             ServerCallContext context

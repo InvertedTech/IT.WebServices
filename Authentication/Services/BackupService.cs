@@ -14,7 +14,7 @@ using IT.WebServices.Crypto;
 
 namespace IT.WebServices.Authentication.Services
 {
-    [Authorize(Roles = ONUser.ROLE_CAN_BACKUP)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_BACKUP)]
     public class BackupService : BackupInterface.BackupInterfaceBase
     {
         private readonly IUserDataProvider dataProvider;
@@ -31,7 +31,7 @@ namespace IT.WebServices.Authentication.Services
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                if (userToken == null || !userToken.Roles.Contains(ONUser.ROLE_BACKUP))
+                if (userToken == null || !userToken.Roles.Contains(RoleAbilities.ROLE_BACKUP))
                     return;
 
                 var encKey = EcdhHelper.DeriveKeyServer(request.ClientPublicJwk.DecodeJsonWebKey(), out string serverPubKey);
@@ -67,7 +67,7 @@ namespace IT.WebServices.Authentication.Services
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
-                if (userToken == null || !(userToken.IsBackup || userToken.IsAdminOrHigher))
+                if (userToken == null || !(userToken.RoleAbilities.IsBackup || userToken.RoleAbilities.IsAdminOrHigher))
                     return;
 
                 await foreach (var r in dataProvider.GetAll())

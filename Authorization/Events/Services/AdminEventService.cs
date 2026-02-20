@@ -37,7 +37,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             _ticketClassHelper = eventTicketClassHelper;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_CREATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminCreateEventResponse> AdminCreateEvent(
             AdminCreateEventRequest request,
             ServerCallContext context
@@ -84,7 +84,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_CREATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminCreateEventResponse> AdminCreateRecurringEvent(
             AdminCreateRecurringEventRequest request,
             ServerCallContext context
@@ -172,7 +172,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
         }
 
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminGetEventResponse> AdminGetEvent(
             AdminGetEventRequest request,
             ServerCallContext context
@@ -201,7 +201,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             return new AdminGetEventResponse() { Event = found, Error = null };
         }
         
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminGetEventsResponse> AdminGetEvents(
             AdminGetEventsRequest request,
             ServerCallContext context
@@ -230,7 +230,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_CREATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminModifyEventResponse> AdminModifyEvent(
             AdminModifyEventRequest request,
             ServerCallContext context
@@ -303,7 +303,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_CREATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminCancelEventResponse> AdminCancelEvent(
             AdminCancelEventRequest request,
             ServerCallContext context
@@ -384,7 +384,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_CREATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
         public override async Task<AdminCancelAllRecurringEventsResponse> AdminCancelAllRecurringEvents(
             AdminCancelAllRecurringEventsRequest request,
             ServerCallContext context
@@ -462,7 +462,7 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         public override async Task<AdminGetTicketResponse> AdminGetTicket(AdminGetTicketRequest request, ServerCallContext context)
         {
             Guid.TryParse(request.TicketId, out var ticketId);
@@ -493,13 +493,13 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             return res;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         public override Task<AdminCancelOtherTicketResponse> AdminCancelOtherTicket(AdminCancelOtherTicketRequest request, ServerCallContext context)
         {
             throw new NotImplementedException();
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_EVENT_MODERATOR_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         public override Task<AdminReserveEventTicketForUserResponse> AdminReserveEventTicketForUser(AdminReserveEventTicketForUserRequest request, ServerCallContext context)
         {
             return base.AdminReserveEventTicketForUser(request, context);

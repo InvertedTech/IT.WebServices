@@ -9,7 +9,7 @@ using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Notification.Services
 {
-    [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
+    [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
     public class NotificationService : NotificationInterface.NotificationInterfaceBase
     {
         private readonly ILogger logger;

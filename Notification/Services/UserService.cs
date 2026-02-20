@@ -25,7 +25,7 @@ namespace IT.WebServices.Notification.Services
             this.userDataProvider = userDataProvider;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
         public override async Task<GetAllTokensResponse> GetAllTokens(GetAllTokensRequest request, ServerCallContext context)
         {
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());

@@ -19,7 +19,7 @@ namespace IT.WebServices.Authorization.Payment.Manual
             this.subscriptionProvider = subscriptionProvider;
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ManualCancelOtherSubscriptionResponse> ManualCancelOtherSubscription(ManualCancelOtherSubscriptionRequest request, ServerCallContext context)
         {
             try
@@ -96,7 +96,7 @@ namespace IT.WebServices.Authorization.Payment.Manual
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ManualGetOtherSubscriptionRecordsResponse> ManualGetOtherSubscriptionRecords(ManualGetOtherSubscriptionRecordsRequest request, ServerCallContext context)
         {
             try
@@ -124,7 +124,7 @@ namespace IT.WebServices.Authorization.Payment.Manual
             return new();
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ManualGetOtherSubscriptionRecordResponse> ManualGetOtherSubscriptionRecord(ManualGetOtherSubscriptionRecordRequest request, ServerCallContext context)
         {
             try
@@ -202,7 +202,7 @@ namespace IT.WebServices.Authorization.Payment.Manual
             return new();
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ManualNewOtherSubscriptionResponse> ManualNewOtherSubscription(ManualNewOtherSubscriptionRequest request, ServerCallContext context)
         {
             try
