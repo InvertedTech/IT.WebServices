@@ -233,6 +233,14 @@ service UserInterface {
       body: "*"
     };
   }
+
+  rpc AdminCreateUser (AdminCreateUserRequest) returns (AdminCreateUserResponse)
+  {
+    option (google.api.http) = {
+        post: "/api/auth/admin/createuser",
+        body: "*"
+    };
+  }
 }
   
 message AuthenticateUserRequest {
@@ -305,6 +313,31 @@ message CreateUserRequest {
 message CreateUserResponse {
   string BearerToken = 1;
   APIError Error = 2;
+}
+
+message AdminCreateUserRequest {
+  string UserName = 1 [(buf.validate.field).string.min_len = 3];                   // User name of the user
+  string Password = 2 [(buf.validate.field).string.min_len = 6];                    // Password of the user
+  string DisplayName = 3;                                                                           // Public display name of the user
+  string Bio = 4;                                                                                           // Biographical info of the user
+  string Email = 5[(buf.validate.field).string.email = true];                          // Private email used for password resets
+  string FirstName = 6 [                                                                              
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // First Name Of The User
+  string LastName = 7 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // Last Name Of The User
+  string PostalCode = 8 [
+    (buf.validate.field).required = true
+  ];                                                                                                               // Postal Code. TODO: Add regex for postal code validation for different countries if needed
+  repeated string Roles = 9;
+}
+
+message AdminCreateUserResponse {
+    string UserId = 1;
+    APIError Error = 2;
 }
 
 message DisableEnableOtherUserRequest {

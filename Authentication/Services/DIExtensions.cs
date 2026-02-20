@@ -2,7 +2,9 @@
 using IT.WebServices.Authentication.Services;
 using IT.WebServices.Authentication.Services.Data;
 using IT.WebServices.Authentication.Services.Helpers;
+using IT.WebServices.AuditLog;
 using IT.WebServices.Helpers;
+using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using System.Diagnostics.CodeAnalysis;
@@ -24,6 +26,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<MySQLHelper>();
             services.AddSingleton<OfflineHelper>();
             services.AddSingleton<TokenHelper>();
+            services.AddSingleton<ServiceNameHelper>();
+            services.AddSingleton<AuditLogHelper>();
 
             return services;
         }

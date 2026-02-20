@@ -8,6 +8,7 @@
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AuditLog\services\IT.WebServices.AuditLog.Services.csproj" />
     <ProjectReference Include="..\..\Authentication\Services\IT.WebServices.Authentication.Services.csproj" />
     <ProjectReference Include="..\..\Authorization\Events\IT.WebServices.Authorization.Events.csproj" />
     <ProjectReference Include="..\..\Authorization\Payment\Combined\IT.WebServices.Authorization.Payment.Combined.csproj" />

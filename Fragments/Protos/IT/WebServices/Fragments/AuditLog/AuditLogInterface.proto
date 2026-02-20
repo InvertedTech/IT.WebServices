@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.AuditLog;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+import "Protos/IT/WebServices/Fragments/AuditLog/AuditLogEntry.proto";
+
+service AuditLogInterface {
+	rpc LogEntry(LogEntryRequest) returns (LogEntryResponse) {}
+	rpc SearchEntries (SearchEntriesRequest) returns (SearchEntriesResponse) {
+		option (google.api.http) = {
+			get: "/api/admin/audit-log"
+		};
+	}
+}
+
+message LogEntryRequest {
+	AuditLogEntry Entry = 1;
+}
+
+message LogEntryResponse {
+	string EntryId = 1;
+	APIError Error = 10;
+}
+
+message SearchEntriesRequest {
+  uint32 PageSize = 1;
+  uint32 PageOffset = 2;
+
+  string ActorUserID = 10;
+  string TargetUserID = 11;
+  string ActionPrefix = 12;
+  string ResourceType = 13;
+  string ResourceID = 14;
+  string RequestID = 15;
+  bool SuccessOnly = 16;
+
+  google.protobuf.Timestamp OccurredAfterUTC = 20;
+  google.protobuf.Timestamp OccurredBeforeUTC = 21;
+}
+
+message SearchEntriesResponse {
+	repeated AuditLogEntry Entries = 1;
+	uint32 PageOffsetStart = 2;
+	uint32 PageOffsetEnd = 3;
+	uint32 PageTotalItems = 4;
+	APIError Error = 10;
+}

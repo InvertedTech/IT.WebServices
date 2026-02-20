@@ -21,6 +21,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IT.WebServices.Helpers;
+using IT.WebServices.AuditLog;
+using IT.WebServices.Fragments.AuditLog;
 using SkiaSharp;
 using IT.WebServices.Fragments;
 
@@ -37,10 +39,11 @@ namespace IT.WebServices.Authentication.Services
         private readonly ISettingsService settingsService;
         private readonly TokenHelper tokenHelper;
         private readonly UserServiceInternal userServiceInternal;
+        private readonly AuditLogHelper auditLogHelper;
         private static readonly HashAlgorithm hasher = SHA256.Create();
         private static readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
 
-        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal)
+        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, AuditLogHelper auditLogHelper)
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
@@ -50,6 +53,7 @@ namespace IT.WebServices.Authentication.Services
             this.settingsService = settingsService;
             this.tokenHelper = tokenHelper;
             this.userServiceInternal = userServiceInternal;
+            this.auditLogHelper = auditLogHelper;
 
             //if (Program.IsDevelopment)
             //{
@@ -593,7 +597,171 @@ namespace IT.WebServices.Authentication.Services
             return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null) };
         }
 
-        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<AdminCreateUserResponse> AdminCreateUser(
+                AdminCreateUserRequest request,
+                ServerCallContext context
+            )
+        {
+            if (offlineHelper.IsOffline)
+                return new AdminCreateUserResponse
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
+
+            try
+            {
+
+                if (!await AmIReallyAdmin(context))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonUnauthorized,
+                            "Admin access required"
+                        )
+                    };
+
+                var validator = new ProtoValidate.Validator();
+
+                // NOTE: some builds expose (request), others (request, bool). Use the 2-arg call here.
+                var validationResult = validator.Validate(request, false);
+                if (validationResult.Violations.Count > 0)
+                {
+                    // Use the enhanced extension method to convert ProtoValidate results
+                    var validationError = GenericErrorExtensions.FromProtoValidateResult(
+                        validationResult,
+                        APIErrorReason.ErrorReasonValidationFailed,
+                        "Validation failed"
+                    );
+
+                    return new AdminCreateUserResponse { Error = validationError };
+                }
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var newGuid = Guid.NewGuid();
+                var now = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+
+                var user = new UserRecord
+                {
+                    Normal = new()
+                    {
+                        Public = new()
+                        {
+                            UserID = newGuid.ToString(),
+                            CreatedOnUTC = now,
+                            ModifiedOnUTC = now,
+                            Data = new()
+                            {
+                                UserName = (request.UserName ?? string.Empty).ToLowerInvariant(),
+                                DisplayName = request.DisplayName ?? string.Empty,
+                                Bio = request.Bio ?? string.Empty,
+                            },
+                        },
+                        Private = new()
+                        {
+                            CreatedBy = (userToken?.Id ?? newGuid).ToString(),
+                            ModifiedBy = (userToken?.Id ?? newGuid).ToString(),
+                            Data = new()
+                            {
+                                Email = request.Email ?? string.Empty,
+                                FirstName = request.FirstName ?? string.Empty,
+                                LastName = request.LastName ?? string.Empty,
+                                PostalCode = request.PostalCode ?? string.Empty,
+                            },
+                        },
+                    },
+                    Server = new(),
+                };
+
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                user.Server.PasswordSalt = Google.Protobuf.ByteString.CopyFrom(salt);
+                user.Server.PasswordHash = Google.Protobuf.ByteString.CopyFrom(
+                    ComputeSaltedHash(request.Password ?? string.Empty, salt)
+                );
+
+                user.Normal.Private.Roles.AddRange(request.Roles);
+
+                var uname = user.Normal.Public.Data.UserName;
+                if (await dataProvider.LoginExists(uname))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonAlreadyExists,
+                            "Username is already taken"
+                        )
+                    };
+
+                var email = user.Normal.Private.Data.Email;
+                if (await dataProvider.EmailExists(email))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonAlreadyExists,
+                            "Email is already taken"
+                        )
+                    };
+
+                var ok = await dataProvider.Create(user);
+                if (!ok)
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonProviderError,
+                            "Data provider failed to create user"
+                        )
+                    };
+
+                try
+                {
+                    await auditLogHelper.LogEvent(
+                        new AuditLogEntry
+                        {
+                            Action = ActionType.ActionUserCreated,
+                            Summary = "Admin created user",
+                            ContextName = "Authentication.AdminCreateUser",
+                            Actor = new AuditActor
+                            {
+                                UserID = userToken?.Id.ToString() ?? string.Empty,
+                                UserName = userToken?.UserName ?? string.Empty,
+                                DisplayName = userToken?.DisplayName ?? string.Empty,
+                            },
+                            Targets =
+                            {
+                                new AuditTarget
+                                {
+                                    Type = TargetType.TargetUser,
+                                    TargetID = user.Normal.Public.UserID,
+                                    DisplayName = user.Normal.Public.Data.DisplayName
+                                }
+                            }
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to write audit event for AdminCreateUser");
+                }
+
+                return new AdminCreateUserResponse
+                {
+                    UserId = user.UserIDGuid.ToString(),
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in Admin Create User");
+                return new AdminCreateUserResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(
+                        APIErrorReason.ErrorReasonUnknown,
+                        "An unexpected error occurred while disabling user"
+                    )
+                };
+            }
+        }
+
+        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(
             DisableEnableOtherUserRequest request,
             ServerCallContext context

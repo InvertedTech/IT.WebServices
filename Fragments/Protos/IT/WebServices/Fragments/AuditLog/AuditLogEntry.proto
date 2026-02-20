@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.AuditLog;
+
+import "google/protobuf/timestamp.proto";
+
+enum ActionType {
+	ActionUnknown = 0;
+	ActionUserCreated = 1;
+	ActionUserChanged = 2;
+	ActionUserDeleted = 3;
+	ActionUserRoleChanged = 4;
+	ActionUserBanned = 5;
+	ActionUserUnbanned = 6;
+	ActionContentCreated = 10;
+	ActionContentChanged = 11;
+	ActionContentDeleted = 12;
+	ActionContentPublished = 13;
+	ActionContentUnpublished = 14;
+	ActionCommentCreated = 20;
+	ActionCommentEdited = 21;
+	ActionCommentDeleted = 22;
+	ActionCommentPinned = 23;
+	ActionCommentUnpinned = 24;
+	ActionPageCreated = 30;
+	ActionPageChanged = 31;
+	ActionPageDeleted = 32;
+	ActionPagePublished = 33;
+	ActionPageUnpublished = 34;
+	ActionSettingsChanged = 40;
+	ActionPaymentChanged = 50;
+	ActionSubscriptionChanged = 51;
+	ActionEventCreated = 60;
+	ActionEventChanged = 61;
+	ActionEventCanceled = 62;
+	ActionTicketReserved = 63;
+	ActionTicketCanceled = 64;
+	ActionTicketUsed = 65;
+}
+
+enum TargetType {
+	TargetUnknown = 0;
+	TargetUser = 1;
+	TargetContent = 2;
+	TargetComment = 3;
+	TargetPage = 4;
+	TargetAsset = 5;
+	TargetSettings = 6;
+	TargetSubscription = 7;
+	TargetPayment = 8;
+	TargetEvent = 9;
+	TargetTicket = 10;
+}
+
+message AuditActor {
+	string UserID = 1;
+	string UserName = 2;
+	string DisplayName = 3;
+}
+
+message AuditTarget {
+	TargetType Type = 1;
+	string TargetID = 2;
+	string DisplayName = 3;
+}
+
+message AuditFieldChange {
+	string FieldName = 1;
+	string BeforeValue = 2;
+	string AfterValue = 3;
+}
+
+message AuditFieldChanges {
+	repeated AuditFieldChange Fields = 1;
+}
+
+message AuditJsonChange {
+	string BeforeJson = 1;
+	string AfterJson = 2;
+}
+
+message AuditTextChange {
+	string BeforeText = 1;
+	string AfterText = 2;
+}
+
+message AuditValueChange {
+	oneof Change {
+		AuditFieldChanges FieldChanges = 1;
+		AuditJsonChange JsonChange = 2;
+		AuditTextChange TextChange = 3;
+	}
+}
+
+message AuditLogEntry {
+	string EntryID = 1;
+	google.protobuf.Timestamp CreatedOnUTC = 2;
+
+	ActionType Action = 10;
+	string Summary = 11;
+	string Reason = 12;
+	string ContextName = 13;
+
+	AuditActor Actor = 20;
+	repeated AuditTarget Targets = 21;
+
+	map<string, string> Metadata = 30;
+	AuditValueChange Changes = 31;
+}

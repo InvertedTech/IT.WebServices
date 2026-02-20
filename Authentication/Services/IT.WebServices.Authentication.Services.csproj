@@ -10,6 +10,7 @@
 	<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj" />
     <ProjectReference Include="..\..\Base\IT.WebServices.Base.csproj" />
   </ItemGroup>
 </Project>

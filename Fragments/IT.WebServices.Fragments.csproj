@@ -9,6 +9,7 @@
     <NoWarn>1701;1702;CS8981</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
@@ -87,6 +88,8 @@
     <None Remove="Protos\IT\WebServices\Fragments\Generic\ServiceOps.proto" />
   </ItemGroup>
   <ItemGroup>
+    <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogEntry.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
