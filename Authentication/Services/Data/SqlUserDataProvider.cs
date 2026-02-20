@@ -221,8 +221,9 @@ namespace IT.WebServices.Authentication.Services.Data
 
                 return null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return null;
             }
         }

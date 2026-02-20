@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net10.0</TargetFramework>
+	<RootNamespace>IT.WebServices.AuditLog</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Fragments\IT.WebServices.Fragments.csproj" />
+    <ProjectReference Include="..\..\Settings\Shared\IT.WebServices.Settings.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

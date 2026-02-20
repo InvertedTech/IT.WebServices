@@ -21,6 +21,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IT.WebServices.Helpers;
+using IT.WebServices.AuditLog;
+using IT.WebServices.Fragments.AuditLog;
 using SkiaSharp;
 using IT.WebServices.Fragments;
 
@@ -37,10 +39,11 @@ namespace IT.WebServices.Authentication.Services
         private readonly ISettingsService settingsService;
         private readonly TokenHelper tokenHelper;
         private readonly UserServiceInternal userServiceInternal;
+        private readonly AuditLogHelper auditLogHelper;
         private static readonly HashAlgorithm hasher = SHA256.Create();
         private static readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
 
-        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal)
+        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, AuditLogHelper auditLogHelper)
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
@@ -50,6 +53,7 @@ namespace IT.WebServices.Authentication.Services
             this.settingsService = settingsService;
             this.tokenHelper = tokenHelper;
             this.userServiceInternal = userServiceInternal;
+            this.auditLogHelper = auditLogHelper;
 
             //if (Program.IsDevelopment)
             //{
@@ -695,6 +699,37 @@ namespace IT.WebServices.Authentication.Services
                             "Data provider failed to create user"
                         )
                     };
+
+                try
+                {
+                    await auditLogHelper.LogEvent(
+                        new AuditLogEntry
+                        {
+                            Action = ActionType.ActionUserCreated,
+                            Summary = "Admin created user",
+                            ContextName = "Authentication.AdminCreateUser",
+                            Actor = new AuditActor
+                            {
+                                UserID = userToken?.Id.ToString() ?? string.Empty,
+                                UserName = userToken?.UserName ?? string.Empty,
+                                DisplayName = userToken?.DisplayName ?? string.Empty,
+                            },
+                            Targets =
+                            {
+                                new AuditTarget
+                                {
+                                    Type = TargetType.TargetUser,
+                                    TargetID = user.Normal.Public.UserID,
+                                    DisplayName = user.Normal.Public.Data.DisplayName
+                                }
+                            }
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to write audit event for AdminCreateUser");
+                }
 
                 return new AdminCreateUserResponse
                 {

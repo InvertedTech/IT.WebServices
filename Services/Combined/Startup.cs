@@ -95,7 +95,7 @@ namespace IT.WebServices.Services.Combined
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             services.AddJwtAuthentication();
-
+            services.AddAuditLogClasses();
             services.AddAuthenticationClasses();
             services.AddCMSClasses();
             services.AddCommentClasses();
@@ -135,6 +135,7 @@ namespace IT.WebServices.Services.Combined
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapAuditLogGrpcServices();
                 endpoints.MapAuthenticationGrpcServices();
                 endpoints.MapCMSGrpcServices();
                 endpoints.MapCommentGrpcServices();

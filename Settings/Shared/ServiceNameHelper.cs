@@ -22,6 +22,7 @@ namespace IT.WebServices.Settings
         public readonly Channel StatsServiceChannel;
         public readonly Channel UserServiceChannel;
         public readonly Channel EventsServiceChannel;
+        public readonly Channel AuditLogServiceChannel;
 
         private readonly Task<string> ServiceTokenTask;
         private readonly Lazy<string> serviceToken;
@@ -53,6 +54,7 @@ namespace IT.WebServices.Settings
             PaymentServiceChannel = new Channel("localhost", 7001, ChannelCredentials.Insecure);
             StatsServiceChannel = new Channel("localhost", 7001, ChannelCredentials.Insecure);
             EventsServiceChannel = new Channel("localhost", 7001, ChannelCredentials.Insecure);
+            AuditLogServiceChannel = new Channel("localhost", 7001, ChannelCredentials.Insecure);
 
             ServiceTokenTask = GetServiceToken();
             serviceToken = new Lazy<string>(() => ServiceTokenTask.Result);

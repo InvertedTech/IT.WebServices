@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.34928.147
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11430.68
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Fragments", "Fragments\IT.WebServices.Fragments.csproj", "{7ACA905F-1493-4378-85D5-87DC5D393BEC}"
 EndProject
@@ -53,6 +53,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.OIP", "OIP\IT.WebServices.OIP\IT.WebServices.OIP.csproj", "{D56D34A1-5CB0-7A89-ED7A-D325A368ED69}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Crypto.Extra", "Crypto\IT.WebServices.Crypto.Extra\IT.WebServices.Crypto.Extra.csproj", "{EBBAD69C-2901-7461-C1D9-93B78755F379}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.AuditLog.Services", "AuditLog\services\IT.WebServices.AuditLog.Services.csproj", "{48BBA66E-F858-7904-F14C-28D956641885}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.AuditLog.Shared", "AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj", "{3DCB4ECA-2308-84E5-07BF-A3F55080243B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +156,14 @@ Global
 		{EBBAD69C-2901-7461-C1D9-93B78755F379}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBBAD69C-2901-7461-C1D9-93B78755F379}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBBAD69C-2901-7461-C1D9-93B78755F379}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48BBA66E-F858-7904-F14C-28D956641885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48BBA66E-F858-7904-F14C-28D956641885}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48BBA66E-F858-7904-F14C-28D956641885}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48BBA66E-F858-7904-F14C-28D956641885}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
