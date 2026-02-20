@@ -583,6 +583,139 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<AdminCreateUserResponse> AdminCreateUser(
+                AdminCreateUserRequest request,
+                ServerCallContext context
+            )
+        {
+            if (offlineHelper.IsOffline)
+                return new AdminCreateUserResponse
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
+
+            try
+            {
+
+                if (!await AmIReallyAdmin(context))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonUnauthorized,
+                            "Admin access required"
+                        )
+                    };
+
+                var validator = new ProtoValidate.Validator();
+
+                // NOTE: some builds expose (request), others (request, bool). Use the 2-arg call here.
+                var validationResult = validator.Validate(request, false);
+                if (validationResult.Violations.Count > 0)
+                {
+                    // Use the enhanced extension method to convert ProtoValidate results
+                    var validationError = GenericErrorExtensions.FromProtoValidateResult(
+                        validationResult,
+                        APIErrorReason.ErrorReasonValidationFailed,
+                        "Validation failed"
+                    );
+
+                    return new AdminCreateUserResponse { Error = validationError };
+                }
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var newGuid = Guid.NewGuid();
+                var now = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+
+                var user = new UserRecord
+                {
+                    Normal = new()
+                    {
+                        Public = new()
+                        {
+                            UserID = newGuid.ToString(),
+                            CreatedOnUTC = now,
+                            ModifiedOnUTC = now,
+                            Data = new()
+                            {
+                                UserName = (request.UserName ?? string.Empty).ToLowerInvariant(),
+                                DisplayName = request.DisplayName ?? string.Empty,
+                                Bio = request.Bio ?? string.Empty,
+                            },
+                        },
+                        Private = new()
+                        {
+                            CreatedBy = (userToken?.Id ?? newGuid).ToString(),
+                            ModifiedBy = (userToken?.Id ?? newGuid).ToString(),
+                            Data = new()
+                            {
+                                Email = request.Email ?? string.Empty,
+                                FirstName = request.FirstName ?? string.Empty,
+                                LastName = request.LastName ?? string.Empty,
+                                PostalCode = request.PostalCode ?? string.Empty,
+                            },
+                        },
+                    },
+                    Server = new(),
+                };
+
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                user.Server.PasswordSalt = Google.Protobuf.ByteString.CopyFrom(salt);
+                user.Server.PasswordHash = Google.Protobuf.ByteString.CopyFrom(
+                    ComputeSaltedHash(request.Password ?? string.Empty, salt)
+                );
+
+                user.Normal.Private.Roles.AddRange(request.Roles);
+
+                var uname = user.Normal.Public.Data.UserName;
+                if (await dataProvider.LoginExists(uname))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonAlreadyExists,
+                            "Username is already taken"
+                        )
+                    };
+
+                var email = user.Normal.Private.Data.Email;
+                if (await dataProvider.EmailExists(email))
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonAlreadyExists,
+                            "Email is already taken"
+                        )
+                    };
+
+                var ok = await dataProvider.Create(user);
+                if (!ok)
+                    return new AdminCreateUserResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonProviderError,
+                            "Data provider failed to create user"
+                        )
+                    };
+
+                return new AdminCreateUserResponse
+                {
+                    UserId = user.UserIDGuid.ToString(),
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in Admin Create User");
+                return new AdminCreateUserResponse
+                {
+                    Error = GenericErrorExtensions.CreateError(
+                        APIErrorReason.ErrorReasonUnknown,
+                        "An unexpected error occurred while disabling user"
+                    )
+                };
+            }
+        }
+
+        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(
             DisableEnableOtherUserRequest request,
             ServerCallContext context
@@ -1558,7 +1691,6 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        // TODO: Add New Roles Or New Method To Support New Roles
         private async Task<bool> AmIReallyAdmin(ServerCallContext context)
         {
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());

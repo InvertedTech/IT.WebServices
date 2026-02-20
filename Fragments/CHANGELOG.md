@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.2
+
+### Patch Changes
+
+- Add AdminCreateUser
+
 ## 0.10.1
 
 ### Patch Changes
