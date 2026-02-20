@@ -597,7 +597,7 @@ namespace IT.WebServices.Authentication.Services
             return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null) };
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<AdminCreateUserResponse> AdminCreateUser(
                 AdminCreateUserRequest request,
                 ServerCallContext context
@@ -611,9 +611,9 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-
-                if (!await AmIReallyAdmin(context))
-                    return new AdminCreateUserResponse
+                var myDbRoles = await GetRolesFromDB(context);
+                if (!myDbRoles.CanManageMembers)
+                    return new()
                     {
                         Error = GenericErrorExtensions.CreateError(
                             APIErrorReason.ErrorReasonUnauthorized,
@@ -761,7 +761,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(
             DisableEnableOtherUserRequest request,
             ServerCallContext context
