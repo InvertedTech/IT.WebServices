@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\Content\CMS\Services\IT.WebServices.Content.CMS.Services.csproj" />
     <ProjectReference Include="..\..\Content\Comment\Services\IT.WebServices.Content.Comment.Services.csproj" />
     <ProjectReference Include="..\..\Content\Stats\Services\IT.WebServices.Content.Stats.Services.csproj" />
+    <ProjectReference Include="..\..\Dashboard\services\IT.WebServices.Dashboard.Services.csproj" />
     <ProjectReference Include="..\..\Notification\Services\IT.WebServices.Notification.Services.csproj" />
     <ProjectReference Include="..\..\Settings\Services\IT.WebServices.Settings.Services.csproj" />
   </ItemGroup>

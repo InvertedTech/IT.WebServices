@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Dashboard;
+import "google/protobuf/timestamp.proto";
+
+message DateRange {
+  google.protobuf.Timestamp Start = 1;
+  google.protobuf.Timestamp End = 2;
+}
+
+message CountComparison {
+	int64 CurrentCount = 1;
+	int64 PreviousCount = 2;
+	double PercentageChange = 3;
+}
+
+message CentsComparison {
+	int64 CurrentCents = 1;
+	int64 PreviousCents = 2;
+	double PercentageChange = 3;
+}
+
+message RatioComparison {
+	double CurrentRatio = 1;
+	double PreviousRatio = 2;
+	double PercentageChange = 3;
+}
+
+enum SeriesGranularity {
+  SERIES_GRANULARITY_UNSPECIFIED = 0;
+  SERIES_GRANULARITY_DAY = 1;
+  SERIES_GRANULARITY_WEEK = 2;
+  SERIES_GRANULARITY_MONTH = 3;
+}
+
+message CountSeriesPoint {
+  google.protobuf.Timestamp BucketStart = 1;
+  google.protobuf.Timestamp BucketEnd = 2;
+  int64 Value = 3;
+}
+
+message CentsSeriesPoint {
+  google.protobuf.Timestamp BucketStart = 1;
+  google.protobuf.Timestamp BucketEnd = 2;
+  int64 ValueCents = 3;
+}
+
+message TopPlanByRevenue {
+  string PlanId = 1;
+  string PlanName = 2;
+  int64 RevenueCents = 3;
+}
+
+message TopLikedContentItem {
+  string ContentId = 1;
+  string ContentTitle = 2;
+  int64 LikeCount = 3;
+}
+
+message SubscriptionKpis {
+  CountComparison ActiveSubscriptions = 1;
+  CountComparison NewSubscriptions = 2;
+  CountComparison CanceledSubscriptions = 3;
+  CentsComparison NewSubscriptionRevenue = 4;
+  CentsComparison TotalSubscriptionRevenue = 5;
+  repeated TopPlanByRevenue TopPlansByRevenue = 6;
+}
+
+message UserKpis {
+  CountComparison TotalUsers = 1;
+  CountComparison NewUsers = 2;
+  CountComparison DisabledUsers = 3;
+  RatioComparison ChurnRate = 4;
+}
+
+message ContentKpis {
+  CountComparison UniqueViewers = 1;
+  RatioComparison CompletionRate = 2;
+  RatioComparison MedianCompletionPercent = 3;
+  RatioComparison AvgConsumptionSeconds = 4;
+  repeated TopLikedContentItem TopLikedContent = 5;
+}

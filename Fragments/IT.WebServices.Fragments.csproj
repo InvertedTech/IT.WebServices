@@ -60,6 +60,8 @@
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsSaveInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsShareInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Stats\StatsViewInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Errors.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationUserRecord.proto" />
@@ -80,11 +82,6 @@
     <None Remove="Protos\IT\WebServices\Fragments\Content\Backup.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\Content.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Content\ContentRecord.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\CreatorDashboard\Settings\CreatorSettings.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\CreatorDashboard\Settings\SettingsManager.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Ban.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Manage.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Mute.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Generic\ServiceOps.proto" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +125,8 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\AssetRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Music\MusicInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Music\MusicRecord.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Errors.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageInterface.proto" />
@@ -162,11 +161,6 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\ContentRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Backup.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Content.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\CreatorDashboard\Settings\CreatorSettings.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\CreatorDashboard\Settings\SettingsManager.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Ban.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Manage.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\CreatorDashboard\Subscribers\Mute.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Generic\ServiceOps.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Paypal\PaypalInterface.proto" GrpcServices="Both" />
   </ItemGroup>
