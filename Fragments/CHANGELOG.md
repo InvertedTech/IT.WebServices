@@ -1,5 +1,17 @@
 # @inverted-tech/fragments
 
+## 0.10.4
+
+### Patch Changes
+
+- Slim Down AuditLog Changes Fields
+
+## 0.10.3
+
+### Patch Changes
+
+- Add AuditLog protos
+
 ## 0.10.2
 
 ### Patch Changes

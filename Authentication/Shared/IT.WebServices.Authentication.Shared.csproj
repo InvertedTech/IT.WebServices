@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Crypto\IT.WebServices.Crypto\IT.WebServices.Crypto.csproj" />
+    <ProjectReference Include="..\..\Fragments\IT.WebServices.Fragments.csproj" />
   </ItemGroup>
 
 </Project>

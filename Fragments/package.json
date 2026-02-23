@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.10.2",
+	"version": "0.10.4",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
@@ -32,6 +32,19 @@
 		"./protos/*": {
 			"types": "./dist/protos/*.d.ts",
 			"import": "./dist/esm/*.js"
+		},
+		"./AuditLog": {
+			"types": "./dist/protos/AuditLog/index.d.ts",
+			"import": "./dist/esm/AuditLog/index.js",
+			"default": "./dist/esm/AuditLog/index.js"
+		},
+		"./AuditLog/": {
+			"types": "./dist/protos/AuditLog/",
+			"import": "./dist/esm/AuditLog/"
+		},
+		"./AuditLog/*": {
+			"types": "./dist/protos/AuditLog/*.d.ts",
+			"import": "./dist/esm/AuditLog/*.js"
 		},
 		"./Authorization": {
 			"types": "./dist/protos/Authorization/index.d.ts",

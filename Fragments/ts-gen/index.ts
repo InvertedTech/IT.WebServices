@@ -1,6 +1,7 @@
 // Auto-generated - DO NOT EDIT
 export * from './CommonTypes_pb';
 export * from './Errors_pb';
+export * as AuditLog from './AuditLog';
 export * as Authentication from './Authentication';
 export * as Authorization from './Authorization';
 export * as Comment from './Comment';

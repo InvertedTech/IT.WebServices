@@ -1,10 +1,12 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using IT.WebServices.AuditLog;
 using IT.WebServices.Authentication;
 using IT.WebServices.Authorization.Events.Data;
 using IT.WebServices.Authorization.Events.Extensions;
 using IT.WebServices.Authorization.Events.Helpers;
 using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Fragments.Authorization.Events;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
@@ -27,14 +29,16 @@ namespace IT.WebServices.Authorization.Events.Services.Services
         private readonly ITicketDataProvider _ticketDataProvider;
         private readonly ONUserHelper _userHelper;
         private readonly EventTicketClassHelper _ticketClassHelper;
+        private readonly AuditLogHelper auditLogHelper;
 
-        public AdminEventService(ILogger<AdminEventService> logger, ITicketDataProvider ticketDataProvider,IEventDataProvider eventProvider, ONUserHelper userHelper, EventTicketClassHelper eventTicketClassHelper)
+        public AdminEventService(ILogger<AdminEventService> logger, ITicketDataProvider ticketDataProvider,IEventDataProvider eventProvider, ONUserHelper userHelper, EventTicketClassHelper eventTicketClassHelper, AuditLogHelper auditLogHelper)
         {
             _logger = logger;
             _eventProvider = eventProvider;
             _ticketDataProvider = ticketDataProvider;
             _userHelper = userHelper;
             _ticketClassHelper = eventTicketClassHelper;
+            this.auditLogHelper = auditLogHelper;
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
@@ -72,6 +76,20 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                     Error = new() { Reason = APIErrorReason.ErrorReasonUnknown, Message = "An Error Ocurred" },
                 };
             }
+
+            // TODO: Add Actor
+            //await auditLogHelper.TryLogEvent(
+            //        new AuditLogEntry()
+            //        {
+            //            Action = ActionType.ActionSettingsChanged,
+            //            Summary = $"Event Owner Settings Modified",
+            //            Actor = userToken.ToAuditActor(),
+            //            Metadata =
+            //            {
+            //                { "ModifiedData", request.Data.ToString() },
+            //            },
+            //        },
+            //    _logger);
 
             return new AdminCreateEventResponse()
             {
@@ -168,6 +186,23 @@ namespace IT.WebServices.Authorization.Events.Services.Services
             // Return the "template" event (first instance)
             response.Event = records.First();
             response.Error = null;
+
+            // TODO: Add Actor
+            //await auditLogHelper.TryLogEvent(
+            //    new AuditLogEntry()
+            //    {
+            //        Action = ActionType.ActionSettingsChanged,
+            //        Summary = $"Recurring Event Created with {instances.Count} instances",
+            //        Actor = context.GetHttpContext()?.User?.Identity?.Name ?? "unknown",
+            //        Metadata =
+            //        {
+            //            { "TemplateEvent", baseRecord.ToString() },
+            //            { "RecurrenceRule", request.RecurrenceRule.ToString() },
+            //            { "GeneratedInstances", instances.Count.ToString() },
+            //        },
+            //    },
+            //    _logger
+            //);
             return response;
         }
 
@@ -300,6 +335,22 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                 return res;
             }
 
+            // TODO: Add Actor
+            //await auditLogHelper.TryLogEvent(
+            //    new AuditLogEntry()
+            //    {
+            //        Action = ActionType.ActionSettingsChanged,
+            //        Summary = $"Event {existing.EventId} Modified",
+            //        Actor = context.GetHttpContext()?.User?.Identity?.Name ?? "unknown",
+            //        Metadata =
+            //        {
+            //            { "EventId", existing.EventId },
+            //            { "ModifiedData", request.Data.ToString() },
+            //        },
+            //    },
+            //    _logger
+            //);
+
             return res;
         }
 
@@ -381,6 +432,21 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                 res.Error = null;
             }
 
+            // TODO: Add Actor
+            //await auditLogHelper.TryLogEvent(
+            //    new AuditLogEntry()
+            //    {
+            //        Action = ActionType.ActionSettingsChanged,
+            //        Summary = $"Event {rec.EventId} Canceled",
+            //        Actor = context.GetHttpContext()?.User?.Identity?.Name ?? "unknown",
+            //        Metadata =
+            //        {
+            //            { "EventId", rec.EventId },
+            //            { "Reason", request.Reason },
+            //        },
+            //    },
+            //    _logger
+            //);
             return res;
         }
 
@@ -444,6 +510,22 @@ namespace IT.WebServices.Authorization.Events.Services.Services
                 }
 
                 response.Error = null;
+
+                // TODO: Add Actor
+                //await auditLogHelper.TryLogEvent(
+                //    new AuditLogEntry()
+                //    {
+                //        Action = ActionType.ActionSettingsChanged,
+                //        Summary = $"Canceled {toCancel.Count} events with RecurrenceHash {request.RecurrenceHash}",
+                //        Actor = context.GetHttpContext()?.User?.Identity?.Name ?? "unknown",
+                //        Metadata =
+                //        {
+                //            { "RecurrenceHash", request.RecurrenceHash },
+                //            { "CanceledEventIds", string.Join(", ", toCancel.Select(e => e.EventId)) },
+                //        },
+                //    },
+                //    _logger
+                //);
                 return response;
             }
             catch (Exception ex)
@@ -496,12 +578,14 @@ namespace IT.WebServices.Authorization.Events.Services.Services
         [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         public override Task<AdminCancelOtherTicketResponse> AdminCancelOtherTicket(AdminCancelOtherTicketRequest request, ServerCallContext context)
         {
+            // TODO Implement
             throw new NotImplementedException();
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         public override Task<AdminReserveEventTicketForUserResponse> AdminReserveEventTicketForUser(AdminReserveEventTicketForUserRequest request, ServerCallContext context)
         {
+            // TODO Implement
             return base.AdminReserveEventTicketForUser(request, context);
         }
         private async Task<List<EventRecord>> GetSingleEvents(

@@ -11,8 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Core;
+using IT.WebServices.AuditLog;
 using IT.WebServices.Authentication;
 using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Generic;
@@ -33,19 +35,21 @@ namespace IT.WebServices.Settings.Services
         private readonly OfflineHelper offlineHelper;
         private readonly ILogger<SettingsService> logger;
         private readonly ISettingsDataProvider dataProvider;
-
+        private readonly AuditLogHelper auditLogHelper;
         private static bool hasEnsuredStockSettings = false;
         private static SemaphoreSlim stockSettingsSemaphore = new SemaphoreSlim(1, 1);
 
         public SettingsService(
             OfflineHelper offlineHelper,
             ILogger<SettingsService> logger,
-            ISettingsDataProvider dataProvider
+            ISettingsDataProvider dataProvider,
+            AuditLogHelper auditLogHelper
         )
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
             this.dataProvider = dataProvider;
+            this.auditLogHelper = auditLogHelper;
 
             EnsureStockSettings().Wait();
         }
@@ -180,7 +184,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"CMS Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -212,7 +226,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"CMS Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -244,7 +268,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"CMS Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -276,7 +310,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Comments Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -308,7 +352,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Comments Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -340,7 +394,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Comments Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -372,7 +436,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Notification Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -404,7 +478,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Notification Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -436,7 +520,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Notification Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -468,7 +562,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Personalization Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -500,7 +604,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Personalization Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -532,7 +646,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Personalization Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -564,7 +688,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Subscription Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -596,7 +730,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Subscription Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -628,7 +772,17 @@ namespace IT.WebServices.Settings.Services
                 record.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Subscription Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -794,7 +948,17 @@ namespace IT.WebServices.Settings.Services
                 );
                 record.Private.ModifiedBy = userToken.Id.ToString();
                 await dataProvider.Save(record);
-
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Public Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -822,6 +986,17 @@ namespace IT.WebServices.Settings.Services
                 );
                 record.Private.ModifiedBy = userToken.Id.ToString();
                 await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Private Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch
@@ -849,6 +1024,17 @@ namespace IT.WebServices.Settings.Services
                 );
                 record.Private.ModifiedBy = userToken.Id.ToString();
                 await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Owner Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
                 return new() { Error = null };
             }
             catch

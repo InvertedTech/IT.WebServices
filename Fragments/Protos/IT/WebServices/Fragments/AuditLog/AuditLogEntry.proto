@@ -70,28 +70,6 @@ message AuditFieldChange {
 	string AfterValue = 3;
 }
 
-message AuditFieldChanges {
-	repeated AuditFieldChange Fields = 1;
-}
-
-message AuditJsonChange {
-	string BeforeJson = 1;
-	string AfterJson = 2;
-}
-
-message AuditTextChange {
-	string BeforeText = 1;
-	string AfterText = 2;
-}
-
-message AuditValueChange {
-	oneof Change {
-		AuditFieldChanges FieldChanges = 1;
-		AuditJsonChange JsonChange = 2;
-		AuditTextChange TextChange = 3;
-	}
-}
-
 message AuditLogEntry {
 	string EntryID = 1;
 	google.protobuf.Timestamp CreatedOnUTC = 2;
@@ -105,5 +83,5 @@ message AuditLogEntry {
 	repeated AuditTarget Targets = 21;
 
 	map<string, string> Metadata = 30;
-	AuditValueChange Changes = 31;
+	repeated AuditFieldChange Changes = 31;
 }

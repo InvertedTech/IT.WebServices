@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IT.WebServices.Fragments.AuditLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -87,6 +88,16 @@ namespace IT.WebServices.Authentication
         }
 
         public override bool IsInRole(string role) => Roles.Contains(role);
+
+        public AuditActor ToAuditActor()
+        {
+            return new AuditActor
+            {
+                UserID = Id.ToString(),
+                UserName = UserName,
+                DisplayName = DisplayName
+            };
+        }
 
         private bool IsValid()
         {

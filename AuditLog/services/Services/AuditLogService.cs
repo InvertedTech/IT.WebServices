@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -63,7 +64,7 @@ namespace IT.WebServices.AuditLog.Services
             }
         }
 
-        //[Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<SearchEntriesResponse> SearchEntries(SearchEntriesRequest request, ServerCallContext context)
         {
             if (_offlineHelper.IsOffline)
@@ -83,7 +84,25 @@ namespace IT.WebServices.AuditLog.Services
                 List<AuditLogEntry> entries = new();
                 var res = new SearchEntriesResponse();
 
-                return await _db.Search(request);
+                await foreach (var entry in _db.GetAll())
+                {
+                    entries.Add(entry);
+                }
+
+                res.Entries.AddRange(entries.OrderByDescending(r => r.CreatedOnUTC));
+                res.PageTotalItems = (uint)res.Entries.Count();
+
+                if (request.PageSize > 0)
+                {
+                    res.PageOffsetStart = request.PageOffset;
+
+                    var page = res.Entries.Skip((int)request.PageOffset).Take((int)request.PageSize).ToList();
+                    res.Entries.Clear();
+                    res.Entries.AddRange(page);
+                }
+
+                res.PageOffsetEnd = res.PageOffsetStart + (uint)res.Entries.Count;
+                return res;
             }
             catch (Exception ex)
             {

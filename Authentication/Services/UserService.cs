@@ -193,17 +193,48 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
+                var passwordBeforeHash = Convert.ToBase64String(record.Server.PasswordHash?.ToByteArray() ?? Array.Empty<byte>());
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 record.Server.PasswordSalt = ByteString.CopyFrom(salt);
                 record.Server.PasswordHash = ByteString.CopyFrom(
                     ComputeSaltedHash(request.NewPassword, salt)
                 );
+                var passwordAfterHash = Convert.ToBase64String(record.Server.PasswordHash?.ToByteArray() ?? Array.Empty<byte>());
 
                 record.Normal.Public.ModifiedOnUTC =
                     Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
+
+                await auditLogHelper.TryLogEvent(
+                         new AuditLogEntry
+                         {
+                             Action = ActionType.ActionUserChanged,
+                             Summary = "Admin changed user password",
+                             ContextName = "Authentication.ChangeOtherPassword",
+                             Actor = userToken.ToAuditActor(),
+                             Targets =
+                            {
+                                new AuditTarget
+                                {
+                                    Type = TargetType.TargetUser,
+                                    TargetID = record.Normal.Public.UserID,
+                                    DisplayName = record.Normal.Public.Data.DisplayName
+                                }
+                            },
+                             Changes =
+                             {
+                                 new AuditFieldChange
+                                 {
+                                     FieldName = "PasswordHash",
+                                     BeforeValue = passwordBeforeHash,
+                                     AfterValue = passwordAfterHash,
+                                 }
+                             }
+                         },
+                         logger
+                    );
 
                 return new ChangeOtherPasswordResponse
                 {
@@ -303,6 +334,8 @@ namespace IT.WebServices.Authentication.Services
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
+
+                // TODO: Log Audit Entry
 
                 return new ChangeOtherProfileImageResponse
                 {
@@ -711,21 +744,14 @@ namespace IT.WebServices.Authentication.Services
                         )
                     };
 
-                try
-                {
-                    await auditLogHelper.LogEvent(
-                        new AuditLogEntry
-                        {
-                            Action = ActionType.ActionUserCreated,
-                            Summary = "Admin created user",
-                            ContextName = "Authentication.AdminCreateUser",
-                            Actor = new AuditActor
-                            {
-                                UserID = userToken?.Id.ToString() ?? string.Empty,
-                                UserName = userToken?.UserName ?? string.Empty,
-                                DisplayName = userToken?.DisplayName ?? string.Empty,
-                            },
-                            Targets =
+                await auditLogHelper.TryLogEvent(
+                         new AuditLogEntry
+                         {
+                             Action = ActionType.ActionUserCreated,
+                             Summary = "Admin created user",
+                             ContextName = "Authentication.AdminCreateUser",
+                             Actor = userToken.ToAuditActor(),
+                             Targets =
                             {
                                 new AuditTarget
                                 {
@@ -733,14 +759,19 @@ namespace IT.WebServices.Authentication.Services
                                     TargetID = user.Normal.Public.UserID,
                                     DisplayName = user.Normal.Public.Data.DisplayName
                                 }
-                            }
-                        }
+                            },
+                             Changes =
+                             {
+                                 new AuditFieldChange
+                                 {
+                                     FieldName = "UserRecord",
+                                     BeforeValue = "null",
+                                     AfterValue = user.Normal.ToString(),
+                                 }
+                             }
+                         },
+                         logger
                     );
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to write audit event for AdminCreateUser");
-                }
 
                 return new AdminCreateUserResponse
                 {
@@ -802,10 +833,38 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
+                var disabledOnBefore = record.Normal.Public.DisabledOnUTC?.ToDateTime().ToString("o") ?? "null";
+                var disabledByBefore = record.Normal.Private.DisabledBy ?? "null";
                 record.Normal.Public.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.DisabledBy = userToken.Id.ToString();
+                var disabledOnAfter = record.Normal.Public.DisabledOnUTC?.ToDateTime().ToString("o") ?? "null";
+                var disabledByAfter = record.Normal.Private.DisabledBy ?? "null";
 
                 await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                            new AuditLogEntry
+                            {
+                                Action = ActionType.ActionUserDeleted,
+                                Summary = "Admin disabled user",
+                                ContextName = "Authentication.DisableOtherUser",
+                                Actor = userToken.ToAuditActor(),
+                                Targets =
+                                {
+                                    new AuditTarget
+                                    {
+                                        Type = TargetType.TargetUser,
+                                        TargetID = record.Normal.Public.UserID,
+                                        DisplayName = record.Normal.Public.Data.DisplayName
+                                    }
+                                },
+                                Changes =
+                                {
+                                    new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
+                                    new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
+                                }
+                            },
+                            logger
+                        );
 
                 return new DisableEnableOtherUserResponse
                 {
@@ -870,6 +929,8 @@ namespace IT.WebServices.Authentication.Services
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
+
+                // TODO: Log Audit Entry With Before/After
 
                 return new DisableOtherTotpResponse
                 {
@@ -978,10 +1039,39 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
+                var disabledOnBefore = record.Normal.Public.DisabledOnUTC?.ToDateTime().ToString("o") ?? "null";
+                var disabledByBefore = record.Normal.Private.DisabledBy ?? "null";
                 record.Normal.Public.DisabledOnUTC = null;
                 record.Normal.Private.DisabledBy = userToken.Id.ToString();
+                var disabledOnAfter = record.Normal.Public.DisabledOnUTC?.ToDateTime().ToString("o") ?? "null";
+                var disabledByAfter = record.Normal.Private.DisabledBy ?? "null";
 
                 await dataProvider.Save(record);
+
+                await auditLogHelper.TryLogEvent(       
+                    new AuditLogEntry
+                            {
+                                Action = ActionType.ActionUserChanged,
+                                Summary = "Admin enabled user",
+                                ContextName = "Authentication.EnableOtherUser",
+                                Actor = userToken.ToAuditActor(),
+                                Targets =
+                                {
+                                    new AuditTarget
+                                    {
+                                        Type = TargetType.TargetUser,
+                                        TargetID = record.Normal.Public.UserID,
+                                        DisplayName = record.Normal.Public.Data.DisplayName
+                                    }
+                                },
+                                Changes =
+                                {
+                                    new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
+                                    new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
+                                }
+                            },
+                            logger
+                        );
 
                 return new DisableEnableOtherUserResponse
                 {
@@ -1070,6 +1160,42 @@ namespace IT.WebServices.Authentication.Services
                     record.Normal.Public.Data.UserName,
                     key
                 );
+
+                await auditLogHelper.TryLogEvent(
+                         new AuditLogEntry
+                            {
+                                Action = ActionType.ActionUserChanged,
+                                Summary = "Admin added TOTP device to user",
+                             ContextName = "Authentication.GenerateOtherTotp",
+                             Actor = userToken.ToAuditActor(),
+                             Targets =
+                            {
+                                new AuditTarget
+                                {
+                                    Type = TargetType.TargetUser,
+                                    TargetID = record.Normal.Public.UserID,
+                                    DisplayName = record.Normal.Public.Data.DisplayName
+                                },
+                                // TODO: Add Type For TOTP Device Target
+                                new AuditTarget
+                                {
+                                    Type = TargetType.TargetUser,
+                                    TargetID = totp.TotpID,
+                                    DisplayName = totp.DeviceName
+                                }
+                            },
+                             Changes =
+                             {
+                                 new AuditFieldChange
+                                 {
+                                     FieldName = "TotpDevice",
+                                     BeforeValue = "null",
+                                     AfterValue = totp.ToString(),
+                                 }
+                             }
+                         },
+                         logger
+                    );
 
                 return new()
                 {
@@ -1443,6 +1569,8 @@ namespace IT.WebServices.Authentication.Services
 
                 await dataProvider.Save(record);
 
+                // TODO: Log Audit Entry With Before/After
+
                 return new();
             }
             catch
@@ -1451,7 +1579,6 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        // TODO: Make Role Member Manager Or Higher If They Should Edit Roles
         [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyOtherUserRolesResponse> ModifyOtherUserRoles(
             ModifyOtherUserRolesRequest request,
@@ -1478,13 +1605,44 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanChangeRolesOfOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
+                var rolesBefore = string.Join(",", record.Normal.Private.Roles);
                 record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 record.Normal.Private.Roles.Clear();
                 record.Normal.Private.Roles.AddRange(request.Roles);
+                var rolesAfter = string.Join(",", record.Normal.Private.Roles);
 
                 await dataProvider.Save(record);
+
+                await auditLogHelper.TryLogEvent(
+                            new AuditLogEntry
+                            {
+                                Action = ActionType.ActionUserChanged,
+                                Summary = "Admin changed user roles",
+                                ContextName = "Authentication.ModifyOtherUserRoles",
+                                Actor = userToken.ToAuditActor(),
+                                Targets =
+                                {
+                                    new AuditTarget
+                                    {
+                                        Type = TargetType.TargetUser,
+                                        TargetID = record.Normal.Public.UserID,
+                                        DisplayName = record.Normal.Public.Data.DisplayName,
+                                    }
+                                },
+                                Changes =
+                                {
+                                    new AuditFieldChange
+                                    {
+                                        FieldName = "Roles",
+                                        BeforeValue = rolesBefore,
+                                        AfterValue = rolesAfter,
+                                    }
+                                }
+                            },
+                            logger
+                            );
 
                 return new();
             }

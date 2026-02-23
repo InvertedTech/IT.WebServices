@@ -12,6 +12,8 @@ using IT.WebServices.Content.CMS.Services.Helpers;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Fragments;
+using IT.WebServices.AuditLog;
+using IT.WebServices.Fragments.AuditLog;
 
 namespace IT.WebServices.Content.CMS.Services
 {
@@ -21,12 +23,14 @@ namespace IT.WebServices.Content.CMS.Services
         private readonly ILogger logger;
         private readonly IContentDataProvider dataProvider;
         private readonly StatsClient statsClient;
+        private readonly AuditLogHelper auditLogHelper;
 
-        public ContentService(ILogger<ContentService> logger, IContentDataProvider dataProvider, StatsClient statsClient)
+        public ContentService(ILogger<ContentService> logger, IContentDataProvider dataProvider, StatsClient statsClient, AuditLogHelper auditLogHelper)
         {
             this.logger = logger;
             this.dataProvider = dataProvider;
             this.statsClient = statsClient;
+            this.auditLogHelper = auditLogHelper;
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_CAN_PUBLISH)]
@@ -60,10 +64,45 @@ namespace IT.WebServices.Content.CMS.Services
                 };
             }
 
+            // TODO: Make Less Verbose
+            var announceDateChanged = new AuditFieldChange
+            {
+                FieldName = "AnnounceOnUTC",
+                BeforeValue = record.Public.AnnounceOnUTC?.ToDateTimeOffset().ToString("o") ?? "null",
+            };
+            var announceByChanged = new AuditFieldChange
+            {
+                FieldName = "AnnouncedBy",
+                BeforeValue = record.Private.AnnouncedBy ?? "null",
+            };
             record.Public.AnnounceOnUTC = request.AnnounceOnUTC;
             record.Private.AnnouncedBy = user.Id.ToString();
 
+            announceDateChanged.AfterValue = record.Public.AnnounceOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            announceByChanged.AfterValue = record.Private.AnnouncedBy ?? "null";
+
+            var fieldChanges = new List<AuditFieldChange>();
+            if (announceDateChanged.BeforeValue != announceDateChanged.AfterValue)
+                fieldChanges.Add(announceDateChanged);
+            if (announceByChanged.BeforeValue != announceByChanged.AfterValue)
+                fieldChanges.Add(announceByChanged);
+
+            var auditEntry =
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentChanged,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                };
+            auditEntry.Changes.AddRange(fieldChanges);
+
             await dataProvider.Save(record);
+
+            await auditLogHelper.TryLogEvent(
+                auditEntry,
+                logger   
+             );
 
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -105,6 +144,18 @@ namespace IT.WebServices.Content.CMS.Services
             };
 
             await dataProvider.Save(record);
+            var createdSnapshot = record.Public.Data?.ToString() ?? "null";
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentCreated,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes = { BuildTextChange("Data", "null", createdSnapshot) },
+                },
+                logger    
+            );
 
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -126,9 +177,25 @@ namespace IT.WebServices.Content.CMS.Services
 
             record.Public.DeletedOnUTC = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
             record.Private.DeletedBy = user.Id.ToString();
+            var deletedOnAfter = record.Public.DeletedOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var deletedByAfter = record.Private.DeletedBy ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentDeleted,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        new AuditFieldChange { FieldName = "DeletedOnUTC", BeforeValue = "null", AfterValue = deletedOnAfter },
+                        new AuditFieldChange { FieldName = "DeletedBy", BeforeValue = "null", AfterValue = deletedByAfter }
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
@@ -502,14 +569,34 @@ namespace IT.WebServices.Content.CMS.Services
                 {
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
                 };
-
+            var beforePublicData = record.Public.Data?.ToString() ?? "null";
+            var beforePrivateData = record.Private.Data?.ToString() ?? "null";
             record.Public.Data = request.Public;
             record.Private.Data = request.Private;
             record.Public.ModifiedOnUTC = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
             record.Private.ModifiedBy = user.Id.ToString();
+            var afterPublicData = record.Public.Data?.ToString() ?? "null";
+            var afterPrivateData = record.Private.Data?.ToString() ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentChanged,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        BuildTextChange(
+                            "RecordData",
+                            $"Public:{Environment.NewLine}{beforePublicData}{Environment.NewLine}Private:{Environment.NewLine}{beforePrivateData}",
+                            $"Public:{Environment.NewLine}{afterPublicData}{Environment.NewLine}Private:{Environment.NewLine}{afterPrivateData}"
+                        )
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
@@ -534,12 +621,30 @@ namespace IT.WebServices.Content.CMS.Services
                 {
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
                 };
+            var publishOnBefore = record.Public.PublishOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var publishedByBefore = record.Private.PublishedBy ?? "null";
 
             record.Public.PublishOnUTC = request.PublishOnUTC;
             record.Private.PublishedBy = user.Id.ToString();
+            var publishOnAfter = record.Public.PublishOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var publishedByAfter = record.Private.PublishedBy ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentPublished,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        new AuditFieldChange { FieldName = "PublishOnUTC", BeforeValue = publishOnBefore, AfterValue = publishOnAfter },
+                        new AuditFieldChange { FieldName = "PublishedBy", BeforeValue = publishedByBefore, AfterValue = publishedByAfter }
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
@@ -642,12 +747,30 @@ namespace IT.WebServices.Content.CMS.Services
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
                 };
             }
+            var announceOnBefore = record.Public.AnnounceOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var announcedByBefore = record.Private.AnnouncedBy ?? "null";
 
             record.Public.AnnounceOnUTC = null;
             record.Private.AnnouncedBy = user.Id.ToString();
+            var announceOnAfter = record.Public.AnnounceOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var announcedByAfter = record.Private.AnnouncedBy ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentChanged,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        new AuditFieldChange { FieldName = "AnnounceOnUTC", BeforeValue = announceOnBefore, AfterValue = announceOnAfter },
+                        new AuditFieldChange { FieldName = "AnnouncedBy", BeforeValue = announcedByBefore, AfterValue = announcedByAfter }
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
@@ -665,12 +788,30 @@ namespace IT.WebServices.Content.CMS.Services
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
                 };
             }
+            var deletedOnBefore = record.Public.DeletedOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var deletedByBefore = record.Private.DeletedBy ?? "null";
 
             record.Public.DeletedOnUTC = null;
             record.Private.DeletedBy = user.Id.ToString();
+            var deletedOnAfter = record.Public.DeletedOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var deletedByAfter = record.Private.DeletedBy ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentChanged,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        new AuditFieldChange { FieldName = "DeletedOnUTC", BeforeValue = deletedOnBefore, AfterValue = deletedOnAfter },
+                        new AuditFieldChange { FieldName = "DeletedBy", BeforeValue = deletedByBefore, AfterValue = deletedByAfter }
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
 
@@ -688,13 +829,41 @@ namespace IT.WebServices.Content.CMS.Services
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Content Not Found")
                 };
             }
+            var publishOnBefore = record.Public.PublishOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var publishedByBefore = record.Private.PublishedBy ?? "null";
 
             record.Public.PublishOnUTC = null;
             record.Private.PublishedBy = user.Id.ToString();
+            var publishOnAfter = record.Public.PublishOnUTC?.ToDateTimeOffset().ToString("o") ?? "null";
+            var publishedByAfter = record.Private.PublishedBy ?? "null";
 
             await dataProvider.Save(record);
-
+            await auditLogHelper.TryLogEvent(
+                new AuditLogEntry
+                {
+                    ContextName = "Content",
+                    Action = ActionType.ActionContentChanged,
+                    Actor = user.ToAuditActor(),
+                    Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
+                    Changes =
+                    {
+                        new AuditFieldChange { FieldName = "PublishOnUTC", BeforeValue = publishOnBefore, AfterValue = publishOnAfter },
+                        new AuditFieldChange { FieldName = "PublishedBy", BeforeValue = publishedByBefore, AfterValue = publishedByAfter }
+                    },
+                },
+                logger    
+            );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
+        }
+
+        private static AuditFieldChange BuildTextChange(string fieldName, string before, string after)
+        {
+            return new AuditFieldChange
+            {
+                FieldName = fieldName,
+                BeforeValue = before ?? "null",
+                AfterValue = after ?? "null",
+            };
         }
 
         private bool CanShowContent(ContentRecord rec, ONUser user)

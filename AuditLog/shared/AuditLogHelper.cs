@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Settings;
+using Microsoft.Extensions.Logging;
 
 namespace IT.WebServices.AuditLog
 {
@@ -13,6 +14,36 @@ namespace IT.WebServices.AuditLog
         public AuditLogHelper(ServiceNameHelper serviceNameHelper)
         {
             _serviceNameHelper = serviceNameHelper;
+        }
+
+        public async Task TryLogEvent(
+                AuditLogEntry entry,
+                ILogger logger
+            )
+        {
+            try
+            {
+                await LogEvent(entry);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to log audit event");
+            }
+        }
+
+        public async Task TryLogEvent(
+        Func<AuditLogEntry> entryFactory,
+        ILogger logger
+    )
+        {
+            try
+            {
+                await LogEvent(entryFactory());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to log audit event");
+            }
         }
 
         public async Task<LogEntryResponse> LogEvent(AuditLogEntry entry)
