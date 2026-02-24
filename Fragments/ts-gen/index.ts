@@ -6,7 +6,7 @@ export * as Authentication from './Authentication';
 export * as Authorization from './Authorization';
 export * as Comment from './Comment';
 export * as Content from './Content';
-export * as CreatorDashboard from './CreatorDashboard';
+export * as Dashboard from './Dashboard';
 export * as Generic from './Generic';
 export * as Notification from './Notification';
 export * as Page from './Page';

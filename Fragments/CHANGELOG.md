@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.5
+
+### Patch Changes
+
+- Add Dashboard protos for admin kpis
+
 ## 0.10.4
 
 ### Patch Changes

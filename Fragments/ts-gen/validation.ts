@@ -8,7 +8,7 @@ import * as Auth from './Authentication/index.js';
 import * as Authorization from './Authorization/index.js';
 import * as Comment from './Comment/index.js';
 import * as Content from './Content/index.js';
-import * as CreatorDashboard from './CreatorDashboard/index.js';
+import * as Dashboard from './Dashboard/index.js';
 import * as Generic from './Generic/index.js';
 import * as Notification from './Notification/index.js';
 import * as Page from './Page/index.js';
@@ -33,7 +33,7 @@ function collectFiles(): GenFile[] {
 		Authorization,
 		Comment,
 		Content,
-		CreatorDashboard,
+		Dashboard,
 		Generic,
 		Notification,
 		Page,
