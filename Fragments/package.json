@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.10.5",
+	"version": "0.10.6",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
@@ -215,18 +215,18 @@
 			"types": "./dist/protos/Content/Stats/*.d.ts",
 			"import": "./dist/esm/Content/Stats/*.js"
 		},
-		"./CreatorDashboard": {
-			"types": "./dist/protos/CreatorDashboard/index.d.ts",
-			"import": "./dist/esm/CreatorDashboard/index.js",
-			"default": "./dist/esm/CreatorDashboard/index.js"
+		"./Dashboard": {
+			"types": "./dist/protos/Dashboard/index.d.ts",
+			"import": "./dist/esm/Dashboard/index.js",
+			"default": "./dist/esm/Dashboard/index.js"
 		},
-		"./CreatorDashboard/": {
-			"types": "./dist/protos/CreatorDashboard/",
-			"import": "./dist/esm/CreatorDashboard/"
+		"./Dashboard/": {
+			"types": "./dist/protos/Dashboard/",
+			"import": "./dist/esm/Dashboard/"
 		},
-		"./CreatorDashboard/*": {
-			"types": "./dist/protos/CreatorDashboard/*.d.ts",
-			"import": "./dist/esm/CreatorDashboard/*.js"
+		"./Dashboard/*": {
+			"types": "./dist/protos/Dashboard/*.d.ts",
+			"import": "./dist/esm/Dashboard/*.js"
 		},
 		"./Generic": {
 			"types": "./dist/protos/Generic/index.d.ts",

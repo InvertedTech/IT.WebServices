@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.6
+
+### Patch Changes
+
+- Add Dashboard To Package.json
+
 ## 0.10.5
 
 ### Patch Changes
