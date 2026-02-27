@@ -4,6 +4,7 @@ export * from './Errors_pb';
 export * as AuditLog from './AuditLog';
 export * as Authentication from './Authentication';
 export * as Authorization from './Authorization';
+export * as Careers from './Careers';
 export * as Comment from './Comment';
 export * as Content from './Content';
 export * as Dashboard from './Dashboard';

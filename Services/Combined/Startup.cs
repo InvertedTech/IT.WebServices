@@ -104,6 +104,7 @@ namespace IT.WebServices.Services.Combined
             services.AddEventsClasses();
             services.AddPaymentClasses();
             services.AddDashboardClasses();
+            services.AddCareersClasses();
 
             CryptoProviderFactory.DefaultCacheSignatureProviders = false;
 
@@ -146,6 +147,7 @@ namespace IT.WebServices.Services.Combined
 
                 endpoints.MapPaymentGrpcServices();
                 endpoints.MapDashboardGrpcServices();
+                endpoints.MapCareersGrpcServices();
                 //endpoints.MapGrpcReflectionService();
 
                 endpoints.MapControllerRoute(

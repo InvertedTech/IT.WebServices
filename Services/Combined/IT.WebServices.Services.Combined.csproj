@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\Authentication\Services\IT.WebServices.Authentication.Services.csproj" />
     <ProjectReference Include="..\..\Authorization\Events\IT.WebServices.Authorization.Events.csproj" />
     <ProjectReference Include="..\..\Authorization\Payment\Combined\IT.WebServices.Authorization.Payment.Combined.csproj" />
+    <ProjectReference Include="..\..\Careers\IT.WebServices.Careers.csproj" />
     <ProjectReference Include="..\..\Content\CMS\Services\IT.WebServices.Content.CMS.Services.csproj" />
     <ProjectReference Include="..\..\Content\Comment\Services\IT.WebServices.Content.Comment.Services.csproj" />
     <ProjectReference Include="..\..\Content\Stats\Services\IT.WebServices.Content.Stats.Services.csproj" />

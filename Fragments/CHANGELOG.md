@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.10.7
+
+### Patch Changes
+
+- Add Careers
+
 ## 0.10.6
 
 ### Patch Changes

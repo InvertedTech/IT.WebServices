@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Careers;
+import "google/protobuf/timestamp.proto";
+
+enum JobType {
+	FULL_TIME=0;
+	PART_TIME=1;
+	HYBRID=3;
+	REMOTE=4;
+	CONTRACT=5;
+}
+
+message ListingLocation {
+	string Area = 1;
+	bool RelocationRequired = 2;
+	JobType EmploymentType = 3;
+}
+
+message WeeklyDeliverable {
+	string DeliverableName = 1;
+	string DeliverableDetails = 2;
+}
+
+message CareerRecord {
+	string CareerId = 1;
+	string Title = 2;
+	string Company = 3;
+	ListingLocation Location = 4;
+	string ReportsTo = 5;
+	string Contact = 6;
+	string About = 7;
+	string RoleOverview = 8;
+	repeated string Responsibilities = 9;
+	repeated string Qualifications = 10;
+	repeated WeeklyDeliverable WeeklyDeliverables = 11;
+	google.protobuf.Timestamp CreatedOnUTC = 12;
+	google.protobuf.Timestamp ModifiedOnUTC = 13;
+	google.protobuf.Timestamp DeletedOnUTC = 14;
+}
+
+message CareerListRecord {
+	string CareerId = 1;
+	string Title = 2;
+	string Company = 3;
+	ListingLocation Location = 4;
+	string About = 5;
+	repeated string Responsibilities = 6;
+	google.protobuf.Timestamp CreatedOnUTC = 7;
+	google.protobuf.Timestamp ModifiedOnUTC = 8;
+	google.protobuf.Timestamp DeletedOnUTC = 9;
+}

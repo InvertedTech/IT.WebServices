@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Careers;
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+import "Protos/IT/WebServices/Fragments/Careers/CareersRecord.proto";
+
+service CareersInterface {
+	rpc CreateCareer(CreateCareerRequest) returns (CreateCareerResponse) {
+		option (google.api.http) = {
+			post: "/api/admin/careers"
+			body: "*"
+		};
+	}
+
+	rpc GetCareer(GetCareerRequest) returns (GetCareerResponse) {
+		option (google.api.http) = {
+			get: "/api/careers/{CareerId}"
+		};
+	}
+
+	rpc ListCareers(ListCareersRequest) returns (ListCareersResponse) {
+		option (google.api.http) = {
+			get: "/api/careers"
+		};
+	}
+
+	rpc UpdateCareer(UpdateCareerRequest) returns (UpdateCareerResponse) {
+		option (google.api.http) = {
+			put: "/api/admin/careers/{CareerId}"
+			body: "Career"
+		};
+	}
+
+	rpc DeleteCareer(DeleteCareerRequest) returns (DeleteCareerResponse) {
+		option (google.api.http) = {
+			delete: "/api/admin/careers/{CareerId}"
+		};
+	}
+}
+
+message CreateCareerRequest {
+	string Title = 1;
+	string Company = 2;
+	ListingLocation Location = 3;
+	string ReportsTo = 4;
+	string Contact = 5;
+	string About = 6;
+	string RoleOverview = 7;
+	repeated string Responsibilities = 8;
+	repeated string Qualifications = 9;
+	repeated WeeklyDeliverable WeeklyDeliverables = 10;
+}
+
+message CreateCareerResponse {
+	string CareerId = 1;
+	APIError  Error = 2;
+}
+
+message GetCareerRequest {
+	string CareerId = 1;
+}
+
+message GetCareerResponse {
+	CareerRecord Career = 1;
+	APIError Error = 2;
+}
+
+message ListCareersRequest {
+	uint32 PageSize = 1;
+	uint32 PageOffset = 2;
+}
+
+message ListCareersResponse {
+	repeated CareerListRecord Careers = 1;
+	uint32 PageSize = 2;
+	uint32 PageOffsetStart = 3;
+	uint32 PageOffsetEnd = 4;
+	uint32 PageTotalItems = 5;
+}
+
+message UpdateCareerRequest {
+	string CareerId = 1;
+	CareerRecord Career = 2;
+}
+
+message UpdateCareerResponse {
+	CareerRecord Record = 1;
+	APIError Error = 2;
+}
+
+message DeleteCareerRequest {
+	string CareerId = 1;
+}
+
+message DeleteCareerResponse {
+	APIError Error = 1;
+}

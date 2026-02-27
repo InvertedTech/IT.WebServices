@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.10.6",
+	"version": "0.10.7",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
@@ -162,6 +162,19 @@
 		"./Authentication/*": {
 			"types": "./dist/protos/Authentication/*.d.ts",
 			"import": "./dist/esm/Authentication/*.js"
+		},
+		"./Careers": {
+			"types": "./dist/protos/Careers/index.d.ts",
+			"import": "./dist/esm/Careers/index.js",
+			"default": "./dist/esm/Careers/index.js"
+		},
+		"./Careers/": {
+			"types": "./dist/protos/Careers/",
+			"import": "./dist/esm/Careers/"
+		},
+		"./Careers/*": {
+			"types": "./dist/protos/Careers/*.d.ts",
+			"import": "./dist/esm/Careers/*.js"
 		},
 		"./Comment": {
 			"types": "./dist/protos/Comment/index.d.ts",

@@ -40,6 +40,8 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\SharedTypes.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Careers\CareersInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Careers\CareersRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\CommentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\CommentRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Comment\SharedTypes.proto" />
@@ -117,6 +119,8 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeSettings.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\SharedTypes.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Careers\CareersInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Careers\CareersRecord.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\CommentInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\CommentRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Comment\SharedTypes.proto" GrpcServices="None" />

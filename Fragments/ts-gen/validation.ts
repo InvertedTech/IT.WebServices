@@ -14,6 +14,7 @@ import * as Notification from './Notification/index.js';
 import * as Page from './Page/index.js';
 import * as Settings from './Settings/index.js';
 import * as FragmentsRoot from './index.js';
+import * as Careers from './Careers';
 
 // Runtime guard (don’t use a type predicate over a module union)
 function looksLikeGenFile(x: unknown): x is GenFile {
@@ -39,6 +40,7 @@ function collectFiles(): GenFile[] {
 		Page,
 		Settings,
 		FragmentsRoot,
+		Careers,
 	];
 	for (const m of mods) {
 		for (const value of Object.values(m) as unknown[]) {

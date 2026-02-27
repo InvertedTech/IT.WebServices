@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.AuditLog.Sha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Dashboard.Services", "Dashboard\services\IT.WebServices.Dashboard.Services.csproj", "{F77091E9-EAFB-D20B-A367-8088036E8E73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Careers", "Careers\IT.WebServices.Careers.csproj", "{071A961C-AFAF-A789-2981-45C890A05A94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -170,6 +172,10 @@ Global
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{071A961C-AFAF-A789-2981-45C890A05A94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{071A961C-AFAF-A789-2981-45C890A05A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
