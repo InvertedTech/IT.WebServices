@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -92,7 +93,8 @@ namespace IT.WebServices.Careers.Data
             if (entry == null)
                 throw new ArgumentNullException(nameof(entry));
 
-            if (!Guid.TryParse(entry.CareerId, out var id) || id == Guid.Empty)
+            bool isNew = !Guid.TryParse(entry.CareerId, out var id) || id == Guid.Empty;
+            if (isNew)
             {
                 id = Guid.NewGuid();
                 entry.CareerId = id.ToString();
@@ -101,10 +103,35 @@ namespace IT.WebServices.Careers.Data
             if (entry.CreatedOnUTC == null || (entry.CreatedOnUTC.Seconds == 0 && entry.CreatedOnUTC.Nanos == 0))
                 entry.CreatedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
 
-            var line = Convert.ToBase64String(entry.ToByteArray()) + "\n";
-            await File.AppendAllTextAsync(dataFile.FullName, line);
-            dataFile.Refresh();
+            var newLine = Convert.ToBase64String(entry.ToByteArray());
 
+            if (isNew)
+            {
+                await File.AppendAllTextAsync(dataFile.FullName, newLine + "\n");
+
+                dataFile.Refresh();
+                return entry;
+            }
+            var lines = await File.ReadAllLinesAsync(dataFile.FullName);
+            bool replaced = false;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+               var existing = CareerRecord.Parser.ParseFrom(Convert.FromBase64String(lines[i]));
+                if (existing.CareerId == entry.CareerId)
+                {
+                    lines[i] = newLine;
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced)
+                lines = lines.Append(newLine).ToArray();
+
+            await File.WriteAllLinesAsync(dataFile.FullName, lines);
+
+            dataFile.Refresh();
             return entry;
         }
     }

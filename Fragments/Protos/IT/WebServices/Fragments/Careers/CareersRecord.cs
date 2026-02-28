@@ -20,9 +20,12 @@ namespace IT.WebServices.Fragments.Careers
                 Location = this.Location,
                 About = this.About,
                 CreatedOnUTC = this.CreatedOnUTC,
-                ModifiedOnUTC = this.ModifiedOnUTC,
-                DeletedOnUTC = this.DeletedOnUTC,
             };
+            if (this.DeletedOnUTC != null)
+                rec.DeletedOnUTC = this.DeletedOnUTC;
+
+            if (this.ModifiedOnUTC != null)
+                rec.ModifiedOnUTC = this.ModifiedOnUTC;
 
             rec.Responsibilities.AddRange(this.Responsibilities);
 

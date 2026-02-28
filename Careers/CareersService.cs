@@ -51,7 +51,11 @@ namespace IT.WebServices.Careers
                 var saved = await dataProvider.Save(newCareer);
                 return new CreateCareerResponse
                 {
-                    CareerId = saved.CareerId
+                    CareerId = saved.CareerId,
+                    Error = new Fragments.APIError
+                    {
+                        Reason = Fragments.APIErrorReason.ErrorReasonNoError
+                    }
                 };
             }
             catch (Exception ex)
@@ -86,10 +90,13 @@ namespace IT.WebServices.Careers
                 List<CareerListRecord> records = new();
                 var res = new ListCareersResponse();
 
+                // TODO: Add A Filter For This
                 await foreach (var record in dataProvider.GetAll())
                 {
-                    records.Add(record.ToCareerListRecord());
+                    if (record.DeletedOnUTC == null)
+                        records.Add(record.ToCareerListRecord());
                 }
+
                 res.Careers.AddRange(records.OrderByDescending(r => r.CreatedOnUTC));
                 res.PageTotalItems = (uint)res.Careers.Count();
 
