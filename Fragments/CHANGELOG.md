@@ -1,5 +1,17 @@
 # @inverted-tech/fragments
 
+## 0.10.9
+
+### Patch Changes
+
+- Add AdminListCareers
+
+## 0.10.8
+
+### Patch Changes
+
+- Add Validation To Careers
+
 ## 0.10.7
 
 ### Patch Changes

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package IT.WebServices.Fragments.Careers;
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 
 enum JobType {
 	FULL_TIME=0;
@@ -12,14 +13,14 @@ enum JobType {
 }
 
 message ListingLocation {
-	string Area = 1;
+	string Area = 1 [(buf.validate.field).string.min_len = 2];
 	bool RelocationRequired = 2;
-	JobType EmploymentType = 3;
+	JobType EmploymentType = 3 [(buf.validate.field).enum.defined_only = true];
 }
 
 message WeeklyDeliverable {
-	string DeliverableName = 1;
-	string DeliverableDetails = 2;
+	string DeliverableName = 1 [(buf.validate.field).string.min_len = 3];
+	string DeliverableDetails = 2 [(buf.validate.field).string.min_len = 10];
 }
 
 message CareerRecord {

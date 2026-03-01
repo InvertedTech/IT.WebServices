@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package IT.WebServices.Fragments.Careers;
 import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Careers/CareersRecord.proto";
 
@@ -25,10 +26,16 @@ service CareersInterface {
 		};
 	}
 
+	rpc AdminListCareers(AdminListCareersRequest) returns (ListCareersResponse) {
+		option (google.api.http) = {
+			get: "/api/admin/careers"
+		};
+	}
+
 	rpc UpdateCareer(UpdateCareerRequest) returns (UpdateCareerResponse) {
 		option (google.api.http) = {
 			put: "/api/admin/careers/{CareerId}"
-			body: "Career"
+			body: "*"
 		};
 	}
 
@@ -40,15 +47,15 @@ service CareersInterface {
 }
 
 message CreateCareerRequest {
-	string Title = 1;
-	string Company = 2;
-	ListingLocation Location = 3;
-	string ReportsTo = 4;
-	string Contact = 5;
-	string About = 6;
-	string RoleOverview = 7;
-	repeated string Responsibilities = 8;
-	repeated string Qualifications = 9;
+	string Title = 1 [(buf.validate.field).string.min_len = 3];
+	string Company = 2 [(buf.validate.field).string.min_len = 3];
+	ListingLocation Location = 3 [(buf.validate.field).required = true];
+	string ReportsTo = 4[(buf.validate.field).required = true];
+	string Contact = 5[(buf.validate.field).required = true];
+	string About = 6 [(buf.validate.field).string.min_len = 10];
+	string RoleOverview = 7 [(buf.validate.field).string.min_len = 10];
+	repeated string Responsibilities = 8 [(buf.validate.field).repeated.min_items = 1];
+	repeated string Qualifications = 9 [(buf.validate.field).repeated.min_items = 1];
 	repeated WeeklyDeliverable WeeklyDeliverables = 10;
 }
 
@@ -58,7 +65,7 @@ message CreateCareerResponse {
 }
 
 message GetCareerRequest {
-	string CareerId = 1;
+	string CareerId = 1 [(buf.validate.field).string.uuid = true];
 }
 
 message GetCareerResponse {
@@ -71,17 +78,24 @@ message ListCareersRequest {
 	uint32 PageOffset = 2;
 }
 
+message AdminListCareersRequest {
+	uint32 PageSize = 1;
+	uint32 PageOffset = 2;
+	bool IncludeDeleted = 3;
+}
+
 message ListCareersResponse {
 	repeated CareerListRecord Careers = 1;
 	uint32 PageSize = 2;
 	uint32 PageOffsetStart = 3;
 	uint32 PageOffsetEnd = 4;
 	uint32 PageTotalItems = 5;
+	APIError Error = 10;
 }
 
 message UpdateCareerRequest {
-	string CareerId = 1;
-	CareerRecord Career = 2;
+	string CareerId = 1 [(buf.validate.field).string.uuid = true];
+	CareerRecord Career = 2 [(buf.validate.field).required = true];
 }
 
 message UpdateCareerResponse {
@@ -90,7 +104,7 @@ message UpdateCareerResponse {
 }
 
 message DeleteCareerRequest {
-	string CareerId = 1;
+	string CareerId = 1 [(buf.validate.field).string.uuid = true];
 }
 
 message DeleteCareerResponse {
