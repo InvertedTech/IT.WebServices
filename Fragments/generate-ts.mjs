@@ -626,7 +626,7 @@ async function main() {
 for (const e of await fsp.readdir(tsGenDir, { withFileTypes: true })) {
   if (e.name === '_meta') continue;
   if (e.name === 'validation.ts') continue; // keep the helper
-  if (e.name === 'client.ts') continue; // keep the client
+  if (e.name === 'api.ts') continue; // keep the api utility
   await rimrafSafe(path.join(tsGenDir, e.name));
 }
 

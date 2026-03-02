@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.10.9",
+	"version": "0.11.0",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
@@ -297,9 +297,9 @@
 			"types": "./dist/protos/validation.d.ts",
 			"import": "./dist/esm/validation.js"
 		},
-		"./client": {
-			"types": "./dist/protos/client.d.ts",
-			"import": "./dist/esm/client.js"
+		"./api": {
+			"types": "./dist/protos/api.d.ts",
+			"import": "./dist/esm/api.js"
 		},
 		"./*": {
 			"types": "./dist/*",
@@ -325,7 +325,7 @@
 		"lint": "eslint . --ext .ts",
 		"lint:gen": "eslint ts-gen --ext .ts",
 		"lint:gen:fix": "eslint ts-gen --ext .ts --fix",
-		"clean": "node -e \"const fs=require('fs'),path=require('path'); const rm=(p)=>fs.rmSync(p,{recursive:true,force:true}); if(fs.existsSync('dist')) rm('dist'); const base='ts-gen'; if(fs.existsSync(base)){ for(const ent of fs.readdirSync(base,{withFileTypes:true})) { if(ent.name==='validation.ts' || ent.name==='client.ts') continue; rm(path.join(base, ent.name)); } }\"",
+		"clean": "node -e \"const fs=require('fs'),path=require('path'); const rm=(p)=>fs.rmSync(p,{recursive:true,force:true}); if(fs.existsSync('dist')) rm('dist'); const base='ts-gen'; if(fs.existsSync(base)){ for(const ent of fs.readdirSync(base,{withFileTypes:true})) { if(ent.name==='validation.ts' || ent.name==='api.ts') continue; rm(path.join(base, ent.name)); } }\"",
 		"clean:pack": "node -e \"const fs=require('fs'); const path=require('path'); fs.rmSync('__pack_extract__',{recursive:true,force:true}); fs.readdirSync('.').filter(f=>f.endsWith('.tgz')).forEach(f=>fs.rmSync(path.join('.',f),{force:true})); console.log('Removed __pack_extract__ and *.tgz');\"",
 		"clean:dist": "node -e \"const fs=require('fs'); fs.rmSync('dist',{recursive:true,force:true});\"",
 		"rebuild": "npm run clean:dist && node ./scripts/ensure-gen.mjs && npm run build",
@@ -360,6 +360,7 @@
 	"dependencies": {
 		"@bufbuild/protobuf": "^2.10.0",
 		"@bufbuild/protovalidate": "^1.0.0",
-		"@connectrpc/connect": "^1.7.0"
+		"@connectrpc/connect": "^1.7.0",
+		"pino": "^10.3.1"
 	}
 }

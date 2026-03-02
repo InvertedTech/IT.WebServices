@@ -1,5 +1,12 @@
 # @inverted-tech/fragments
 
+## 0.11.0
+
+### Minor Changes
+
+- Add helper function for api calls
+- Add builder for API urls tied to the Inverted Tech API
+
 ## 0.10.9
 
 ### Patch Changes

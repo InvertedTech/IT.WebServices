@@ -5,8 +5,8 @@
 Fragments/dist
 Fragments/ts-gen/**/*.ts
 !Fragments/ts-gen/validation.ts
-!Fragments/ts-gen/client.ts
 !Fragments/ts-gen/index.ts
+!Fragments/ts-gen/api.ts
 # User-specific files
 *.rsuser
 *.suo
