@@ -71,10 +71,10 @@ namespace IT.WebServices.Content.Stats.Services
 
             const string query = @"
                 SELECT
-                    SUM(CASE WHEN LikedOnUTC IS NOT NULL THEN 1 ELSE 0 END) Likes,
-                    SUM(CASE WHEN SavedOnUTC IS NOT NULL THEN 1 ELSE 0 END) Saves,
-                    SUM(NumberOfShares) Shares,
-                    SUM(NumberOfViews) Views
+                    COALESCE(SUM(CASE WHEN LikedOnUTC IS NOT NULL THEN 1 ELSE 0 END), 0) Likes,
+                    COALESCE(SUM(CASE WHEN SavedOnUTC IS NOT NULL THEN 1 ELSE 0 END), 0) Saves,
+                    COALESCE(SUM(NumberOfShares), 0) Shares,
+                    COALESCE(SUM(NumberOfViews), 0) Views
                 FROM
                     Stats_ContentUser
                 WHERE
