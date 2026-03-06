@@ -74,12 +74,14 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
             if (full.SubscriptionRecord == null)
                 return;
 
-            await subProvider.Save(full.SubscriptionRecord);
-
             await paymentProvider.DeleteAll(full.SubscriptionRecord.UserID.ToGuid(), full.SubscriptionRecord.InternalSubscriptionID.ToGuid());
 
+            var tasks = new List<Task> { subProvider.Save(full.SubscriptionRecord) };
+
             foreach (var p in full.Payments)
-                await paymentProvider.Save(p);
+                tasks.Add(paymentProvider.Save(p));
+
+            await Task.WhenAll(tasks);
         }
 
         private async Task Hydrate(GenericSubscriptionFullRecord full)
