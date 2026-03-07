@@ -1,7 +1,5 @@
-﻿using Grpc.Core;
-using Microsoft.Extensions.Logging;
+﻿using IT.WebServices.Authorization;
 using IT.WebServices.Fragments.Authorization;
-using IT.WebServices.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +9,16 @@ namespace IT.WebServices.Authentication.Services.Helpers
 {
     public class ClaimsClient
     {
-        public const string CLAIMS_SERVICE_LIST = "CLAIMS_SERVICE_LIST";
-        public const string CHANNEL_NAME_CHAT = "chat";
-        public const string CHANNEL_NAME_PAYMENT = "payment";
-        public const string CHANNEL_NAME_EVENTS = "events";
+        public readonly IClaimsProvider[] claimsProviders;
+
+        public ClaimsClient(IEnumerable<IClaimsProvider> claimsProviders)
+        {
+            this.claimsProviders = claimsProviders.ToArray();
+        }
 
         public async Task<IEnumerable<ClaimRecord>> GetOtherClaims(Guid userId)
         {
-            List<Channel> channels = GetChannels();
-
-            var tasks = channels.Select(c => GetOtherClaims(userId, c));
+            var tasks = claimsProviders.Select(p => p.GetOtherClaims(userId));
 
             await Task.WhenAll(tasks);
 
@@ -44,59 +42,6 @@ namespace IT.WebServices.Authentication.Services.Helpers
             }
 
             return dict.Values;
-        }
-
-        private async Task<IEnumerable<ClaimRecord>> GetOtherClaims(Guid userId, Channel channel)
-        {
-            if (channel == null)
-                return new ClaimRecord[0];
-
-            try
-            {
-                var client = new ClaimsInterface.ClaimsInterfaceClient(channel);
-                var reply = await client.GetClaimsAsync(new GetClaimsRequest()
-                {
-                    UserID = userId.ToString()
-                });
-
-                return reply.Claims;
-            }
-            catch (Exception)
-            {
-
-            }
-
-            return new ClaimRecord[0];
-        }
-
-        private List<Channel> GetChannels()
-        {
-            List<Channel> channels = new List<Channel>();
-
-            var channelNames = GetStringFromEnvVar(CLAIMS_SERVICE_LIST)?.Split(',') ?? new string[0];
-            foreach (var name in channelNames)
-            {
-                switch(name)
-                {
-                    case CHANNEL_NAME_CHAT:
-                        //channels.Add(settingsService.ChatServiceChannel);
-                        break;
-                    case CHANNEL_NAME_PAYMENT:
-                        //channels.Add(settingsService.PaymentServiceChannel);
-                        break;
-                    case CHANNEL_NAME_EVENTS:
-                        break;
-                }
-            }
-
-            return channels;
-        }
-
-        private string GetStringFromEnvVar(string varName)
-        {
-            var envVar = Environment.GetEnvironmentVariable(varName, EnvironmentVariableTarget.Process);
-
-            return envVar;
         }
     }
 }

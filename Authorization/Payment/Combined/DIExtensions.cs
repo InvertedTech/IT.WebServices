@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Authorization.Payment;
+﻿using IT.WebServices.Authorization;
+using IT.WebServices.Authorization.Payment;
 using IT.WebServices.Authorization.Payment.Combined.Services;
 using IT.WebServices.Authorization.Payment.Helpers;
 using IT.WebServices.Authorization.Payment.Helpers.BulkJobs;
@@ -15,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddFortisClasses();
             services.AddPaypalClasses();
             services.AddStripeClasses();
+
+            services.AddSingleton<ClaimsServiceInternal>();
+            services.AddSingleton<IClaimsProvider, ClaimsServiceInternal>();
 
             services.AddSingleton<BulkHelper>();
             services.AddSingleton<ReconcileHelper>();
