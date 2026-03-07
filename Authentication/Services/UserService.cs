@@ -1550,6 +1550,9 @@ namespace IT.WebServices.Authentication.Services
 
                 if (record.Normal.Private.Data.Email != request.Email)
                 {
+                    if (await dataProvider.EmailExists(request.Email))
+                        return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
+
                     if (!await dataProvider.ChangeEmailIndex(request.Email, userId))
                         return new ModifyOtherUserResponse() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
 
@@ -1678,6 +1681,9 @@ namespace IT.WebServices.Authentication.Services
 
                 if (record.Normal.Private.Data.Email != request.Email)
                 {
+                    if (await dataProvider.EmailExists(request.Email))
+                        return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
+
                     if (!await dataProvider.ChangeEmailIndex(request.Email, record.UserIDGuid))
                         return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
 
