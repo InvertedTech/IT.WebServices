@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.11.1
+
+### Patch Changes
+
+- Add Protovalidate to ModifyOwnUser
+
 ## 0.11.0
 
 ### Minor Changes

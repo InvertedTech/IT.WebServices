@@ -149,6 +149,7 @@ namespace IT.WebServices.Authentication.Services
                 Ok = true,
                 BearerToken = tokenHelper.GenerateToken(user.Normal, otherClaims),
                 UserRecord = user.Normal,
+                Error = GenericErrorExtensions.CreateNoError()
             };
         }
 
@@ -627,7 +628,7 @@ namespace IT.WebServices.Authentication.Services
                     )
                 };
 
-            return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null) };
+            return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null), Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
@@ -1202,6 +1203,7 @@ namespace IT.WebServices.Authentication.Services
                     TotpID = totp.TotpID,
                     Key = setupInfo.ManualEntryKey,
                     QRCode = setupInfo.QrCodeSetupImageUrl,
+                    Error = GenericErrorExtensions.CreateNoError()
                 };
             }
             catch (Exception ex)
@@ -1276,6 +1278,7 @@ namespace IT.WebServices.Authentication.Services
                     TotpID = totp.TotpID,
                     Key = setupInfo.ManualEntryKey,
                     QRCode = setupInfo.QrCodeSetupImageUrl,
+                    Error = GenericErrorExtensions.CreateNoError()
                 };
             }
             catch (Exception ex)
@@ -1524,7 +1527,7 @@ namespace IT.WebServices.Authentication.Services
 
                 var otherDbRoles = await GetRolesFromDB(userId);
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
-                    return new();
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 if (!IsUserNameValid(request.UserName))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "User Name not valid") };
@@ -1574,7 +1577,7 @@ namespace IT.WebServices.Authentication.Services
 
                 // TODO: Log Audit Entry With Before/After
 
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {
@@ -1647,7 +1650,7 @@ namespace IT.WebServices.Authentication.Services
                             logger
                             );
 
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {
@@ -1701,7 +1704,7 @@ namespace IT.WebServices.Authentication.Services
                 await dataProvider.Save(record);
                 var otherClaims = await claimsClient.GetOtherClaims(userToken.Id);
 
-                return new() { BearerToken = tokenHelper.GenerateToken(record.Normal, otherClaims) };
+                return new() { BearerToken = tokenHelper.GenerateToken(record.Normal, otherClaims), Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {

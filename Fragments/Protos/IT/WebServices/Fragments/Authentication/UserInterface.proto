@@ -469,15 +469,32 @@ message UserIdRecord {
   string UserName = 3;
 }
 
+// TODO: Add Same Protovalidadte as in createuserrequest
 message ModifyOtherUserRequest {
   string UserID = 1;          // Guid for the user
-  string UserName = 2;        // User name of the user
-  string DisplayName = 3;     // Public display name of the user
-  string Bio = 4;             // Biographical info of the user
-  string Email = 5;           // Private email used for password resets
-  string FirstName = 6;
-  string LastName = 7;
-  string PostalCode = 8;
+  // OLD
+  // string UserName = 2;        // User name of the user
+  // string DisplayName = 3;     // Public display name of the user
+  // string Bio = 4;             // Biographical info of the user
+  // string Email = 5;           // Private email used for password resets
+  // string FirstName = 6;
+  // string LastName = 7;
+  // string PostalCode = 8;
+  string UserName = 2[(buf.validate.field).string.min_len = 3];
+  string DisplayName = 3;                                                                           // Public display name of the user
+  string Bio = 4;                                                                                           // Biographical info of the user
+  string Email = 5[(buf.validate.field).string.email = true];                          // Private email used for password resets
+  string FirstName = 6 [                                                                              
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // First Name Of The User
+  string LastName = 7 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // Last Name Of The User
+  string PostalCode = 8 [
+    (buf.validate.field).required = true
+  ];    
 }
   
 message ModifyOtherUserResponse {
@@ -493,16 +510,33 @@ message ModifyOtherUserRolesResponse {
   APIError Error = 1;
 }
 
+// TODO: Add Same Protovalidadte as in createuserrequest
 message ModifyOwnUserRequest {
   string UserID = 1;          // Guid for the user
-  string DisplayName = 2;     // Public display name of the user
-  string Bio = 3;             // Biographical info of the user
-  string Email = 4;           // Private email used for password resets
-  string FirstName = 5;
-  string LastName = 6;
-  string PostalCode = 7;
+  // OLD:
+  // string DisplayName = 2;     // Public display name of the user
+  // string Bio = 3;             // Biographical info of the user
+  // string Email = 4;           // Private email used for password resets
+  // string FirstName = 5;
+  // string LastName = 6;
+  // string PostalCode = 7;
+
+  string DisplayName = 2;                                                                           // Public display name of the user
+  string Bio = 3;                                                                                           // Biographical info of the user
+  string Email = 4[(buf.validate.field).string.email = true];                          // Private email used for password resets
+  string FirstName = 5 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // First Name Of The User
+  string LastName = 6 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1
+  ];                                                                                                                // Last Name Of The User
+  string PostalCode = 7 [
+    (buf.validate.field).required = true
+  ];
 }
-  
+
 message ModifyOwnUserResponse {
   APIError Error = 1;
   string BearerToken = 2;
