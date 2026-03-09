@@ -49,16 +49,17 @@ namespace IT.WebServices.Authentication.Services.Microsoft.Controllers
             var uriBuilder = new UriBuilder(settings.GoodRedirect);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
 
+            Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, token, new CookieOptions()
+            {
+                HttpOnly = true,
+                Expires = DateTimeOffset.UtcNow.AddDays(21),
+                IsEssential = true,
+                Domain = GetMainDomain(),
+            });
+
             switch (settings.CookieOrGet)
             {
                 case MySettings.CookieOrGetEnum.Cookie:
-                    Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, token, new CookieOptions()
-                    {
-                        HttpOnly = true,
-                        Expires = DateTimeOffset.UtcNow.AddDays(21),
-                        IsEssential = true,
-                        Domain = GetMainDomain(),
-                    });
                     break;
                 case MySettings.CookieOrGetEnum.Get:
                     query["token"] = token;
