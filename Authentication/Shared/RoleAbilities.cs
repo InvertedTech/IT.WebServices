@@ -72,6 +72,7 @@ namespace IT.WebServices.Authentication
 
         public const string ROLE_IS_MEMBER_MANAGER_OR_HIGHER = ROLE_MEMBER_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER;
         public const string ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER = ROLE_SUBSCRIPTION_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER;
+        public const string ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER_OR_BOT = ROLE_SUBSCRIPTION_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER + "," + ROLE_BOT_VERIFICATION;
 
         public bool IsOwner => IsInRole(ROLE_OWNER);
         public bool IsAdmin => IsInRole(ROLE_ADMIN);

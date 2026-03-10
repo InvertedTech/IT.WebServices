@@ -192,7 +192,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             }
         }
 
-        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER_OR_BOT)]
         public override async Task<GetSubscriptionRecordResponse> GetOtherSubscriptionRecord(GetOtherSubscriptionRecordRequest request, ServerCallContext context)
         {
             try
@@ -232,7 +232,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
         }
 
 
-        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER_OR_BOT)]
         public override async Task<GetSubscriptionRecordsResponse> GetOtherSubscriptionRecords(GetOtherSubscriptionRecordsRequest request, ServerCallContext context)
         {
             try
