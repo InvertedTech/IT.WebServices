@@ -5,6 +5,7 @@ using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Authorization.Payment.Fortis;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace IT.WebServices.Authorization.Payment.Fortis.Clients
@@ -13,13 +14,21 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
     {
         private readonly SettingsHelper settingsHelper;
         private readonly AppSettings appSettings;
+        private readonly ILogger logger;
 
         public readonly FortisAPI.Standard.FortisAPIClient Client;
 
-        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings)
+        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger)
         {
             this.settingsHelper = settingsHelper;
             this.appSettings = appSettings.Value;
+            this.logger = logger;
+
+            logger.LogWarning("FortisDeveloperId: {FortisDeveloperId}", this.appSettings.FortisDeveloperId);
+            logger.LogWarning("UserID: {UserID}", settingsHelper.Owner.Subscription.Fortis.UserID);
+            logger.LogWarning("UserApiKey: {UserApiKey}", settingsHelper.Owner.Subscription.Fortis.UserApiKey);
+            logger.LogWarning("LocationID: {LocationID}", settingsHelper.Owner.Subscription.Fortis.LocationID);
+            logger.LogWarning("ProductID: {ProductID}", settingsHelper.Owner.Subscription.Fortis.ProductID);
 
             Client = GetClient();
         }
@@ -53,11 +62,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
                 ResponseTransactionIntention result = await elementsController.TransactionIntentionAsync(body);
                 return new() { ClientToken = result.Data.ClientToken };
             }
-            catch (ApiException)
+            catch (ApiException ex)
             {
+                logger.LogError(ex, "Error in GetNewDetails");
+
                 return new();
             }
-            ;
         }
     }
 }
