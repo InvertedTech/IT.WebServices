@@ -185,6 +185,13 @@ service UserInterface {
     };
   }
 
+  rpc ModifyOtherUserAuthProviders (ModifyOtherUserAuthProvidersRequest) returns (ModifyOtherUserAuthProvidersResponse) {
+    option (google.api.http) = {
+        post: "/api/auth/admin/user/providers",
+        body: "*"
+    };
+  }
+
   // Modify User record
   rpc ModifyOtherUserRoles (ModifyOtherUserRolesRequest) returns (ModifyOtherUserRolesResponse)
   {
@@ -494,7 +501,7 @@ message ModifyOtherUserRequest {
   ];                                                                                                                // Last Name Of The User
   string PostalCode = 8 [
     (buf.validate.field).required = true
-  ];    
+  ]; 
 }
   
 message ModifyOtherUserResponse {
@@ -601,5 +608,14 @@ message VerifyOwnTotpRequest {
 
 message VerifyOwnTotpResponse {
   APIError Error = 10;
+}
+
+message ModifyOtherUserAuthProvidersRequest {
+    string UserID = 1;
+    AuthProviders AuthProviders = 2;
+}
+
+message ModifyOtherUserAuthProvidersResponse {
+    APIError Error = 1;
 }
 

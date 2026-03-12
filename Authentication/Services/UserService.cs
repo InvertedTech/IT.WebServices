@@ -1579,9 +1579,76 @@ namespace IT.WebServices.Authentication.Services
 
                 return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
-            catch
+            catch (Exception ex)
             {
-                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Unknown error") };
+                logger.LogError(ex.Message, ex);
+
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message ?? "Unknown error") };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyOtherUserAuthProvidersResponse> ModifyOtherUserAuthProviders(ModifyOtherUserAuthProvidersRequest request, ServerCallContext context)
+        {
+            if (offlineHelper.IsOffline)
+                return new ModifyOtherUserAuthProvidersResponse
+                {
+                    Error = GenericErrorExtensions.CreateOfflineError()
+                };
+
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new ModifyOtherUserAuthProvidersResponse
+                    {
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonUnauthenticated,
+                            "User authentication required"
+                        )
+                    };
+
+                // TODO: Add AmIReallyAdminCheck Here
+                
+                Guid.TryParse(request.UserID, out var userToModifyId);
+                if (userToModifyId == Guid.Empty)
+                {
+                    var error = new APIError
+                    {
+                        Message = "Invalid Request Data",
+                        Reason = APIErrorReason.ErrorReasonValidationFailed,
+
+                    };
+                    error.AddValidationIssue("UserID", "UserID must be a GUID");
+
+                    return new ModifyOtherUserAuthProvidersResponse
+                    {
+                        Error = error
+                    };
+                }
+
+                var record = await dataProvider.GetById(userToModifyId);
+                if (record == null)
+                    return new ModifyOtherUserAuthProvidersResponse
+                    {
+                        Error = new APIError
+                        {
+                            Message = "User Not Found",
+                            Reason = APIErrorReason.ErrorReasonNotFound
+                        }
+                    };
+
+                record.Server.AuthProviders = request.AuthProviders;
+                await dataProvider.Save(record);
+
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
+            }
+            catch (Exception ex) {
+                logger.LogError(ex.Message, ex);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message ?? "Unknown Error Occurred")
+                };
             }
         }
 

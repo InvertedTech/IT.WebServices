@@ -125,6 +125,7 @@ export function createApiEndpoints(baseUrl: string) {
 			createUser: `${baseUrl}/auth/createuser`,
 			adminCreateUser: `${baseUrl}/auth/admin/createuser`,
 			refresh: `${baseUrl}/auth/renewtoken`,
+			adminModifyOtherAuthProviders: `${baseUrl}/auth/admin/user/providers`,
 			changePassword: `${baseUrl}/auth/password`,
 			adminChangePassword: `${baseUrl}/auth/admin/password`,
 			getCurrentUser: `${baseUrl}/auth/user`,

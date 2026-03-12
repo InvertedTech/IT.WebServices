@@ -1,5 +1,17 @@
 # @inverted-tech/fragments
 
+## 0.11.3
+
+### Patch Changes
+
+- Remove MicrosoftID from ModifyOtherUser fields, Add ModifyOtherUserAuthProviders
+
+## 0.11.2
+
+### Patch Changes
+
+- Add MicrosoftID to ModifyOtherUser fields
+
 ## 0.11.1
 
 ### Patch Changes
