@@ -469,7 +469,7 @@ namespace IT.WebServices.Authentication.Services.Data
                     new MySqlParameter("UserID", user.Normal.Public.UserID),
                     new MySqlParameter("UserName", user.Normal.Public.Data.UserName),
                     new MySqlParameter("DisplayName", user.Normal.Public.Data.DisplayName),
-                    new MySqlParameter("Bio", user.Normal.Public.Data.Bio),
+                    new MySqlParameter("Bio", user.Normal.Public.Data.Bio.TruncateIfTooLong(1000)),
                     new MySqlParameter("Roles", string.Join(",", user.Normal.Private.Roles)),
                     new MySqlParameter("Email", user.Normal.Private.Data.Email),
                     new MySqlParameter("OldUserID", user.Normal.Private.Data.OldUserID),
@@ -494,8 +494,9 @@ namespace IT.WebServices.Authentication.Services.Data
                 foreach (var d in user.Server.TOTPDevices)
                     await InsertOrUpdateTotp(d, user.UserIDGuid);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                log.LogError(ex, "Error in SqlUserDataProvider.InsertOrUpdate");
             }
         }
 
@@ -525,8 +526,9 @@ namespace IT.WebServices.Authentication.Services.Data
 
                 await sql.RunCmd(query, parameters);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                log.LogError(ex, "Error in SqlUserDataProvider.InsertOrUpdateTotp");
             }
         }
 
