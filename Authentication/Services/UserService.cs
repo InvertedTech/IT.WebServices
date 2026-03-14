@@ -1049,14 +1049,14 @@ namespace IT.WebServices.Authentication.Services
 
                 await dataProvider.Save(record);
 
-                await auditLogHelper.TryLogEvent(       
+                await auditLogHelper.TryLogEvent(
                     new AuditLogEntry
-                            {
-                                Action = ActionType.ActionUserChanged,
-                                Summary = "Admin enabled user",
-                                ContextName = "Authentication.EnableOtherUser",
-                                Actor = userToken.ToAuditActor(),
-                                Targets =
+                    {
+                        Action = ActionType.ActionUserChanged,
+                        Summary = "Admin enabled user",
+                        ContextName = "Authentication.EnableOtherUser",
+                        Actor = userToken.ToAuditActor(),
+                        Targets =
                                 {
                                     new AuditTarget
                                     {
@@ -1065,12 +1065,12 @@ namespace IT.WebServices.Authentication.Services
                                         DisplayName = record.Normal.Public.Data.DisplayName
                                     }
                                 },
-                                Changes =
+                        Changes =
                                 {
                                     new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
                                     new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
                                 }
-                            },
+                    },
                             logger
                         );
 
@@ -1164,9 +1164,9 @@ namespace IT.WebServices.Authentication.Services
 
                 await auditLogHelper.TryLogEvent(
                          new AuditLogEntry
-                            {
-                                Action = ActionType.ActionUserChanged,
-                                Summary = "Admin added TOTP device to user",
+                         {
+                             Action = ActionType.ActionUserChanged,
+                             Summary = "Admin added TOTP device to user",
                              ContextName = "Authentication.GenerateOtherTotp",
                              Actor = userToken.ToAuditActor(),
                              Targets =
@@ -1609,7 +1609,7 @@ namespace IT.WebServices.Authentication.Services
                     };
 
                 // TODO: Add AmIReallyAdminCheck Here
-                
+
                 Guid.TryParse(request.UserID, out var userToModifyId);
                 if (userToModifyId == Guid.Empty)
                 {
@@ -1643,7 +1643,8 @@ namespace IT.WebServices.Authentication.Services
 
                 return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 logger.LogError(ex.Message, ex);
                 return new()
                 {
@@ -1864,6 +1865,10 @@ namespace IT.WebServices.Authentication.Services
                             StringComparison.InvariantCultureIgnoreCase
                         )
                         && !rec.Normal.Public.Data.DisplayName.Contains(
+                            searchSearchString,
+                            StringComparison.InvariantCultureIgnoreCase
+                        )
+                        && !rec.Normal.Private.Data.Email.Contains(
                             searchSearchString,
                             StringComparison.InvariantCultureIgnoreCase
                         )
