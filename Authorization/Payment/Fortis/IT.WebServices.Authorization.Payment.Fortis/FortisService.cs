@@ -23,9 +23,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis
         private readonly IGenericSubscriptionRecordProvider subscriptionProvider;
         private readonly FortisSubscriptionHelper fortisSubscriptionHelper;
         private readonly FortisTransactionHelper fortisTransactionHelper;
-        private readonly SettingsClient settingsClient;
 
-        public FortisService(ILogger<FortisService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericPaymentRecordProvider paymentProvider, IGenericSubscriptionRecordProvider subscriptionProvider, FortisSubscriptionHelper fortisSubscriptionHelper, FortisTransactionHelper fortisTransactionHelper, SettingsClient settingsClient)
+        public FortisService(ILogger<FortisService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericPaymentRecordProvider paymentProvider, IGenericSubscriptionRecordProvider subscriptionProvider, FortisSubscriptionHelper fortisSubscriptionHelper, FortisTransactionHelper fortisTransactionHelper)
         {
             this.logger = logger;
             this.fullProvider = fullProvider;
@@ -33,7 +32,6 @@ namespace IT.WebServices.Authorization.Payment.Fortis
             this.subscriptionProvider = subscriptionProvider;
             this.fortisSubscriptionHelper = fortisSubscriptionHelper;
             this.fortisTransactionHelper = fortisTransactionHelper;
-            this.settingsClient = settingsClient;
         }
 
         public override async Task<FortisFinishOwnSubscriptionResponse> FortisFinishOwnSubscription(FortisFinishOwnSubscriptionRequest request, ServerCallContext context)

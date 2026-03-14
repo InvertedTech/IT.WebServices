@@ -1,8 +1,13 @@
-﻿using IT.WebServices.Authorization.Payment.Paypal.Clients.Models;
+﻿using IT.WebServices.Authorization.Payment.Generic;
+using IT.WebServices.Authorization.Payment.Helpers.Models;
+using IT.WebServices.Authorization.Payment.Paypal.Clients.Models;
+using IT.WebServices.Authorization.Payment.Paypal.Helpers;
+using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment.Paypal;
 using IT.WebServices.Fragments.Settings;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -14,6 +19,7 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
     public class PaypalClient
     {
         private readonly SettingsHelper settings;
+        private readonly ILogger log;
 
         private readonly Dictionary<uint, PlanRecordModel> CachedPlans = new();
 
@@ -24,9 +30,10 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
 
         private object syncObject = new();
 
-        public PaypalClient(SettingsHelper settings)
+        public PaypalClient(SettingsHelper settings, ILogger<PaypalClient> log)
         {
             this.settings = settings;
+            this.log = log;
         }
 
         public bool IsEnabled => (settings.Public?.Subscription?.Paypal?.Enabled ?? false)
@@ -148,7 +155,10 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
                 if (httpRes.IsSuccessStatusCode)
                     return true;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in CancelSubscription for {subscriptionId}", subscriptionId);
+            }
 
             return false;
         }
@@ -162,10 +172,10 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
 
             while (true)
             {
-                CancellationTokenSource timeout = new CancellationTokenSource();
-                timeout.CancelAfter(30000);
+                //CancellationTokenSource timeout = new CancellationTokenSource();
+                //timeout.CancelAfter(60000);
 
-                var httpRes = await client.GetAsync(url, timeout.Token);
+                var httpRes = await client.GetAsync(url/*, timeout.Token*/);
 
                 var str = await httpRes.Content.ReadAsStringAsync();
                 if (!httpRes.IsSuccessStatusCode)
@@ -203,12 +213,15 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
                 if (httpRes.IsSuccessStatusCode)
                     return JsonSerializer.Deserialize<SubscriptionModel>(await httpRes.Content.ReadAsStringAsync());
             }
-            catch { }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in GetSubscription");
+            }
 
             return null;
         }
 
-        internal async Task<List<TransactionInfoModel>> GetTransactionsByDate(DateTimeOffset from, DateTimeOffset to)
+        internal async Task<List<ProcessorPaymentRecord>> GetTransactionsByDate(DateTimeOffset from, DateTimeOffset to)
         {
             try
             {
@@ -223,24 +236,28 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
                                ?.Where(t => t?.transaction_info != null)
                                ?.Select(t => t.transaction_info!)
                                ?.Where(t => t?.paypal_reference_id_type == "SUB" || t?.paypal_reference_id_type == "RP")
+                               ?.Select(t => t.ToProcessorPaymentRecord())
                                ?.ToList() ?? new();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in GetTransactionsByDate");
+            }
 
             return new();
         }
 
-        internal async IAsyncEnumerator<TransactionInfoModel> GetTransactionsByDateSegmented(DateTimeOffset from, DateTimeOffset to, CancellationToken token)
+        internal async IAsyncEnumerable<ProcessorPaymentRecord> GetTransactionsByDateSegmented(DateTimeOffsetRange range, CancellationToken? token = null)
         {
-            var monthFrom = from;
+            var monthFrom = range.Begin;
 
-            while (monthFrom <= to)
+            while (monthFrom < range.End)
             {
-                token.ThrowIfCancellationRequested();
+                token?.ThrowIfCancellationRequested();
 
-                var monthTo = monthFrom.AddMonths(1);
-                if (monthTo > to)
-                    monthTo = to;
+                var monthTo = monthFrom.AddDays(1);
+                if (monthTo > range.End)
+                    monthTo = range.End;
 
                 var list = await GetTransactionsByDate(monthFrom, monthTo);
                 foreach (var t in list)
@@ -268,7 +285,10 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients
                 if (httpRes.IsSuccessStatusCode)
                     return JsonSerializer.Deserialize<TransactionsModel>(str) ?? new();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in GetTransactionsForSubscription for {subscriptionId}", subscriptionId);
+            }
 
             return new();
         }

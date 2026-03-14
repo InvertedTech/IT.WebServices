@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
+namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
 {
     public class ReconcileAll : IBulkJob
     {

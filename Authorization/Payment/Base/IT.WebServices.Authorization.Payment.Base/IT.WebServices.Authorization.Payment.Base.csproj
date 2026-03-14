@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Base\IT.WebServices.Base.csproj" />
-    <ProjectReference Include="..\..\..\..\Settings\Shared\IT.WebServices.Settings.Shared.csproj" />
   </ItemGroup>
 
 </Project>

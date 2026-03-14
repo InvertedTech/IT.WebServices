@@ -73,7 +73,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis
             };
         }
 
-        public IAsyncEnumerable<GenericPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => fortisTransactionHelper.GetAllForRange(range);
+        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => fortisTransactionHelper.GetAllForRange(range);
 
         public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID)
         {

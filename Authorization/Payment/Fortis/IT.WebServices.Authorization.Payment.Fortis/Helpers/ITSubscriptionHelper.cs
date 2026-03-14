@@ -46,7 +46,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             };
 
             foreach (var t in fRec.Transactions)
-                record.Payments.Add(t.ToPaymentRecord());
+                record.Payments.Add(t.ToGenericPaymentRecord());
 
             return record;
         }

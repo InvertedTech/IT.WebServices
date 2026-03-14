@@ -2,13 +2,8 @@
 using IT.WebServices.Authentication;
 using IT.WebServices.Authorization.Payment.Generic.Data;
 using IT.WebServices.Authorization.Payment.Paypal.Clients;
-using IT.WebServices.Authorization.Payment.Paypal.Helpers;
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment.Paypal;
-using IT.WebServices.Fragments.Generic;
-using IT.WebServices.Helpers;
-using IT.WebServices.Settings;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace IT.WebServices.Authorization.Payment.Paypal
@@ -20,18 +15,14 @@ namespace IT.WebServices.Authorization.Payment.Paypal
         private readonly IGenericSubscriptionRecordProvider subProvider;
         private readonly IGenericPaymentRecordProvider paymentProvider;
         private readonly PaypalClient client;
-        private readonly ReconcileHelper reconcileHelper;
-        private readonly SettingsClient settingsClient;
 
-        public PaypalService(ILogger<PaypalService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericSubscriptionRecordProvider subProvider, IGenericPaymentRecordProvider paymentProvider, PaypalClient client, ReconcileHelper reconcileHelper, SettingsClient settingsClient)
+        public PaypalService(ILogger<PaypalService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericSubscriptionRecordProvider subProvider, IGenericPaymentRecordProvider paymentProvider, PaypalClient client)
         {
             this.logger = logger;
             this.fullProvider = fullProvider;
             this.subProvider = subProvider;
             this.paymentProvider = paymentProvider;
             this.client = client;
-            this.reconcileHelper = reconcileHelper;
-            this.settingsClient = settingsClient;
         }
 
         #region New

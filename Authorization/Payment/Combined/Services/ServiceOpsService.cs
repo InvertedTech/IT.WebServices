@@ -1,7 +1,8 @@
 using Grpc.Core;
-using Microsoft.Extensions.Logging;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using static IT.WebServices.Fragments.Generic.ServiceStatusResponse.Types;
 
@@ -9,10 +10,10 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
 {
     public class ServiceOpsService : ServiceOpsInterface.ServiceOpsInterfaceBase
     {
-        private readonly SettingsClient settingsClient;
+        private readonly SettingsHelper settingsClient;
         private readonly ILogger logger;
 
-        public ServiceOpsService(ILogger<ServiceOpsService> logger, SettingsClient settingsClient)
+        public ServiceOpsService(ILogger<ServiceOpsService> logger, SettingsHelper settingsClient)
         {
             this.settingsClient = settingsClient;
             this.logger = logger;
@@ -23,15 +24,15 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
             return Task.FromResult(new ServiceStatusResponse() { Status = ServiceStatus(settingsClient) });
         }
 
-        public static OnlineStatus ServiceStatus(SettingsClient settingsClient)
+        public static OnlineStatus ServiceStatus(SettingsHelper settingsClient)
         {
-            if (!settingsClient.PublicData.Subscription.Paypal.Enabled)
+            if (!settingsClient.Public.Subscription.Paypal.Enabled)
                 return OnlineStatus.Offline;
 
-            if (!settingsClient.PublicData.Subscription.Paypal.IsValid)
+            if (!settingsClient.Public.Subscription.Paypal.IsValid)
                 return OnlineStatus.Faulted;
 
-            if (!settingsClient.OwnerData.Subscription.Paypal.IsValid)
+            if (!settingsClient.Owner.Subscription.Paypal.IsValid)
                 return OnlineStatus.Faulted;
 
             return OnlineStatus.Online;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IT.WebServices.Authorization.Events.Data;
+using IT.WebServices.Authorization.Events.Helpers;
 using IT.WebServices.Authorization.Events.Services;
 using IT.WebServices.Authorization.Events.Services.Services;
 using IT.WebServices.Settings;

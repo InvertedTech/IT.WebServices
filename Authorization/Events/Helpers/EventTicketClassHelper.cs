@@ -1,29 +1,30 @@
 ﻿using IT.WebServices.Fragments.Authorization.Events;
+using IT.WebServices.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IT.WebServices.Settings
+namespace IT.WebServices.Authorization.Events.Helpers
 {
     public class EventTicketClassHelper
     {
-        private readonly SettingsClient _settingsClient;
+        private readonly SettingsHelper _settingsClient;
 
-        public EventTicketClassHelper(SettingsClient settingsClient)
+        public EventTicketClassHelper(SettingsHelper settingsClient)
         {
             _settingsClient = settingsClient;
         }
 
         public TicketClassRecord[] GetAll()
         {
-            return _settingsClient.PublicData?.Events?.TicketClasses?.ToArray();
+            return _settingsClient.Public?.Events?.TicketClasses?.ToArray();
         }
 
         public TicketClassRecord GetById(string id)
         {
-            return _settingsClient.PublicData?.Events?.TicketClasses?.FirstOrDefault(tc =>
+            return _settingsClient.Public?.Events?.TicketClasses?.FirstOrDefault(tc =>
                 tc.TicketClassId == id
             );
         }

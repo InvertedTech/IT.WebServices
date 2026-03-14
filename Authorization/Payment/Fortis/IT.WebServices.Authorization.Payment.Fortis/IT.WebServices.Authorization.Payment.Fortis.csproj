@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Base\IT.WebServices.Authorization.Payment.Base\IT.WebServices.Authorization.Payment.Base.csproj" />
-    <ProjectReference Include="..\..\Stripe\IT.WebServices.Authorization.Payment.Stripe.csproj" />
     <ProjectReference Include="..\Nugets\FortisAPI.Standard\FortisAPI.Standard.csproj" />
   </ItemGroup>
 

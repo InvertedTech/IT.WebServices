@@ -8,7 +8,7 @@ using IT.WebServices.Fragments.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
-namespace IT.WebServices.Authorization.Payment
+namespace IT.WebServices.Authorization.Payment.Combined.Services
 {
     [Authorize(Roles = RoleAbilities.ROLE_CAN_BACKUP)]
     public class BackupService : Fragments.Authorization.Payment.BackupInterface.BackupInterfaceBase

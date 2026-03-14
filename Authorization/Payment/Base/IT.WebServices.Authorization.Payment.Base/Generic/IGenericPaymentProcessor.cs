@@ -19,7 +19,7 @@ namespace IT.WebServices.Authorization.Payment.Generic
         Task<List<GenericSubscriptionRecord>> GetAllSubscriptions();
         bool GetAllSubscriptionsSupported { get; }
 
-        IAsyncEnumerable<GenericPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range);
+        IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range);
         bool GetAllPaymentsBetweenDatesSupported { get; }
 
         Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID);

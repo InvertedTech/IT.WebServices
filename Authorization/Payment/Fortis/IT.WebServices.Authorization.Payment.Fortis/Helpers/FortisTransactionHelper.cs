@@ -2,6 +2,8 @@
 using FortisAPI.Standard.Exceptions;
 using FortisAPI.Standard.Models;
 using IT.WebServices.Authorization.Payment.Fortis.Clients;
+using IT.WebServices.Authorization.Payment.Generic;
+using IT.WebServices.Authorization.Payment.Generic.Data;
 using IT.WebServices.Authorization.Payment.Helpers.Models;
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment.Fortis;
@@ -18,11 +20,13 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
     {
         private readonly FortisClient client;
         private readonly SettingsHelper settingsHelper;
+        private readonly IGenericSubscriptionRecordProvider localSubProvider;
 
-        public FortisTransactionHelper(FortisClient client, SettingsHelper settingsHelper)
+        public FortisTransactionHelper(FortisClient client, SettingsHelper settingsHelper, IGenericSubscriptionRecordProvider localSubProvider)
         {
             this.client = client;
             this.settingsHelper = settingsHelper;
+            this.localSubProvider = localSubProvider;
         }
 
         public async Task<GenericPaymentRecord?> CreateFromAccountValut(string accountVaultId, int fixAmount)
@@ -36,7 +40,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     Description = "Amount Fix",
                 });
 
-                return res.ToPaymentRecord();
+                return res.ToGenericPaymentRecord();
             }
             catch (Exception ex)
             {
@@ -46,7 +50,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return null;
         }
 
-        public async IAsyncEnumerable<GenericPaymentRecord> GetAllForRange(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
+        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllForRange(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
             var ranges = range.BreakIntoHours();
             foreach (var r in ranges)
@@ -60,7 +64,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             }
         }
 
-        private async Task<List<GenericPaymentRecord>> GetAll(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
+        private async Task<List<ProcessorPaymentRecord>> GetAll(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
             int errors = 0;
             int page = 1;
@@ -121,7 +125,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     throw;
             }
 
-            return ret.Select(p => p.ToPaymentRecord()).ToList();
+            return ret.Select(p => p.ToProcessorPaymentRecord()).ToList();
         }
 
         public async Task<GenericPaymentRecord?> Get(string tranId)
@@ -130,7 +134,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             {
                 var res = await client.Client.TransactionsReadController.GetTransactionAsync(tranId);
 
-                return res.Data.ToPaymentRecord();
+                return res.Data.ToGenericPaymentRecord();
             }
             catch (Exception ex)
             {
@@ -149,7 +153,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     TransactionApiId = "\"" + tranId.ToString() + "\""
                 }, null);
 
-                return res.ToPaymentRecords();
+                return res.ToGenericPaymentRecords();
             }
             catch (Exception ex)
             {
@@ -198,7 +202,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     TransactionAmount = (int)cents,
                 });
 
-                return res.ToPaymentRecord();
+                return res.ToGenericPaymentRecord();
             }
             catch (Exception ex)
             {

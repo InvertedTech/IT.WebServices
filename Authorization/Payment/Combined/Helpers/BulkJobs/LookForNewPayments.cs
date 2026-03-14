@@ -12,10 +12,11 @@ using Microsoft.Extensions.Logging;
 using IT.WebServices.Authorization.Payment.Helpers.Models;
 using System.Diagnostics;
 using FortisAPI.Standard.Models;
+using IT.WebServices.Fragments.Generic;
 
-namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
+namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
 {
-    public class LookForNewPayments : IBulkJob
+    public abstract class LookForNewPayments : IBulkJob
     {
         private readonly ILogger logger;
         private readonly IGenericSubscriptionFullRecordProvider fullProvider;
@@ -28,9 +29,7 @@ namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
         private CancellationTokenSource cancelToken = new();
         private ONUser user;
 
-        private const int DAYS_TO_LOOK_BACK = 10;
-
-        public LookForNewPayments(ILogger<LookForNewPayments> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericSubscriptionRecordProvider subProvider, IGenericPaymentRecordProvider paymentProvider, GenericPaymentProcessorProvider genericProcessorProvider, ReconcileHelper reconcileHelper)
+        public LookForNewPayments(ILogger logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericSubscriptionRecordProvider subProvider, IGenericPaymentRecordProvider paymentProvider, GenericPaymentProcessorProvider genericProcessorProvider, ReconcileHelper reconcileHelper)
         {
             this.logger = logger;
             this.fullProvider = fullProvider;
@@ -40,7 +39,8 @@ namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
             this.reconcileHelper = reconcileHelper;
         }
 
-        public PaymentBulkActionProgress Progress { get; init; } = new() { Action = PaymentBulkAction.ReconcileAll };
+        public abstract uint DaysToLookBack { get; }
+        public abstract PaymentBulkActionProgress Progress { get; init; }
 
         public void Cancel(ONUser user)
         {
@@ -69,7 +69,7 @@ namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
             try
             {
                 var now = DateTimeOffset.UtcNow;
-                var range = new DateTimeOffsetRange(now.AddDays(-DAYS_TO_LOOK_BACK), now);
+                var range = new DateTimeOffsetRange(now.AddDays(-DaysToLookBack), now);
 
                 var processors = genericProcessorProvider.AllEnabledProviders;
 
@@ -77,10 +77,17 @@ namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
                 {
                     Progress.Progress = 1F * i / processors.Length;
                     var processor = processors[i];
+
+                    Progress.StatusMessage = $"Loading {processor.ProcessorName}";
                     var payments = processor.GetAllPaymentsForDateRange(range);
 
+                    var j = 0;
                     await foreach (var payment in payments)
+                    {
+                        j++;
+                        Progress.StatusMessage = $"Loading {processor.ProcessorName} - {j}";
                         await LoadPayment(payment);
+                    }
                 }
 
                 Progress.StatusMessage = "Completed Successfully";
@@ -94,13 +101,25 @@ namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
             }
         }
 
-        private async Task LoadPayment(GenericPaymentRecord payment)
+        private async Task LoadPayment(ProcessorPaymentRecord payment)
         {
-            var localSub = await subProvider.GetByProcessorId(payment.ProcessorPaymentID);
-            if (localSub is null)
-                return;
+            var localPay = await paymentProvider.GetByProcessorId(payment.ProcessorPaymentID);
 
-            await reconcileHelper.EnsurePayment(localSub, payment, user);
+            GenericSubscriptionRecord? localSub = null;
+
+            if (localPay is not null)
+                localSub = await subProvider.GetById(localPay.UserID.ToGuid(), localPay.InternalSubscriptionID.ToGuid());
+
+            if (localSub is null)
+                localSub = await subProvider.GetByProcessorId(payment.ProcessorSubscriptionID);
+
+            if (localSub is null)
+            {
+                logger.LogWarning("Couldn't find sub {subId} for payment {payId}", payment.ProcessorSubscriptionID, payment.ProcessorPaymentID);
+                return;
+            }
+
+            await reconcileHelper.EnsurePayment(localSub, payment.ToGenericPaymentRecord(), user);
         }
     }
 }

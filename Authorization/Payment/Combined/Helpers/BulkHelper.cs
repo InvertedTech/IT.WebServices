@@ -1,16 +1,11 @@
 ﻿using IT.WebServices.Authentication;
-using IT.WebServices.Authorization.Payment.Helpers.BulkJobs;
+using IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs;
 using IT.WebServices.Fragments.Authorization.Payment;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace IT.WebServices.Authorization.Payment.Helpers
+namespace IT.WebServices.Authorization.Payment.Combined.Helpers
 {
     public class BulkHelper
     {
@@ -73,8 +68,10 @@ namespace IT.WebServices.Authorization.Payment.Helpers
         {
             switch (action)
             {
-                case PaymentBulkAction.LookForNewPayments:
-                    return serviceProvider.GetService<LookForNewPayments>();
+                case PaymentBulkAction.LookForNewPaymentsOneDay:
+                    return serviceProvider.GetService<LookForNewPaymentsOneDay>();
+                case PaymentBulkAction.LookForNewPaymentsOneMonth:
+                    return serviceProvider.GetService<LookForNewPaymentsOneMonth>();
                 case PaymentBulkAction.ReconcileAll:
                     return serviceProvider.GetService<ReconcileAll>();
             }

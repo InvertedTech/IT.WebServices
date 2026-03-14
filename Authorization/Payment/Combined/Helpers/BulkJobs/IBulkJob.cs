@@ -1,7 +1,7 @@
 ﻿using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Authorization.Payment;
 
-namespace IT.WebServices.Authorization.Payment.Helpers.BulkJobs
+namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
 {
     public interface IBulkJob
     {

@@ -8,8 +8,6 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddPaymentBaseClasses(this IServiceCollection services)
         {
-            services.AddSettingsHelpers();
-
             services.AddSingleton<MySQLHelper>();
 
             services.AddSingleton<GenericPaymentProcessorProvider>();

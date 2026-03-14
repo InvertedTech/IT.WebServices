@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using IT.WebServices.Authorization.Payment.Generic;
 using IT.WebServices.Fragments.Authorization.Payment;
 using Stripe;
 using System;
@@ -9,22 +10,56 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Helpers
 {
     internal static class ITPaymentHelper
     {
-        public static GenericPaymentRecord ToPaymentRecord(this Invoice pRec)
+        public static GenericPaymentRecord ToGenericPaymentRecord(this Invoice pRec)
         {
             var createdOn = pRec.Created;
             var paidThru = createdOn.AddMonths(1).AddDays(2);
+
+            var subTotal = (uint)pRec.Subtotal;
+            var total = (uint)pRec.Total;
+            var tax = total - subTotal;
+            var taxRate = 1.0 * tax / subTotal;
+            var taxRatePercent = taxRate * 100;
+
             return new()
             {
                 ProcessorPaymentID = pRec.Id,
                 Status = ConvertStatus(pRec.Status),
-                AmountCents = (uint)(pRec.AmountPaid),
-                TaxCents = 0,
-                TaxRateThousandPercents = 0,
-                TotalCents = (uint)(pRec.AmountPaid),
+                AmountCents = subTotal,
+                TaxCents = tax,
+                TaxRateThousandPercents = (uint)(taxRatePercent * 1000),
+                TotalCents = total,
                 CreatedOnUTC = Timestamp.FromDateTime(pRec.Created),
                 ModifiedOnUTC = Timestamp.FromDateTime(pRec.Created),
                 PaidOnUTC = Timestamp.FromDateTime(pRec.Created),
                 PaidThruUTC = Timestamp.FromDateTime(paidThru),
+            };
+        }
+
+        public static ProcessorPaymentRecord ToProcessorPaymentRecord(this Invoice pRec)
+        {
+            var createdOn = pRec.Created;
+            var paidThru = createdOn.AddMonths(1).AddDays(2);
+
+            var subTotal = (uint)pRec.Subtotal;
+            var total = (uint)pRec.Total;
+            var tax = total - subTotal;
+            var taxRate = 1.0 * tax / subTotal;
+            var taxRatePercent = taxRate * 100;
+
+            return new()
+            {
+                ProcessorSubscriptionID = pRec.Parent.SubscriptionDetails.SubscriptionId,
+                ProcessorPaymentID = pRec.Id,
+                Status = ConvertStatus(pRec.Status),
+                AmountCents = subTotal,
+                TaxCents = tax,
+                TaxRateThousandPercents = (uint)(taxRatePercent * 1000),
+                TotalCents = total,
+                CreatedOnUTC = new DateTimeOffset(pRec.Created, TimeSpan.Zero),
+                ModifiedOnUTC = new DateTimeOffset(pRec.Created, TimeSpan.Zero),
+                PaidOnUTC = new DateTimeOffset(pRec.Created, TimeSpan.Zero),
+                PaidThruUTC = new DateTimeOffset(paidThru, TimeSpan.Zero),
             };
         }
 

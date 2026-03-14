@@ -117,6 +117,7 @@ namespace IT.WebServices.Authentication.Services
                         else
                         {
                             await dataProvider.Save(r.Record.Data);
+                            Console.WriteLine(r.Record.Data.Normal.Private.Data.OldUserID);
                             res.NumUsersRestored++;
                         }
                     }

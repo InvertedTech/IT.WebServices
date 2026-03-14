@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
-namespace IT.WebServices.Authorization.Payment.Helpers
+namespace IT.WebServices.Authorization.Payment.Combined.Helpers
 {
     public class ReconcileHelper
     {
@@ -161,6 +161,7 @@ namespace IT.WebServices.Authorization.Payment.Helpers
                 localSub.ModifiedBy = user.Id.ToString();
                 localSub.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
 
+                logger.LogInformation("Updating sub {subId}", localSub.ProcessorSubscriptionID);
                 await subProvider.Save(localSub);
             }
         }
@@ -199,20 +200,21 @@ namespace IT.WebServices.Authorization.Payment.Helpers
                 changed = true;
             }
 
-            if (localSub.TotalCents != localPayment.TotalCents)
-            {
-                localPayment.AmountCents = localSub.AmountCents;
-                localPayment.TaxCents = localSub.TaxCents;
-                localPayment.TaxRateThousandPercents = localSub.TaxRateThousandPercents;
-                localPayment.TotalCents = localSub.TotalCents;
-                changed = true;
-            };
+            //if (localSub.TotalCents != localPayment.TotalCents)
+            //{
+            //    localPayment.AmountCents = localSub.AmountCents;
+            //    localPayment.TaxCents = localSub.TaxCents;
+            //    localPayment.TaxRateThousandPercents = localSub.TaxRateThousandPercents;
+            //    localPayment.TotalCents = localSub.TotalCents;
+            //    changed = true;
+            //}
 
             if (changed)
             {
                 localPayment.ModifiedBy = user.Id.ToString();
                 localPayment.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
 
+                logger.LogInformation("Updating payment {payId}", localPayment.ProcessorPaymentID);
                 await paymentProvider.Save(localPayment);
             }
         }
@@ -236,6 +238,7 @@ namespace IT.WebServices.Authorization.Payment.Helpers
                 processorPayment.TotalCents = localSub.TotalCents;
             }
 
+            logger.LogInformation("Creating payment {payId}", processorPayment.ProcessorPaymentID);
             await paymentProvider.Save(processorPayment);
         }
 
@@ -253,6 +256,7 @@ namespace IT.WebServices.Authorization.Payment.Helpers
             processorSubscription.CreatedBy = user.Id.ToString();
             processorSubscription.CreatedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
 
+            logger.LogInformation("Creating sub {subId}", processorSubscription.ProcessorSubscriptionID);
             await subProvider.Save(processorSubscription);
         }
 
@@ -278,13 +282,16 @@ namespace IT.WebServices.Authorization.Payment.Helpers
 
                     await foreach (var payment in payments)
                     {
-                        if (!innerHashSetOfProcessorSubIds.Contains(payment.InternalSubscriptionID))
+                        if (!innerHashSetOfProcessorSubIds.Contains(payment.ProcessorSubscriptionID))
                         {
-                            innerHashSetOfProcessorSubIds.Add(payment.InternalSubscriptionID);
+                            innerHashSetOfProcessorSubIds.Add(payment.ProcessorSubscriptionID);
 
                             var processorSub = HallucinateSubscriptionFromPayment(payment);
                             if (processorSub is not null)
+                            {
+                                processorSub.ProcessorName = processor.ProcessorName;
                                 list.Add(processorSub);
+                            }
                         }
                     }
                 }
@@ -302,9 +309,16 @@ namespace IT.WebServices.Authorization.Payment.Helpers
             return provider.GetMissingUserIdForSubscription(processorSubscription);
         }
 
-        private GenericSubscriptionRecord? HallucinateSubscriptionFromPayment(GenericPaymentRecord payment)
+        private GenericSubscriptionRecord? HallucinateSubscriptionFromPayment(ProcessorPaymentRecord payment)
         {
-            return null;
+            return new()
+            {
+                ProcessorSubscriptionID = payment.ProcessorSubscriptionID,
+                AmountCents = payment.AmountCents,
+                TaxCents = payment.TaxCents,
+                TaxRateThousandPercents = payment.TaxRateThousandPercents,
+                TotalCents = payment.TotalCents,
+            };
         }
     }
 }

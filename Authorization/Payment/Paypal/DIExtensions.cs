@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Authorization.Payment.Paypal;
+﻿using IT.WebServices.Authorization.Payment.Generic;
+using IT.WebServices.Authorization.Payment.Paypal;
 using IT.WebServices.Authorization.Payment.Paypal.Clients;
 using IT.WebServices.Authorization.Payment.Paypal.Helpers;
 using IT.WebServices.Helpers;
@@ -12,13 +13,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddPaypalClasses(this IServiceCollection services)
         {
             services.AddPaymentBaseClasses();
-            services.AddSettingsHelpers();
 
             services.AddSingleton<SettingsHelper>();
 
-            services.AddSingleton<ReconcileHelper>();
-
             services.AddSingleton<PaypalClient>();
+
+            services.AddSingleton<IGenericPaymentProcessor, PaypalGenericPaymentProcessor>();
 
             return services;
         }

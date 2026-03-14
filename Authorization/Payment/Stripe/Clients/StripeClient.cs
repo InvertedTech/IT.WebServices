@@ -1,20 +1,22 @@
 ﻿using IT.WebServices.Authentication;
+using IT.WebServices.Authorization.Payment.Generic;
 using IT.WebServices.Authorization.Payment.Helpers.Models;
 using IT.WebServices.Authorization.Payment.Stripe.Data;
 using IT.WebServices.Authorization.Payment.Stripe.Helpers;
+using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Authorization.Payment;
-using IT.WebServices.Fragments.Authorization.Payment.Stripe;
 using IT.WebServices.Fragments.Authorization.Payment;
-using Stripe;
+using IT.WebServices.Fragments.Authorization.Payment.Stripe;
+using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Helpers;
 using IT.WebServices.Models;
 using IT.WebServices.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
+using Stripe;
 using Stripe.Checkout;
-using IT.WebServices.Fragments.Generic;
-using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 {
@@ -29,7 +31,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private readonly AppSettings settings;
         private readonly IProductRecordProvider recordProvider;
         private readonly ILogger<StripeClient> logger;
-        private readonly SettingsClient settingsClient;
+        private readonly SettingsHelper settingsClient;
 
         private global::Stripe.Checkout.SessionService checkoutService = new();
         private CustomerService customerService = new();
@@ -44,7 +46,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             ILogger<StripeClient> logger,
             IOptions<AppSettings> settings,
             IProductRecordProvider recordProvider,
-            SettingsClient settingsClient
+            SettingsHelper settingsClient
         )
         {
             this.settings = settings.Value;
@@ -55,15 +57,15 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             if (IsEnabled)
             {
                 // Set Client Secret
-                StripeConfiguration.ApiKey = settingsClient?.OwnerData?.Subscription?.Stripe?.ClientSecret ?? "";
+                StripeConfiguration.ApiKey = settingsClient.Owner.Subscription?.Stripe?.ClientSecret ?? "";
 
                 Products = recordProvider.GetAll().Result;
                 EnsureProducts();
             }
         }
 
-        public bool IsEnabled => settingsClient?.PublicData?.Subscription?.Stripe?.Enabled ?? false && IsSettingsValid;
-        private bool IsSettingsValid => settingsClient?.OwnerData?.Subscription?.Stripe?.IsValid() ?? false;
+        public bool IsEnabled => settingsClient.Public?.Subscription?.Stripe?.Enabled ?? false && IsSettingsValid;
+        private bool IsSettingsValid => settingsClient.Owner?.Subscription?.Stripe?.IsValid() ?? false;
 
 
         public async Task<Product?> EnsureOneTimeProduct(StripeEnsureOneTimeProductRequest request)
@@ -437,7 +439,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 {
                     if (transaction == null) continue;
 
-                    list.Add(transaction.ToPaymentRecord());
+                    list.Add(transaction.ToGenericPaymentRecord());
                 }
             }
             catch
@@ -446,7 +448,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return list;
         }
 
-        public async IAsyncEnumerable<GenericPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range)
+        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range)
         {
             if (!IsEnabled)
                 yield break;
@@ -463,7 +465,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             {
                 if (transaction == null) continue;
 
-                yield return transaction.ToPaymentRecord();
+                yield return transaction.ToProcessorPaymentRecord();
             }
         }
 
@@ -486,7 +488,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 {
                     if (transaction == null) continue;
 
-                    list.Add(transaction.ToPaymentRecord());
+                    list.Add(transaction.ToGenericPaymentRecord());
                 }
             }
             catch
@@ -603,7 +605,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             var stripePrices = priceService.List().Where(p => p.ProductId.StartsWith(PRODUCT_SUBSCRIPTION_PREFIX)).ToList();
             logger.LogWarning($"****PRODS: {stripeProducts}");
 
-            var tiers = settingsClient.PublicData.Subscription.Tiers.ToList();
+            var tiers = settingsClient.Public.Subscription.Tiers.ToList();
             List<ProductRecord> goodList = new();
             foreach (var t in tiers)
             {
@@ -795,6 +797,18 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 };
 
                 record.Payments.AddRange(await GetAllPaymentsForSubscription(processorSubscriptionID));
+
+                var lastPayment = record.Payments.OrderByDescending(p => p.PaidOnUTC).FirstOrDefault();
+                if (lastPayment is not null)
+                {
+                    if (lastPayment.TotalCents != sub.TotalCents)
+                    {
+                        sub.AmountCents = lastPayment.AmountCents;
+                        sub.TaxCents = lastPayment.TaxCents;
+                        sub.TaxRateThousandPercents = lastPayment.TaxRateThousandPercents;
+                        sub.TotalCents = lastPayment.TotalCents;
+                    }
+                }
 
                 return record;
             }

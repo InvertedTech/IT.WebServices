@@ -526,9 +526,8 @@ namespace IT.WebServices.Authentication.Services.Data
 
                 await sql.RunCmd(query, parameters);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                log.LogError(ex, "Error in SqlUserDataProvider.InsertOrUpdateTotp");
             }
         }
 

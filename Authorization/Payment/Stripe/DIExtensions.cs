@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Authorization.Payment.Stripe;
+﻿using IT.WebServices.Authorization.Payment.Generic;
+using IT.WebServices.Authorization.Payment.Stripe;
 using IT.WebServices.Authorization.Payment.Stripe.Clients;
 using IT.WebServices.Authorization.Payment.Stripe.Data;
 using IT.WebServices.Helpers;
@@ -12,12 +13,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddStripeClasses(this IServiceCollection services)
         {
             services.AddPaymentBaseClasses();
-            services.AddSettingsHelpers();
 
             services.AddSingleton<MySQLHelper>();
 
             services.AddSingleton<StripeClient>();
             services.AddSingleton<IProductRecordProvider, FileSystemProductRecordProvider>();
+
+            services.AddSingleton<IGenericPaymentProcessor, StripeGenericPaymentProcessor>();
 
             return services;
         }

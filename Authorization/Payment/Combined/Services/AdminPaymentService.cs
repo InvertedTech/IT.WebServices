@@ -1,15 +1,14 @@
 ﻿using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 using IT.WebServices.Authentication;
+using IT.WebServices.Authorization.Payment.Combined.Helpers;
+using IT.WebServices.Authorization.Payment.Generic;
 using IT.WebServices.Authorization.Payment.Generic.Data;
-using IT.WebServices.Authorization.Payment.Generic;                                                                     
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using ManualD = IT.WebServices.Authorization.Payment.Manual.Data;
-using StripeD = IT.WebServices.Authorization.Payment.Stripe.Data;
-using IT.WebServices.Authorization.Payment.Helpers;
 
 namespace IT.WebServices.Authorization.Payment.Combined.Services
 {

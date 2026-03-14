@@ -46,13 +46,13 @@ namespace IT.WebServices.Authorization.Payment.Paypal.Clients.Models
         public string? paypal_reference_id_type { get; set; }
         public AmountModel? transaction_amount { get; set; }
         public string? transaction_initiation_date { get; set; }
-        public DateTimeOffset? transaction_initiation_date_UTC
+        public DateTimeOffset transaction_initiation_date_UTC
         {
             get
             {
                 if (DateTimeOffset.TryParse(transaction_initiation_date, out var date))
                     return date;
-                return null;
+                return DateTimeOffset.MinValue;
             }
         }
 

@@ -65,7 +65,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe
             };
         }
 
-        public IAsyncEnumerable<GenericPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => stripeClient.GetAllPaymentsForDateRange(range);
+        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => stripeClient.GetAllPaymentsForDateRange(range);
 
         public Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID) => stripeClient.GetAllPaymentsForSubscription(processorSubscriptionID);
 

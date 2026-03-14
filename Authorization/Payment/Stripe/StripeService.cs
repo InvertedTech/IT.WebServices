@@ -21,15 +21,13 @@ namespace IT.WebServices.Authorization.Payment.Stripe
         private readonly IGenericSubscriptionRecordProvider subscriptionProvider;
         private readonly IGenericPaymentRecordProvider paymentProvider;
         private readonly StripeClient client;
-        private readonly SettingsClient settingsClient;
 
         public StripeService(
             ILogger<StripeService> logger,
             IGenericSubscriptionFullRecordProvider fullProvider,
             IGenericSubscriptionRecordProvider subscriptionProvider,
             IGenericPaymentRecordProvider paymentProvider,
-            StripeClient client,
-            SettingsClient settingsClient
+            StripeClient client
         )
         {
             this.logger = logger;
@@ -37,7 +35,6 @@ namespace IT.WebServices.Authorization.Payment.Stripe
             this.subscriptionProvider = subscriptionProvider;
             this.paymentProvider = paymentProvider;
             this.client = client;
-            this.settingsClient = settingsClient;
         }
 
         //[Authorize(Roles = ONUser.ROLE_IS_ADMIN_OR_OWNER)]
