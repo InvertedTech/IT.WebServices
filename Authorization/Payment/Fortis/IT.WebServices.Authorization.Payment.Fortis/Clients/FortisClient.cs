@@ -15,23 +15,22 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
         private readonly SettingsHelper settingsHelper;
         private readonly AppSettings appSettings;
         private readonly ILogger logger;
+        private readonly SettingsHelper settingsClient;
 
         public readonly FortisAPI.Standard.FortisAPIClient Client;
 
-        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger)
+        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger, SettingsHelper settingsClient)
         {
             this.settingsHelper = settingsHelper;
             this.appSettings = appSettings.Value;
             this.logger = logger;
-
-            logger.LogWarning("FortisDeveloperId: {FortisDeveloperId}", this.appSettings.FortisDeveloperId);
-            logger.LogWarning("UserID: {UserID}", settingsHelper.Owner.Subscription.Fortis.UserID);
-            logger.LogWarning("UserApiKey: {UserApiKey}", settingsHelper.Owner.Subscription.Fortis.UserApiKey);
-            logger.LogWarning("LocationID: {LocationID}", settingsHelper.Owner.Subscription.Fortis.LocationID);
-            logger.LogWarning("ProductID: {ProductID}", settingsHelper.Owner.Subscription.Fortis.ProductID);
+            this.settingsClient = settingsClient;
 
             Client = GetClient();
         }
+
+        public bool IsEnabled => settingsClient.Public?.Subscription?.Stripe?.Enabled ?? false && IsSettingsValid;
+        private bool IsSettingsValid => settingsClient.Owner?.Subscription?.Stripe?.IsValid() ?? false;
 
         private FortisAPI.Standard.FortisAPIClient GetClient()
         {
@@ -44,8 +43,11 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             return client;
         }
 
-        public async Task<FortisNewDetails> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<FortisNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
         {
+            if (!IsEnabled)
+                return null;
+
             ElementsController elementsController = Client.ElementsController;
             var body = new V1ElementsTransactionIntentionRequest()
             {
@@ -66,7 +68,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             {
                 logger.LogError(ex, "Error in GetNewDetails");
 
-                return new();
+                return null;
             }
         }
     }
