@@ -14,7 +14,7 @@ namespace IT.WebServices.Fragments.Authorization.Payment
 
         public void CalculateRecords()
         {
-            var last = Payments.OrderBy(p => p.PaidOnUTC).LastOrDefault();
+            var last = Payments.Where(p => p.Status == PaymentStatus.PaymentComplete).OrderBy(p => p.PaidOnUTC).LastOrDefault();
             if (last == null)
                 return;
 
