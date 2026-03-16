@@ -257,7 +257,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return createdPrice;
         }
 
-        public async Task<StripeNewDetails?> GetNewDetails(uint level, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<StripeNewDetails?> GetNewDetails(uint level, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
         {
             if (!IsEnabled)
                 return null;

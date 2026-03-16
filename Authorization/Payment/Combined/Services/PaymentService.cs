@@ -81,7 +81,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
         {
             try
             {
-                if (request == null)
+                if (request is null)
                     return new();
                 if (string.IsNullOrWhiteSpace(request.SuccessUrl))
                     return new();
@@ -92,14 +92,14 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                 if (userToken == null)
                     return new();
 
-                var level = request?.Level ?? 0;
+                var level = request.Level;
                 if (level == 0)
                     return new();
 
                 return new()
                 {
-                    Fortis = await fortisClient.GetNewDetails(level, request!.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl),
-                    Stripe = await stripeClient.GetNewDetails(level, userToken, request!.SuccessUrl, request!.CancelUrl),
+                    Fortis = await fortisClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl),
+                    Stripe = await stripeClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl),
                 };
             }
             catch (Exception ex)
@@ -177,7 +177,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                 var records = await genericOneTimeProvider.GetAllByUserId(userToken.Id).ToList();
 
                 var res = new GetOneTimeRecordsResponse();
-                res.Generic.AddRange(records);
+                res.Generic.AddRange(records.OrderByDescending(p => p.PaidOnUTC));
 
                 return res;
             }
@@ -241,7 +241,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     res.Manual.AddRange(manualT.Result);
 
                 if (baseT.Result != null)
-                    res.Generic.AddRange(baseT.Result);
+                    res.Generic.AddRange(baseT.Result.OrderByDescending(s => s.LastPaidUTC));
 
                 return res;
             }

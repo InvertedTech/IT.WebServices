@@ -180,7 +180,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                 var records = await genericOneTimeProvider.GetAllByUserId(userId).ToList();
 
                 var res = new GetOneTimeRecordsResponse();
-                res.Generic.AddRange(records);
+                res.Generic.AddRange(records.OrderByDescending(p => p.PaidOnUTC));
 
                 return res;
             }
@@ -255,7 +255,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     res.Manual.AddRange(manualT.Result);
 
                 if (baseT.Result != null)
-                    res.Generic.AddRange(baseT.Result);
+                    res.Generic.AddRange(baseT.Result.OrderByDescending(s => s.LastPaidUTC));
 
                 return res;
             }
