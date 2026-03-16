@@ -102,7 +102,9 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                         Payment_Generic_Payment
                     WHERE
                         UserID = @UserID
-                        AND InternalSubscriptionID = @InternalSubscriptionID;
+                        AND InternalSubscriptionID = @InternalSubscriptionID
+                    ORDER BY
+                        PaidOnUTC DESC
                 ";
 
             var parameters = new MySqlParameter[]
@@ -130,7 +132,9 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                     FROM
                         Payment_Generic_Payment
                     WHERE
-                        UserID = @UserID;
+                        UserID = @UserID
+                    ORDER BY
+                        PaidOnUTC DESC
                 ";
 
             var parameters = new MySqlParameter[]
