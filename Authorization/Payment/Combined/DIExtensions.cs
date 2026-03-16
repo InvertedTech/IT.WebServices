@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<LookForNewPaymentsOneDay>();
             services.AddSingleton<LookForNewPaymentsOneMonth>();
+            services.AddSingleton<LookForNewPaymentsOneWeek>();
             services.AddSingleton<ReconcileAll>();
 
             return services;

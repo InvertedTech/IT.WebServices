@@ -84,6 +84,8 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
                     var j = 0;
                     await foreach (var payment in payments)
                     {
+                        cancelToken.Token.ThrowIfCancellationRequested();
+
                         j++;
                         Progress.StatusMessage = $"Loading {processor.ProcessorName} - {j}";
                         await LoadPayment(payment);

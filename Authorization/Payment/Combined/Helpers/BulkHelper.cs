@@ -72,6 +72,8 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                     return serviceProvider.GetService<LookForNewPaymentsOneDay>();
                 case PaymentBulkAction.LookForNewPaymentsOneMonth:
                     return serviceProvider.GetService<LookForNewPaymentsOneMonth>();
+                case PaymentBulkAction.LookForNewPaymentsOneWeek:
+                    return serviceProvider.GetService<LookForNewPaymentsOneWeek>();
                 case PaymentBulkAction.ReconcileAll:
                     return serviceProvider.GetService<ReconcileAll>();
             }
