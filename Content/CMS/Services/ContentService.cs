@@ -1,19 +1,19 @@
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
+using IT.WebServices.AuditLog;
+using IT.WebServices.Authentication;
+using IT.WebServices.Content.CMS.Services.Data;
+using IT.WebServices.Content.CMS.Services.Helpers;
+using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.AuditLog;
+using IT.WebServices.Fragments.Content;
+using IT.WebServices.Fragments.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using IT.WebServices.Authentication;
-using IT.WebServices.Content.CMS.Services.Data;
-using IT.WebServices.Content.CMS.Services.Helpers;
-using IT.WebServices.Fragments.Content;
-using IT.WebServices.Fragments.Generic;
-using IT.WebServices.Fragments;
-using IT.WebServices.AuditLog;
-using IT.WebServices.Fragments.AuditLog;
 
 namespace IT.WebServices.Content.CMS.Services
 {
@@ -197,6 +197,21 @@ namespace IT.WebServices.Content.CMS.Services
                 logger    
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
+        public override async Task DumpAllContentAdmin(DumpAllContentAdminRequest request, IServerStreamWriter<ContentRecord> responseStream, ServerCallContext context)
+        {
+            await foreach (var rec in dataProvider.GetAll())
+            {
+                if (request.ContentType != ContentType.ContentNone)
+                {
+                    if (rec.Public.Data.GetContentType() != request.ContentType)
+                        continue;
+                }
+
+                await responseStream.WriteAsync(rec);
+            }
         }
 
         [AllowAnonymous]

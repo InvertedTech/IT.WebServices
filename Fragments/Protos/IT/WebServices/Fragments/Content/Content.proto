@@ -31,6 +31,9 @@ service ContentInterface {
       delete: "/api/cms/admin/content/{ContentID}"
     };
   }
+  rpc DumpAllContentAdmin (DumpAllContentAdminRequest) returns (stream ContentRecord)
+  {
+  }
   rpc GetAllContent (GetAllContentRequest) returns (GetAllContentResponse)
   {
     option (google.api.http) = {
@@ -148,7 +151,11 @@ message DeleteContentResponse {
   ContentRecord Record = 1;
   APIError Error = 2;
 }
-  
+
+message DumpAllContentAdminRequest {
+  ContentType ContentType = 11;
+}
+
 message GetAllContentRequest {
   uint32 PageSize = 1;
   uint32 PageOffset = 2;
