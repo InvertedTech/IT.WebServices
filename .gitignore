@@ -406,3 +406,4 @@ tmpdata/
 # Temporary during pack
 Fragments/.README.repo.bak
 /Authentication/Microsoft/appsettings.Development.json
+/Authorization/Discord/appsettings.Development.json

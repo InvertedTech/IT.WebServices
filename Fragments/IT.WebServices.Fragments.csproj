@@ -12,6 +12,8 @@
     <None Remove="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Discord\DiscordInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Discord\DiscordRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventRecord.proto" />
@@ -90,6 +92,8 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogEntry.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Discord\DiscordInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Discord\DiscordRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventRecord.proto" />

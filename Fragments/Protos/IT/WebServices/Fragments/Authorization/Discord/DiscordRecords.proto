@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Discord;
+
+import "google/protobuf/timestamp.proto";
+
+// TODO: Split Into DiscordMemberPublicRecord and DiscordMemberPrivateRecord
+message DiscordMemberRecord {
+	string PlatformUserId = 1;												// References the UserRecord.UserID property
+	string DiscordUserId = 2;												// User's Discord Account Global Id
+	string DiscordUserName = 3;											// User's Discord Account Global UserName
+	uint32 CurrentLevelCents = 4;											// References The Amount the User Is Subscribed For
+	google.protobuf.Timestamp ExpiresOnUTC = 5;				// References The DateTimeUTC This Subscription Expires
+	string InternalSubscriptionId = 6;									// Reference To The User's Internal Subscription Record (If Any)
+	repeated string Tiers = 7;												// Stores the Subscription Tiers That Apply To This User
+	google.protobuf.Timestamp CreatedOnUTC = 8;			// DateTimeUTC When This Record Was Created
+	google.protobuf.Timestamp ModifiedOnUTC = 9;			// DateTimeUTC When This Record Was Modified
+	google.protobuf.Timestamp BannedOnUTC = 10;			// DateTimeUTC When This Member Was Banned
+	string BannedByDiscordId = 11;										// Discord ID of the Mod/Admin That Banned This Member
+	string BannedReason = 12;												// Reason This Member Was Banned
+}
+
+message DiscordAuthLogRecord {
+	string PlatformUserId = 1;												// References the UserRecord.UserID property
+	string DiscordUserId = 2;												// User's Discord Account Global Id
+	string DiscordUserName = 3;											// User's Discord Account Global UserName
+	string AuthCode = 6;														// Auth Code Emailed To The User After Link
+	google.protobuf.Timestamp CreatedOnUTC = 5;			// DateTimeUTC When This Record Was Created
+}
+
+enum ShunStatus {
+	SHUN_ACTIVE = 0;
+	SHUN_INACTIVE = 1;
+}
+
+message DiscordShunRecord {
+	string ShunId = 1;															// GUID For this Record
+	string PlatformUserId = 2;												// References the UserRecord.UserID property
+	string DiscordUserId = 3;												// User's Discord Account Global Id
+	string ShunnedByDiscordId = 4;										// Discord Id of the User Invoked the Shun Command
+	string Reason = 5;															// Reason User Was Shunned
+	ShunStatus Status = 6;														// Status of this Shun Record
+	google.protobuf.Timestamp CreatedOnUTC =7;			// DateTimeUTC When This Record Was Created
+	google.protobuf.Timestamp ModifiedOnUTC = 8;			// DateTimeUTC When This Record Was Modified
+	google.protobuf.Timestamp UnShunnedOnUTC = 9;		// DateTimeUTC When This Record Was Modified
+	string UnShunnedByDiscordID = 10;								// Discord Id Of The Mod/Admin That UnShunned The User
+}
+
+enum TicketStatus {
+	TICKET_OPEN = 0;
+	TICKET_CLOSED = 1;
+}
+
+// TODO: Add Messages sent in thread
+message DiscordTicketRecord {
+	string TicketId = 1;															// Guid For This Record
+	string DiscordUserId = 2;												// User's Discord Account Global Id
+	string DiscordUserName = 3;											// User's Discord Account Global UserName
+	string PlatformUserId = 4;												// References The UserRecord.UserID property
+	string ThreadId = 5;															// Discord thread snowflake ID
+	TicketStatus Status = 6;													// Status of this Ticket Record
+	string Subject = 7;															// Subject Line For This Ticket
+	string Text = 8;																	// Body Text For This Ticket
+	google.protobuf.Timestamp CreatedOnUTC = 9;			// DateTimeUTC When This Record Was Created
+	google.protobuf.Timestamp ModifiedOnUTC = 10;		// DateTimeUTC When This Record Was Modified
+	google.protobuf.Timestamp ClosedOnUTC = 11;			// DateTimeUTC When This Record Was Closed
+	string ClosedByDiscordId = 12;										// Discord ID of the User That Closed This Ticket
+}
+

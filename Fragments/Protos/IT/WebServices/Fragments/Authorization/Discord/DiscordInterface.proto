@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Discord;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Discord/DiscordRecords.proto";
+
+// TODO: Split Into DiscordInterface and AdminDiscordInterface
+service DiscordInterface {
+	rpc CreateMemberRecord (CreateMemberRecordRequest) returns (CreateMemberRecordResponse) {};
+	rpc ModifyMemberRecord (ModifyMemberRecordRequest) returns (ModifyMemberRecordResponse) {};
+	rpc GetMemberByPlatformId (GetMemberByPlatformIdRequest) returns (GetMemberResponse) {};
+	rpc GetMemberByDiscordId (GetMemberByDiscordIdRequest) returns (GetMemberResponse) {};
+	rpc GetMembers (GetMembersRequest) returns (GetMembersResponse) {};
+	rpc BanMember (BanMemberRequest) returns (BanMemberResponse) {};
+	rpc ShunDiscordMember (ShunDiscordMemberRequest) returns (ShunDiscordMemberResponse) {};
+	rpc UnShunDiscordMember (UnShunDiscordMemberRequest) returns (UnShunDiscordMemberResponse) {};
+	rpc GetUserShuns (GetUserShunsRequest) returns (GetUserShunsResponse) {};
+	rpc CreateTicket (CreateTicketRequest) returns (CreateTicketResponse) {};
+	rpc CloseTicket (CloseTicketRequest) returns (CloseTicketResponse) {};
+	rpc GetTickets (GetTicketsRequest) returns (GetTicketsResponse) {};
+}
+
+message CreateMemberRecordRequest {
+	string PlatformUserId = 1;												// References the UserRecord.UserID property
+	string DiscordUserId = 2;												// User's Discord Account Global Id
+	string DiscordUserName = 3;											// User's Discord Account Global UserName
+	uint32 CurrentLevelCents = 4;											// References The Amount the User Is Subscribed For
+	google.protobuf.Timestamp ExpiresOnUTC = 5;				// References The DateTimeUTC This Subscription Expires
+	string InternalSubscriptionId = 6;									// Reference To The User's Internal Subscription Record (If Any)
+	repeated string Tiers = 7;												// Stores the Subscription Tiers That Apply To This User
+}
+
+message CreateMemberRecordResponse {
+	DiscordMemberRecord Record = 1;
+	APIError Error = 2;
+}
+
+message ModifyMemberRecordRequest {
+	string PlatformUserId = 1;												// References The UserRecord.UserID property
+	DiscordMemberRecord Record = 2;								// Record Of The Member To Modify
+}
+
+message ModifyMemberRecordResponse {
+	DiscordMemberRecord Record = 1;
+	APIError Error = 2;
+}
+
+message GetMemberByPlatformIdRequest {
+	string PlatformUserId = 1;
+}
+
+message GetMemberByDiscordIdRequest {
+	string DiscordUserId = 1;
+}
+
+message GetMemberResponse {
+	DiscordMemberRecord Record = 1;
+	APIError Error = 2;
+}
+
+message GetMembersRequest {
+	string PossibleUserPlatformIds =1;
+	string PossibleUserDiscordIds = 2;
+	bool IncludeShunned = 3;
+	bool IncludeBanned = 4;
+	uint32 PageSize = 5;
+	uint32 PageOffset = 6;
+	google.protobuf.Timestamp ExpiredOnUTC = 7;
+}
+
+message GetMembersResponse {
+	repeated DiscordMemberRecord Record = 1;
+	uint32 PageTotalItems = 2;
+	uint32 PageOffsetStart = 3;
+	uint32 PageOffsetEnd = 4;
+	APIError Error = 5;
+}
+
+message BanMemberRequest {
+	string PlatformUserId = 1;
+	string DiscordUserId = 2;
+	string BannedReason = 3;
+}
+
+message BanMemberResponse {
+	APIError Error = 1;
+}
+
+message ShunDiscordMemberRequest {
+	string PlatformUserId = 1;
+	string DiscordUserId = 2;
+	string ShunnedByDiscordId = 3;
+	string Reason = 4;
+}
+
+message ShunDiscordMemberResponse {
+	DiscordShunRecord Record = 1;
+	APIError Error = 2;
+}
+
+message UnShunDiscordMemberRequest {
+	string PlatformUserId = 1;
+	string DiscordUserId = 2;
+	string ShunId = 3;
+}
+
+message UnShunDiscordMemberResponse {
+	APIError Error = 1;
+}
+
+message GetUserShunsRequest {
+	string PlatformUserId = 1;
+	bool IncludeInactive = 2;
+	uint32 PageSize = 3;
+	uint32 PageOffset = 4;
+}
+
+message GetUserShunsResponse {
+	repeated DiscordShunRecord Records = 1;
+	uint32 PageTotalItems = 2;
+	uint32 PageOffsetStart = 3;
+	uint32 PageOffsetEnd = 4;
+	APIError Error = 5;
+}
+
+message CreateTicketRequest {
+	string DiscordUserId = 1;
+	string DiscordUserName = 2;
+	string PlatformUserId = 3;
+	string Subject = 4;
+	string Text = 5;
+}
+
+message CreateTicketResponse {
+	DiscordTicketRecord Record = 1;
+	APIError Error = 2;
+}
+
+message CloseTicketRequest {
+	string TicketId = 1;
+	string ClosedById = 2;
+}
+
+message CloseTicketResponse {
+	DiscordTicketRecord Record = 1;
+	APIError Error = 2;
+}
+
+message GetTicketsRequest {
+	bool IncludeClosed = 1;
+	string DiscordUserId = 2;
+	uint32 PageSize = 3;
+	uint32 PageOffset = 4;
+}
+
+message GetTicketsResponse {
+	repeated DiscordTicketRecord Records = 1;
+	uint32 PageTotalItems = 2;
+	uint32 PageOffsetStart = 3;
+	uint32 PageOffsetEnd = 4;
+	APIError Error = 5;
+}
