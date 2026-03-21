@@ -93,18 +93,42 @@ namespace IT.WebServices.Authorization.Discord.Helpers
 
         public async ValueTask<DiscordCurrentUser> GetCurrentUserAsync(string accessToken)
         {
-            throw new NotImplementedException();
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{V10}users/@me");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await _http.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<DiscordCurrentUser>(jsonString);
         }
 
-        public async ValueTask<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
+        public async ValueTask<OAuthTokenResponse> ExchangeCodeAsync(string code)
         {
-            throw new NotImplementedException();
+            var path = "oauth2/token";
+            var requestDictionary = new Dictionary<string, string>
+            {
+                { "client_id", _settings.AppId },
+                { "client_secret", _settings.ClientSecret },
+                { "grant_type", "authorization_code" },
+                { "code", code },
+                { "redirect_uri", _settings.OAuthRedirect }
+            };
+
+            var content = new FormUrlEncodedContent(requestDictionary);
+
+            var response = await _http.PostAsync(path, content);
+            response.EnsureSuccessStatusCode();
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<OAuthTokenResponse>(jsonString);
         }
 
         public async ValueTask<OAuthTokenResponse> RefreshTokenAsync(string refreshToken)
         {
             throw new NotImplementedException();
         }
+
 
         public async ValueTask RevokeTokenAsync(string token)
         {

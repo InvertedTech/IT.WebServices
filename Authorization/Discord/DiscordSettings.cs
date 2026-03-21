@@ -9,5 +9,6 @@
         public string PublicKey { get; init; }
         public string ClientSecret { get; init; }
         public string OAuthRedirect { get; init; }
+        public string DiscordStateSecret { get; init; }
     }
 }
