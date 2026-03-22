@@ -986,7 +986,9 @@ namespace IT.WebServices.Settings.Services
                                 WrittenMenuLinkName = "Read",
                             },
                         },
-                        Discord = new() { },
+                        Discord = new() { 
+                            Enabled = false,
+                        },
                     },
                     Private = new()
                     {

@@ -235,7 +235,7 @@ service SettingsInterface {
 
   rpc ModifyDiscordOwnerSettings (ModifyDiscordOwnerSettingsRequest) returns (ModifyDiscordOwnerSettingsResponse) {
         option (google.api.http) = {
-          post: "/api/settings/discord/public"
+          post: "/api/settings/discord/owner"
           body: "*"
         };
   };

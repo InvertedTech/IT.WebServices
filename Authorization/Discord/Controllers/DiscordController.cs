@@ -2,7 +2,6 @@
 using IT.WebServices.Authorization.Discord.Models.Interactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using NSec.Cryptography;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -19,11 +18,11 @@ namespace IT.WebServices.Authorization.Discord.Controllers
         private readonly DiscordSettings _settings;
         private readonly DiscordRestClient _client;
 
-        public DiscordController(DiscordCommandRouter commandRouter, IOptions<DiscordSettings> settings, DiscordRestClient client)
+        public DiscordController(DiscordCommandRouter commandRouter, DiscordSettings settings, DiscordRestClient client)
         {
             _interactionValidator = new InteractionValidator();
             _commandRouter = commandRouter;
-            _settings = settings.Value;
+            _settings = settings;
             _client = client;
         }
 

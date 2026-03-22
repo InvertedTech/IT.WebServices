@@ -5,12 +5,30 @@ No implicit grant, no client credentials. Bot operations use the bot token direc
 
 ---
 
-## Scopes Required
+## Flows
+
+Two OAuth2 flows are supported. Both use Authorization Code Grant.
+
+| Flow | Scopes | Purpose |
+|------|--------|---------|
+| Linked Roles | `identify role_connections.write` | Link a logged-in platform account to Discord; push subscription metadata |
+| Sign in with Discord | `identify email` | Log into the platform using a Discord account |
+
+---
+
+## Scopes Required (Linked Roles)
 
 | Scope | Why |
 |-------|-----|
 | `identify` | Get Discord user ID + username after code exchange |
 | `role_connections.write` | Push subscription metadata to Discord Linked Roles |
+
+## Scopes Required (Sign in with Discord)
+
+| Scope | Why |
+|-------|-----|
+| `identify` | Get Discord user ID + username |
+| `email` | Find or create platform account by email |
 
 ---
 
@@ -73,19 +91,56 @@ No implicit grant, no client credentials. Bot operations use the bot token direc
 
 ---
 
+## Sign in with Discord Flow
+
+```
+1. User clicks "Sign in with Discord"
+       ↓
+   GET /api/discord/oauth/signin
+   → state = sign({ flow: "signin" })
+   → redirect to discord.com/oauth2/authorize?scope=identify+email&state=...
+
+2. Discord redirects to GET /api/discord/oauth/callback?code=...&state=...
+
+3. Validate state → detect flow="signin"
+
+4. ExchangeCodeAsync(code, redirectUri)
+   ← { access_token, refresh_token, expires_in, scope }
+
+5. GET /users/@me  (Bearer {access_token})
+   ← { id, username, global_name, email, ... }
+
+6. Resolve PlatformUserId
+   a. GetMemberByDiscordId(id)         → found: use stored PlatformUserId
+   b. Not found: FindUserByEmail(email) → found: use PlatformUserId, store Discord link
+   c. Not found: CreateUser(email, discordId) → new PlatformUserId
+
+7. IssueJwt(platformUserId)
+   ← platform JWT
+
+8. Redirect to DISCORD_SIGNIN_SUCCESS_REDIRECT
+   (set JWT as cookie or embed in redirect URL per platform convention)
+```
+
+---
+
 ## State Parameter
 
-The `state` param carries a **signed platform user ID** so we can link accounts without
-asking the user to log in twice.
+The `state` param carries a **signed JSON payload** encoding the flow type and, for Linked
+Roles, the platform user ID so we can link accounts without asking the user to log in twice.
 
 ```
 Build authorize URL:
-  state = Base64Url( HMAC-SHA256( platformUserId, DISCORD_STATE_SECRET ) + ":" + platformUserId )
+  payload = JSON.Serialize({ flow: "link", uid: platformUserId })   // Linked Roles
+            JSON.Serialize({ flow: "signin" })                      // Sign in with Discord
+  state   = Base64Url( payload + ":" + HMAC-SHA256( payload, DISCORD_STATE_SECRET ) )
 
 On callback:
-  1. Decode state → extract platformUserId + signature
+  1. Decode state → extract payload + signature
   2. Recompute HMAC → compare → reject if mismatch (CSRF protection)
-  3. Use platformUserId to look up / create the DiscordMemberRecord
+  3. Branch on payload.flow:
+       "link"   → use payload.uid as platformUserId (Linked Roles path)
+       "signin" → Sign in with Discord path
 ```
 
 > `DISCORD_STATE_SECRET` is a new env var — add it alongside the others.
@@ -122,23 +177,53 @@ Refresh is needed in two places:
 
 ---
 
+## Controller: `GET /api/discord/oauth/signin`
+
+```csharp
+[AllowAnonymous]
+[HttpGet("oauth/signin")]
+public IActionResult SignIn()
+{
+    var state = BuildSignedState(new { flow = "signin" });
+    var url   = $"https://discord.com/oauth2/authorize"
+              + $"?client_id={_settings.AppId}"
+              + $"&redirect_uri={Uri.EscapeDataString(_settings.OAuthRedirect)}"
+              + $"&response_type=code"
+              + $"&scope=identify%20email"
+              + $"&state={state}";
+    return Redirect(url);
+}
+```
+
+---
+
 ## Controller: `GET /api/discord/oauth/callback`
+
+Handles both flows — branches on `state.flow`:
 
 ```csharp
 [AllowAnonymous]
 [HttpGet("oauth/callback")]
 public async Task<IActionResult> OAuthCallback([FromQuery] string code, [FromQuery] string state)
 {
-    if (!ValidateState(state, out var platformUserId))
+    if (!ValidateState(state, out var payload))
         return BadRequest("Invalid state");
 
-    var tokens    = await _discord.ExchangeCodeAsync(code, _settings.OAuthRedirect);
+    var tokens      = await _discord.ExchangeCodeAsync(code, _settings.OAuthRedirect);
     var discordUser = await _discord.GetCurrentUserAsync(tokens.AccessToken);
 
-    var member = await ResolveOrCreateMember(platformUserId, discordUser, tokens);
+    if (payload.Flow == "signin")
+    {
+        var platformUserId = await ResolveOrCreatePlatformUser(discordUser);
+        var jwt = await _authClient.IssueJwt(platformUserId);
+        // set JWT cookie / embed in redirect per platform convention
+        return Redirect(_settings.SignInSuccessRedirect);
+    }
+
+    // flow == "link" (Linked Roles)
+    var member = await ResolveOrCreateMember(payload.Uid, discordUser, tokens);
     await _discord.PushLinkedRoleMetadataAsync(tokens.AccessToken, BuildMetadata(member));
     await ReconcileRoles(discordUser.Id, member);
-
     return Redirect("/linked-role-success");
 }
 ```
@@ -191,8 +276,9 @@ class DiscordCurrentUser {
 ## New Environment Variables
 
 ```
-DISCORD_OAUTH_REDIRECT    # e.g. https://yoursite.com/api/discord/oauth/callback
-DISCORD_STATE_SECRET      # Random secret for HMAC signing the state param
+DISCORD_OAUTH_REDIRECT          # e.g. https://yoursite.com/api/discord/oauth/callback
+DISCORD_STATE_SECRET            # Random secret for HMAC signing the state param
+DISCORD_SIGNIN_SUCCESS_REDIRECT # e.g. https://platform.com/dashboard (Sign in with Discord only)
 ```
 
 ---

@@ -15,4 +15,5 @@ message DiscordPrivateRecord {
 message DiscordOwnerRecord {
 	string ClientSecret = 1;
 	string DiscordStateSecret = 2;
+	string BotToken = 3;
 }

@@ -1,4 +1,6 @@
-﻿using IT.WebServices.Authorization.Discord.Services;
+﻿using IT.WebServices.Authorization.Discord.Helpers;
+using IT.WebServices.Authorization.Discord.Services;
+using IT.WebServices.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IT.WebServices.Authorization.Discord
@@ -7,19 +9,13 @@ namespace IT.WebServices.Authorization.Discord
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Discord service");
             var builder = WebApplication.CreateBuilder(args);
 
             if (builder.Environment.IsDevelopment())
                 builder.Services.AddHostedService<DevTunnelService>();
 
             builder.Services.AddSettingsHelpers();
-            // TODO: Replace With A Factory  Or Something
-            builder.Services.Configure<DiscordSettings>(
-                    builder.Configuration.GetSection(DiscordSettings.SectionName));
-            builder.Services.Configure<DiscordBotSettings>(
-                    builder.Configuration.GetSection(DiscordBotSettings.SectionName));
-
+            builder.Services.AddDiscordSettings(builder.Configuration);
             builder.Services.AddDiscordClasses();
 
             builder.Services.AddControllers();

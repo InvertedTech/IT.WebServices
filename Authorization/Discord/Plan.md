@@ -449,6 +449,61 @@ user's subscription level changes, keeping linked role metadata in sync automati
 
 ---
 
+## Phase 5.5: Sign in with Discord
+
+Discord supports OAuth2 as an identity provider (`identify` + `email` scopes), letting users
+log into the platform using their Discord account — no separate registration required.
+
+**New route on `DiscordOAuthController`:**
+
+| Route | Auth | Purpose |
+|-------|------|---------|
+| `GET /api/discord/oauth/signin` | None | Builds Discord authorize URL (`scope=identify+email`), signs state with `flowType=signin`, redirects |
+| `GET /api/discord/oauth/callback` | None | Handles both Linked Roles and Sign-in flows based on decoded `state.flow` |
+
+**Scope difference:**
+
+| Flow | Scopes |
+|------|--------|
+| Linked Roles | `identify role_connections.write` |
+| Sign in with Discord | `identify email` |
+
+**Updated state payload** — JSON-encoded before HMAC signing:
+```json
+{ "flow": "link",   "uid": "platform-user-guid" }   // Linked Roles
+{ "flow": "signin"                               }   // Sign in with Discord
+```
+
+**Sign in with Discord flow:**
+```
+User clicks "Sign in with Discord"
+  → GET /api/discord/oauth/signin
+  → state = sign({ flow: "signin" })
+  → redirect to discord.com/oauth2/authorize?scope=identify+email&state=...
+
+Callback (flow=signin):
+  → ExchangeCodeAsync(code)
+  → GetCurrentUserAsync(accessToken)  ← returns id, username, global_name, email
+  → Try GetMemberByDiscordId(discordId)
+       found:  use stored PlatformUserId
+       not found: call auth service FindUserByEmail(email)
+       not found: call auth service CreateUser(email, discordId) → new PlatformUserId
+  → Issue platform JWT via auth service
+  → Redirect to DISCORD_SIGNIN_SUCCESS_REDIRECT with JWT (cookie or query param per platform convention)
+```
+
+**New auth service calls needed:**
+- `FindUserByEmail(email)` — look up existing platform user
+- `CreateUser(email, discordId)` — register new platform user with Discord identity
+- `IssueJwt(platformUserId)` — issue a platform JWT for the redirect
+
+**New env var:**
+```
+DISCORD_SIGNIN_SUCCESS_REDIRECT   # e.g. https://platform.com/dashboard
+```
+
+---
+
 ## Phase 6: Interaction Endpoint Controller
 
 **`Controllers/DiscordInteractionController.cs`** — `POST /api/discord/interactions`
@@ -700,7 +755,9 @@ DISCORD_BOT_TOKEN           # Bot token
 DISCORD_APP_ID              # Application/client ID
 DISCORD_PUBLIC_KEY          # Ed25519 public key for signature verification
 DISCORD_CLIENT_SECRET       # OAuth2 client secret (linked roles)
-DISCORD_OAUTH_REDIRECT      # e.g. https://yoursite.com/api/discord/oauth/callback
+DISCORD_OAUTH_REDIRECT          # e.g. https://yoursite.com/api/discord/oauth/callback
+DISCORD_STATE_SECRET            # HMAC secret for signing state param (both flows)
+DISCORD_SIGNIN_SUCCESS_REDIRECT # Redirect target after Sign in with Discord (e.g. /dashboard)
 DISCORD_GUILD_ID            # Optional: if set, register commands guild-scoped
 DISCORD_SUPPORT_CHANNEL_ID  # Channel for ticket threads
 DISCORD_SHUN_CHANNEL_ID     # Channel for shun announcements

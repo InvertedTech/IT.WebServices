@@ -2,7 +2,6 @@
 using IT.WebServices.Authorization.Discord.Models.Interactions;
 using IT.WebServices.Authorization.Discord.Models.LinkedRoles;
 using IT.WebServices.Authorization.Discord.Models.OAuth;
-using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -19,10 +18,10 @@ namespace IT.WebServices.Authorization.Discord.Helpers
         private readonly HttpClient _http;
         private readonly DiscordSettings _settings;
 
-        public DiscordRestClient(HttpClient http, IOptions<DiscordSettings> options)
+        public DiscordRestClient(HttpClient http, DiscordSettings settings)
         {
             _http = http;
-            _settings = options.Value;
+            _settings = settings;
         }
 
         // <summary>
