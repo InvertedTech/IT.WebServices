@@ -61,7 +61,6 @@ namespace IT.WebServices.Authorization.Discord.Controllers
 
             var currentUser = await _client.GetCurrentUserAsync(tokenRes.AccessToken);
 
-            // TODO: Handle Rest Of Flow
             return Redirect("/linked-role-success");
         }
     }
