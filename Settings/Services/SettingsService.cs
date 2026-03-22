@@ -791,6 +791,131 @@ namespace IT.WebServices.Settings.Services
             }
         }
 
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyDiscordPublicSettingsResponse> ModifyDiscordPublicSettings(ModifyDiscordPublicSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Public.Discord = request.Data;
+
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Discord Public Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
+            } catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message)
+                };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyDiscordPrivateSettingsResponse> ModifyDiscordPrivateSettings(ModifyDiscordPrivateSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Private.Discord = request.Data;
+
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Discord Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message)
+                };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
+        public override async Task<ModifyDiscordOwnerSettingsResponse> ModifyDiscordOwnerSettings(ModifyDiscordOwnerSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Owner.Discord = request.Data;
+
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Discord Owner Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateNoError()
+                };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message)
+                };
+            }
+        }
+
         private async Task EnsureStockSettings()
         {
             if (hasEnsuredStockSettings)
@@ -861,12 +986,14 @@ namespace IT.WebServices.Settings.Services
                                 WrittenMenuLinkName = "Read",
                             },
                         },
+                        Discord = new() { },
                     },
                     Private = new()
                     {
                         Comments = new() { },
                         Personalization = new() { },
                         Subscription = new() { },
+                        Discord = new() { },
                     },
                     Owner = new()
                     {
@@ -878,6 +1005,7 @@ namespace IT.WebServices.Settings.Services
                             //Stripe = new(),
                             Paypal = new(),
                         },
+                        Discord = new() { },
                     },
                 };
 

@@ -5,6 +5,7 @@ package IT.WebServices.Fragments.Settings;
 import "google/protobuf/timestamp.proto";
 import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/SharedTypes.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Discord/DiscordSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Crypto/CryptoSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Manual/ManualPaymentSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Fortis/FortisSettings.proto";
@@ -31,6 +32,7 @@ message SettingsPublicData {
   CMSPublicRecord CMS = 13;
   NotificationPublicRecord Notification = 14;
   IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Events = 15; // Public settings for events
+  IT.WebServices.Fragments.Authorization.Discord.DiscordPublicRecord Discord = 16;
 }
 
 message SettingsPrivateData {
@@ -41,6 +43,7 @@ message SettingsPrivateData {
   CMSPrivateRecord CMS = 13;
   NotificationPrivateRecord Notification = 14;
   IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Events = 15; // Private settings for events
+  IT.WebServices.Fragments.Authorization.Discord.DiscordPrivateRecord Discord = 16;
 }
 
 message SettingsOwnerData {
@@ -50,6 +53,7 @@ message SettingsOwnerData {
   CMSOwnerRecord CMS = 13;
   NotificationOwnerRecord Notification = 14;
   IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Events = 15; // Owner settings for events
+  IT.WebServices.Fragments.Authorization.Discord.DiscordOwnerRecord Discord = 16;
 }
 
 message PersonalizationPublicRecord {

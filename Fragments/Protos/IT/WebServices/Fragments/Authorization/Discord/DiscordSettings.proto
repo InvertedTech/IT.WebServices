@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Discord;
+
+message  DiscordPublicRecord {
+	bool Enabled = 1;
+}
+
+message DiscordPrivateRecord {
+	string AppId = 1;
+	string OAuthRedirectUri = 2;
+	string PublicKey = 3;
+}
+
+message DiscordOwnerRecord {
+	string ClientSecret = 1;
+	string DiscordStateSecret = 2;
+}

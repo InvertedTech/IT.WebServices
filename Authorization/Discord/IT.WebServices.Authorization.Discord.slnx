@@ -2,5 +2,6 @@
   <Project Path="../../Authentication/Shared/IT.WebServices.Authentication.Shared.csproj" />
   <Project Path="../../Base/IT.WebServices.Base.csproj" />
   <Project Path="../../Fragments/IT.WebServices.Fragments.csproj" />
+  <Project Path="../../Settings/Shared/IT.WebServices.Settings.Shared.csproj" />
   <Project Path="IT.WebServices.Authorization.Discord.csproj" />
 </Solution>
