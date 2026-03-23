@@ -10,5 +10,6 @@
         public string ClientSecret { get; init; }
         public string OAuthRedirect { get; init; }
         public string DiscordStateSecret { get; init; }
+        public string SignInSuccessRedirect { get; init; }
     }
 }

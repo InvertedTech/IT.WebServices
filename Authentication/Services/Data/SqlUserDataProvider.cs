@@ -393,6 +393,43 @@ namespace IT.WebServices.Authentication.Services.Data
             }
         }
 
+        public async Task<Guid> GetIdByDiscordAuthProviderUserId(string userId)
+        {
+            try
+            {
+                const string query = @"
+                    SELECT
+                        UserID
+                    FROM
+                        Auth_User
+                    WHERE
+                        DiscordAuthProviderUserID = @DiscordAuthProviderUserID;
+                ";
+
+                var parameters = new MySqlParameter[]
+                {
+                    new MySqlParameter("DiscordAuthProviderUserID", userId)
+                };
+
+                using var rdr = await sql.ReturnReader(query, parameters);
+
+                if (await rdr.ReadAsync())
+                {
+                    var str = rdr.GetString(0) ?? "";
+                    if (Guid.TryParse(str, out var id))
+                        return id;
+                }
+
+                return Guid.Empty;
+            }
+            catch (Exception ex)
+            {
+                log.LogError("SQL Conn: {connStr}", sql.connString);
+                log.LogError(ex, "Error in GetIdByDiscordAuthProviderUserId");
+                return Guid.Empty;
+            }
+        }
+
         public async Task<bool> LoginExists(string loginName)
         {
             try
@@ -436,10 +473,10 @@ namespace IT.WebServices.Authentication.Services.Data
                 const string query = @"
                     INSERT INTO Auth_User
                             (UserID,  UserName,  DisplayName,  Bio,  Roles,  Email,  OldUserID,  PasswordHash,  PasswordSalt,  OldPassword,
-                             OldPasswordAlgorithm,  FirstName,  LastName,  PostalCode,  MicrosoftAuthProviderUserId,
+                             OldPasswordAlgorithm,  FirstName,  LastName,  PostalCode,  MicrosoftAuthProviderUserId,  DiscordAuthProviderUserId,
                              CreatedOnUTC,  CreatedBy,  ModifiedOnUTC,  ModifiedBy,  DisabledOnUTC,  DisabledBy)
                     VALUES (@UserID, @UserName, @DisplayName, @Bio, @Roles, @Email, @OldUserID, @PasswordHash, @PasswordSalt, @OldPassword,
-                            @OldPasswordAlgorithm, @FirstName, @LastName, @PostalCode, @MicrosoftAuthProviderUserId,
+                            @OldPasswordAlgorithm, @FirstName, @LastName, @PostalCode, @MicrosoftAuthProviderUserId, @DiscordAuthProviderUserId,
                             @CreatedOnUTC, @CreatedBy, @ModifiedOnUTC, @ModifiedBy, @DisabledOnUTC, @DisabledBy)
                     ON DUPLICATE KEY UPDATE
                             UserName = @UserName,
@@ -456,6 +493,7 @@ namespace IT.WebServices.Authentication.Services.Data
                             LastName = @LastName,
                             PostalCode = @PostalCode,
                             MicrosoftAuthProviderUserId = @MicrosoftAuthProviderUserId,
+                            DiscordAuthProviderUserId = @DiscordAuthProviderUserId,
                             CreatedOnUTC = @CreatedOnUTC,
                             CreatedBy = @CreatedBy,
                             ModifiedOnUTC = @ModifiedOnUTC,
@@ -481,6 +519,7 @@ namespace IT.WebServices.Authentication.Services.Data
                     new MySqlParameter("LastName", user.Normal.Private.Data.LastName),
                     new MySqlParameter("PostalCode", user.Normal.Private.Data.PostalCode),
                     new MySqlParameter("MicrosoftAuthProviderUserId", user.Server.AuthProviders?.Microsoft?.UserId is null ? DBNull.Value : user.Server.AuthProviders?.Microsoft?.UserId),
+                    new MySqlParameter("DiscordAuthProviderUserId", user.Server.AuthProviders?.Discord?.UserId is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.UserId),
                     new MySqlParameter("CreatedOnUTC", user.Normal.Public.CreatedOnUTC.ToDateTime()),
                     new MySqlParameter("CreatedBy", user.Normal.Private.CreatedBy),
                     new MySqlParameter("ModifiedOnUTC", user.Normal.Public.ModifiedOnUTC?.ToDateTime()),

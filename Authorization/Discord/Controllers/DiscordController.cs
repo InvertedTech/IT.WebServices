@@ -1,11 +1,12 @@
-﻿using IT.WebServices.Authorization.Discord.Helpers;
+﻿using IT.WebServices.Authentication;
+using IT.WebServices.Authentication.Services.Data;
+using IT.WebServices.Authentication.Services.Helpers;
+using IT.WebServices.Authorization.Discord.Helpers;
 using IT.WebServices.Authorization.Discord.Models.Interactions;
+using IT.WebServices.Clients.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSec.Cryptography;
-using System.Security.Cryptography;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace IT.WebServices.Authorization.Discord.Controllers
 {
@@ -17,13 +18,21 @@ namespace IT.WebServices.Authorization.Discord.Controllers
         private readonly DiscordCommandRouter _commandRouter;
         private readonly DiscordSettings _settings;
         private readonly DiscordRestClient _client;
+        private readonly ILogger _logger;
+        private readonly UserClient _users;
+        private readonly IUserDataProvider _userDataProvider;
+        private readonly TokenHelper _tokenHelper;
 
-        public DiscordController(DiscordCommandRouter commandRouter, DiscordSettings settings, DiscordRestClient client)
+        public DiscordController(DiscordCommandRouter commandRouter, DiscordSettings settings, DiscordRestClient client, ILogger<DiscordController> logger, UserClient users, IUserDataProvider userDataProvider, TokenHelper tokenHelper)
         {
             _interactionValidator = new InteractionValidator();
             _commandRouter = commandRouter;
             _settings = settings;
             _client = client;
+            _logger = logger;
+            _users = users;
+            _userDataProvider = userDataProvider;
+            _tokenHelper = tokenHelper;
         }
 
         [HttpPost("interactions")]
@@ -50,17 +59,17 @@ namespace IT.WebServices.Authorization.Discord.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("oauth/signin")]
+        public IActionResult SignInWithDiscord()
+        {
+            throw new NotImplementedException();
+        }
+
+        [AllowAnonymous]
         [HttpGet("oauth/callback")]
         public async Task<IActionResult> OAuthCallback([FromQuery] string code, [FromQuery] string? state)
         {
-            //state = CryptoHelper.GenerateHmacSha256State(platformUserId, _settings.DiscordStateSecret);
-            //if (!ValidateState(state, out var platformUserId))
-            //    return BadRequest("Invalid state");
-            var tokenRes = await _client.ExchangeCodeAsync(code);
-
-            var currentUser = await _client.GetCurrentUserAsync(tokenRes.AccessToken);
-
-            return Redirect("/linked-role-success");
+            throw new NotImplementedException();
         }
     }
 }

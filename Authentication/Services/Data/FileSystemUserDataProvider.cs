@@ -190,5 +190,14 @@ namespace IT.WebServices.Authentication.Services.Data
 
             return Guid.Empty;
         }
+
+        public async Task<Guid> GetIdByDiscordAuthProviderUserId(string userId)
+        {
+            await foreach (var record in GetAll())
+                if (record.Server.AuthProviders?.Discord?.UserId == userId)
+                    return record.UserIDGuid;
+
+            return Guid.Empty;
+        }
     }
 }

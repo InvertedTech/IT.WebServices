@@ -22,6 +22,7 @@ namespace IT.WebServices.Authentication.Services.Data
         Task<UserRecord> GetByLogin(string loginName);
         Task<UserRecord> GetByOldUserID(string oldUserId);
         Task<Guid> GetIdByMicrosoftAuthProviderUserId(string userId);
+        Task<Guid> GetIdByDiscordAuthProviderUserId(string userId);
         Task Save(UserRecord user);
     }
 }

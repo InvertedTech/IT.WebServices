@@ -71,8 +71,13 @@ message TOTPDevice {
 
 message AuthProviders {
 	MicrosoftAuthProvider Microsoft = 1;
+  DiscordAuthProvider Discord = 2;
 }
 
 message MicrosoftAuthProvider {
 	string UserId = 1;
+}
+
+message DiscordAuthProvider {
+  string UserId = 1;
 }
