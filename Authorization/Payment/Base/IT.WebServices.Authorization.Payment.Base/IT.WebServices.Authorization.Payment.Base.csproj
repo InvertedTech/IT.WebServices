@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Base\IT.WebServices.Base.csproj" />
+    <ProjectReference Include="..\..\Tax\IT.WebServices.Authorization.Payment.Tax.csproj" />
   </ItemGroup>
 
 </Project>

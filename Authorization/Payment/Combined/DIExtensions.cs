@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddFortisClasses();
             services.AddPaypalClasses();
             services.AddStripeClasses();
+            services.AddTaxClasses();
 
             services.AddSingleton<ClaimsServiceInternal>();
             services.AddSingleton<IClaimsProvider, ClaimsServiceInternal>();
@@ -36,6 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
             endpoints.MapFortisGrpcServices();
             endpoints.MapPaypalGrpcServices();
             endpoints.MapStripeGrpcServices();
+            endpoints.MapTaxGrpcServices();
 
             endpoints.MapGrpcService<AdminPaymentService>();
             endpoints.MapGrpcService<BackupService>();

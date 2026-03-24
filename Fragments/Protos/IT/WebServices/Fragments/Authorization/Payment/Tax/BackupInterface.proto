@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Payment.Tax;
+
+import "Protos/IT/WebServices/Fragments/Authorization/Payment/Tax/TaxRecords.proto";
+
+// Service for Payment backup fragment interface
+service BackupInterface {
+  // Export a list of all data.
+  rpc BackupAllData (BackupAllDataRequest) returns (stream BackupAllDataResponse) {}
+
+  // Restore a list of all data.
+  rpc RestoreAllData (stream RestoreAllDataRequest) returns (RestoreAllDataResponse) {}
+}
+  
+message BackupAllDataRequest {
+  string ClientPublicJwk = 1;
+}
+
+message BackupAllDataResponse {
+  oneof Response_oneof {
+    string ServerPublicJwk = 1;
+    EncryptedTaxBackupDataRecord EncryptedRecord = 10;
+  }
+}
+
+message EncryptedTaxBackupDataRecord {
+  bytes EncryptionIV = 1;
+  bytes Data = 10;
+}
+
+message RestoreAllDataRequest {
+  oneof Request_oneof {
+    RestoreMode Mode = 1;
+    TaxBackupDataRecord Record = 10;
+  }
+
+  enum RestoreMode {
+    Wipe = 0;         // Wipe entire tax database and restore tax.  Any new tax will be deleted.
+    Overwrite = 1;    // Overwrite all records with corresponding record.  Will not delete new records not in list.
+    MissingOnly = 2;  // Only restore missing tax records.  Will not overwrite tax records that already exist.
+  }
+}
+
+message RestoreAllDataResponse {
+  int32 NumRecordsRestored = 1;
+  int32 NumRecordsSkipped = 2;
+  int32 NumRecordsOverwriten = 3;
+  int32 NumRecordsWiped = 4;
+}
+
+message TaxBackupDataRecord {
+  bytes ExtraData = 1;   // Generic byte structure to save all application specific data for tax
+  SalesTaxByPostalCodeRecord SalesTaxRecord = 2; // TaxRecord
+}

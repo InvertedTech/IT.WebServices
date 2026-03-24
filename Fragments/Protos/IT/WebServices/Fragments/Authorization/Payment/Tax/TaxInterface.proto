@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Payment.Tax;
+
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Payment/Tax/TaxRecords.proto";
+
+service TaxInterface {
+  rpc GetSalesTaxRecordByPostalCode (GetSalesTaxRecordByPostalCodeRequest) returns (GetSalesTaxRecordByPostalCodeResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/payment/tax/sales/{CountryCode}/{PostalCode}"
+    };
+  }
+}
+
+message GetSalesTaxRecordByPostalCodeRequest {
+  string CountryCode = 1;
+  string PostalCode = 2;
+}
+
+message GetSalesTaxRecordByPostalCodeResponse {
+	SalesTaxByPostalCodeRecord Record = 1;
+}

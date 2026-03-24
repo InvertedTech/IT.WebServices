@@ -118,6 +118,9 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Stripe\StripeSettings.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Tax\BackupInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Tax\TaxInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Tax\TaxRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\SharedTypes.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Careers\CareersInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Careers\CareersRecord.proto" />

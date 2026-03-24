@@ -62,6 +62,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Dashboard.Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Careers", "Careers\IT.WebServices.Careers.csproj", "{071A961C-AFAF-A789-2981-45C890A05A94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Authorization.Payment.Tax", "Authorization\Payment\Tax\IT.WebServices.Authorization.Payment.Tax.csproj", "{3C913A40-1537-1227-58EF-94AC1635EBAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,10 @@ Global
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +194,7 @@ Global
 		{B66A6BDC-5C75-4A11-BB9C-EA1C88E96013} = {D37AF415-7FED-4A29-B656-090408A69CF4}
 		{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D} = {D37AF415-7FED-4A29-B656-090408A69CF4}
 		{50630621-6BB9-4198-AD40-B7D4366F5544} = {D37AF415-7FED-4A29-B656-090408A69CF4}
+		{3C913A40-1537-1227-58EF-94AC1635EBAB} = {D37AF415-7FED-4A29-B656-090408A69CF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F6A9A1C2-965B-46B4-829F-34719F799E83}
