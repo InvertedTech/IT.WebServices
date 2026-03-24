@@ -30,7 +30,7 @@ public class DevTunnelService : BackgroundService
         await WaitForApplicationStarted();
 
         var urls = server.Features.Get<IServerAddressesFeature>()!.Addresses;
-        var localUrl = urls.First(u => u.StartsWith("https://"));
+        var localUrl = urls.FirstOrDefault(u => u.StartsWith("https://")) ?? urls.First(u => u.StartsWith("http://"));
         var fixedUrl = config["NgrokUrl"];
 
         // If ngrok is already running, reuse it

@@ -8,24 +8,84 @@ import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Discord/DiscordRecords.proto";
 
-// TODO: Split Into DiscordInterface and AdminDiscordInterface
 service DiscordInterface {
-	rpc CreateMemberRecord (CreateMemberRecordRequest) returns (CreateMemberRecordResponse) {};
-	rpc ModifyMemberRecord (ModifyMemberRecordRequest) returns (ModifyMemberRecordResponse) {};
-	rpc GetMemberByPlatformId (GetMemberByPlatformIdRequest) returns (GetMemberResponse) {};
-	rpc GetMemberByDiscordId (GetMemberByDiscordIdRequest) returns (GetMemberResponse) {};
-	rpc GetMembers (GetMembersRequest) returns (GetMembersResponse) {};
-	rpc BanMember (BanMemberRequest) returns (BanMemberResponse) {};
-	rpc ShunDiscordMember (ShunDiscordMemberRequest) returns (ShunDiscordMemberResponse) {};
-	rpc UnShunDiscordMember (UnShunDiscordMemberRequest) returns (UnShunDiscordMemberResponse) {};
-	rpc GetUserShuns (GetUserShunsRequest) returns (GetUserShunsResponse) {};
-	rpc CreateTicket (CreateTicketRequest) returns (CreateTicketResponse) {};
-	rpc CloseTicket (CloseTicketRequest) returns (CloseTicketResponse) {};
-	rpc GetTickets (GetTicketsRequest) returns (GetTicketsResponse) {};
+	rpc CreateMemberRecord (CreateMemberRecordRequest) returns (CreateMemberRecordResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/member",
+			body: "*"
+		};
+	};
+	rpc ModifyMemberRecord (ModifyMemberRecordRequest) returns (ModifyMemberRecordResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/member/{UserId}",
+			body: "*"
+		};
+	};
+	rpc GetMemberByUserId (GetMemberByUserIdRequest) returns (GetMemberResponse) {
+		option (google.api.http) = {
+			get: "/api/discord/member/{UserId}"
+		};
+	};
+	rpc GetMemberByDiscordId (GetMemberByDiscordIdRequest) returns (GetMemberResponse) {
+		option (google.api.http) = {
+			get: "/api/discord/member/discordid/{DiscordUserId}"
+		};
+	};
+	rpc GetMembers (GetMembersRequest) returns (GetMembersResponse) {
+		option (google.api.http) = {
+			get: "/api/discord/member"
+		};
+	};
+	rpc BanMember (BanMemberRequest) returns (BanMemberResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/member/{UserId}/ban",
+			body: "*"
+		};
+	};
+	rpc ShunDiscordMember (ShunDiscordMemberRequest) returns (ShunDiscordMemberResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/member/{UserId}/shun",
+			body: "*"
+		};
+	};
+	rpc UnShunDiscordMember (UnShunDiscordMemberRequest) returns (UnShunDiscordMemberResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/member/{UserId}/unshun",
+			body: "*"
+		};	
+	};
+	rpc GetShuns (GetShunsRequest) returns (GetShunsResponse) {
+		option (google.api.http) = {
+			get: "/api/discord/member/{UserId}/shun"
+		};	
+	};
+	rpc CreateTicket (CreateTicketRequest) returns (CreateTicketResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/ticket",
+			body: "*"
+		};
+	};
+	rpc AddTicketMessage (AddTicketMessageRequest) returns (AddTicketMessageResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/ticket/{TicketId}",
+			body: "*"
+		};
+	};
+	rpc CloseTicket (CloseTicketRequest) returns (CloseTicketResponse) {
+		option (google.api.http) = {
+			post: "/api/discord/ticket/{TicketId}/close",
+			body: "*"
+		};
+	};
+	rpc GetTickets (GetTicketsRequest) returns (GetTicketsResponse) {
+		option (google.api.http) = {
+			get: "/api/discord/ticket",
+		};
+	};
 }
 
 message CreateMemberRecordRequest {
-	string PlatformUserId = 1;												// References the UserRecord.UserID property
+	string UserId = 1;																// References the UserRecord.UserID property
 	string DiscordUserId = 2;												// User's Discord Account Global Id
 	string DiscordUserName = 3;											// User's Discord Account Global UserName
 	uint32 CurrentLevelCents = 4;											// References The Amount the User Is Subscribed For
@@ -40,7 +100,7 @@ message CreateMemberRecordResponse {
 }
 
 message ModifyMemberRecordRequest {
-	string PlatformUserId = 1;												// References The UserRecord.UserID property
+	string UserId = 1;																// References The UserRecord.UserID property
 	DiscordMemberRecord Record = 2;								// Record Of The Member To Modify
 }
 
@@ -49,8 +109,8 @@ message ModifyMemberRecordResponse {
 	APIError Error = 2;
 }
 
-message GetMemberByPlatformIdRequest {
-	string PlatformUserId = 1;
+message GetMemberByUserIdRequest {
+	string UserId = 1;
 }
 
 message GetMemberByDiscordIdRequest {
@@ -63,13 +123,13 @@ message GetMemberResponse {
 }
 
 message GetMembersRequest {
-	string PossibleUserPlatformIds =1;
-	string PossibleUserDiscordIds = 2;
-	bool IncludeShunned = 3;
+	string PossibleUserIds = 1;
+	string PossibleUserDiscordIds = 2; // TODO: Remove
+	bool IncludeShunned = 3;		// TODO: Remove
 	bool IncludeBanned = 4;
 	uint32 PageSize = 5;
 	uint32 PageOffset = 6;
-	google.protobuf.Timestamp ExpiredOnUTC = 7;
+	google.protobuf.Timestamp ExpiredOnUTC = 7; // TODO: Remove
 }
 
 message GetMembersResponse {
@@ -81,8 +141,8 @@ message GetMembersResponse {
 }
 
 message BanMemberRequest {
-	string PlatformUserId = 1;
-	string DiscordUserId = 2;
+	string UserId = 1;																// References the UserRecord.UserID property
+	string BannedByDiscordId = 2;									   // Banning User's Discord Account Global Id
 	string BannedReason = 3;
 }
 
@@ -91,10 +151,9 @@ message BanMemberResponse {
 }
 
 message ShunDiscordMemberRequest {
-	string PlatformUserId = 1;
-	string DiscordUserId = 2;
-	string ShunnedByDiscordId = 3;
-	string Reason = 4;
+	string UserId = 1;																// References the UserRecord.UserID property
+	string ShunnedByDiscordId = 2;										// Discord Id of the Mod/Admin Invoking the Shun
+	string Reason = 3;
 }
 
 message ShunDiscordMemberResponse {
@@ -103,23 +162,23 @@ message ShunDiscordMemberResponse {
 }
 
 message UnShunDiscordMemberRequest {
-	string PlatformUserId = 1;
-	string DiscordUserId = 2;
-	string ShunId = 3;
+	string UserId = 1;																// References the UserRecord.UserID property
+	string ShunId = 2;																// References the DiscordShunRecord.ShunId property
+	string UnShunnedByDiscordId = 3;									// Discord Id of the Mod/Admin Invoking the UnShun
 }
 
 message UnShunDiscordMemberResponse {
 	APIError Error = 1;
 }
 
-message GetUserShunsRequest {
-	string PlatformUserId = 1;
+message GetShunsRequest {
+	string UserId = 1;
 	bool IncludeInactive = 2;
 	uint32 PageSize = 3;
 	uint32 PageOffset = 4;
 }
 
-message GetUserShunsResponse {
+message GetShunsResponse {
 	repeated DiscordShunRecord Records = 1;
 	uint32 PageTotalItems = 2;
 	uint32 PageOffsetStart = 3;
@@ -128,11 +187,9 @@ message GetUserShunsResponse {
 }
 
 message CreateTicketRequest {
-	string DiscordUserId = 1;
-	string DiscordUserName = 2;
-	string PlatformUserId = 3;
-	string Subject = 4;
-	string Text = 5;
+	string UserId = 1;																// References The UserRecord.UserID property
+	string Subject = 2;
+	string Text = 3;
 }
 
 message CreateTicketResponse {
@@ -140,9 +197,21 @@ message CreateTicketResponse {
 	APIError Error = 2;
 }
 
+message AddTicketMessageRequest {
+	string TicketId = 1;															// References The DiscordTicketRecord.TicketId property
+	string UserId = 2;																// References The UserRecord.UserID property (if sender is a platform user)
+	string SentByDiscordId = 3;											// Discord ID of the User Sending the Message
+	string Text = 4;
+}
+
+message AddTicketMessageResponse {
+	DiscordTicketThreadMessage Record = 1;
+	APIError Error = 2;
+}
+
 message CloseTicketRequest {
 	string TicketId = 1;
-	string ClosedById = 2;
+	string ClosedByDiscordId = 2;										// Discord ID of the Mod/Admin Closing the Ticket
 }
 
 message CloseTicketResponse {
@@ -152,7 +221,7 @@ message CloseTicketResponse {
 
 message GetTicketsRequest {
 	bool IncludeClosed = 1;
-	string DiscordUserId = 2;
+	string UserId = 2;
 	uint32 PageSize = 3;
 	uint32 PageOffset = 4;
 }

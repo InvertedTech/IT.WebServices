@@ -10,6 +10,9 @@
 	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
 	  <PackageReference Include="CliWrap" Version="3.10.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.10.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
     <PackageReference Include="NSec.Cryptography" Version="25.4.0" />
   </ItemGroup>
 
@@ -19,10 +22,6 @@
 		<ProjectReference Include="..\..\Settings\Shared\IT.WebServices.Settings.Shared.csproj" />
 		<ProjectReference Include="..\..\Authentication\Services\IT.WebServices.Authentication.Services.csproj" />
 		<ProjectReference Include="..\..\Authentication\Shared\IT.WebServices.Authentication.Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Models\Embed\" />
 	</ItemGroup>
 
 </Project>

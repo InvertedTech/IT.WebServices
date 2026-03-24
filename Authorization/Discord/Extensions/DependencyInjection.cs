@@ -1,8 +1,11 @@
 ﻿using IT.WebServices.Authorization.Discord;
+using IT.WebServices.Authorization.Discord.Data;
 using IT.WebServices.Authorization.Discord.Decorators;
 using IT.WebServices.Authorization.Discord.Handlers;
 using IT.WebServices.Authorization.Discord.Helpers;
 using IT.WebServices.Authorization.Discord.Services;
+using IT.WebServices.Clients.Authentication;
+using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -38,6 +41,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Where(t => t.GetCustomAttribute<SlashCommandAttribute>() != null
                          && t.IsAssignableTo(typeof(ISlashCommandHandler)));
 
+            services.AddSingleton<OfflineHelper>();
+            services.AddSingleton<UserClient>();
             foreach (var handlerType in slashCommandHandlers)
             {
                 services.AddSingleton(handlerType);
@@ -45,12 +50,21 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<DiscordCommandRouter>();
             services.AddHostedService<DiscordCommandRegistrationService>();
+            services.AddSingleton<DiscordService>();
+            return services;
+        }
 
+        public static IServiceCollection AddDiscordData(this IServiceCollection services)
+        {
+            services.AddSingleton<IMemberDataProvider, SqlMemberDataProvider>();
+            services.AddSingleton<IDiscordTicketDataProvider, SqlDiscordTicketDataProvider>();
+            services.AddSingleton<IShunDataProvider, SqlDiscordShunDataProvider>();
             return services;
         }
 
         public static IEndpointRouteBuilder MapDiscordGrpcServices(this IEndpointRouteBuilder endpoints)
         {
+            endpoints.MapGrpcService<DiscordService>();
             return endpoints;
         }
     }
