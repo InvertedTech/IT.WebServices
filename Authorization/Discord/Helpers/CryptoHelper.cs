@@ -1,5 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using NSec.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace IT.WebServices.Authorization.Discord.Helpers
@@ -11,8 +11,7 @@ namespace IT.WebServices.Authorization.Discord.Helpers
             byte[] secretBytes = Encoding.UTF8.GetBytes(stateSecret);
             byte[] data = Encoding.UTF8.GetBytes(platformUserId);
 
-            using var key = Key.Import(MacAlgorithm.HmacSha256, secretBytes, KeyBlobFormat.RawSymmetricKey);
-            byte[] hmac = MacAlgorithm.HmacSha256.Mac(key, data);
+            byte[] hmac = HMACSHA256.HashData(secretBytes, data);
 
             string combined = Convert.ToHexString(hmac) + ":" + platformUserId;
             byte[] combinedBytes = Encoding.UTF8.GetBytes(combined);

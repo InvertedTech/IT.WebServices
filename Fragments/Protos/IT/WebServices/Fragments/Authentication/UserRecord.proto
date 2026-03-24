@@ -79,5 +79,8 @@ message MicrosoftAuthProvider {
 }
 
 message DiscordAuthProvider {
-  string UserId = 1;
+    string DiscordId = 1;
+    string AccessToken = 2;																	// Discord OAuth access token
+    string RefreshToken = 3;																	// Discord OAuth refresh token (long-lived)
+    google.protobuf.Timestamp AccessTokenExpiresOnUTC = 10;		// When the access token expires (~10 min)
 }

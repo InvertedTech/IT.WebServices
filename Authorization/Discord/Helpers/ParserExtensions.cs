@@ -23,9 +23,6 @@ namespace IT.WebServices.Authorization.Discord.Helpers
                     ModifiedById = rdr["ModifiedById"] as string ?? "",
                     BannedByDiscordId = rdr["BannedByDiscordId"] as string ?? "",
                     InternalSubscriptionId = rdr["InternalSubscriptionId"] as string ?? "",
-                },
-                Server = new()
-                {
                     AccessToken = rdr["AccessToken"] as string ?? "",
                     RefreshToken = rdr["RefreshToken"] as string ?? "",
                 },
@@ -57,19 +54,7 @@ namespace IT.WebServices.Authorization.Discord.Helpers
             if (!(rdr["AccessTokenExpiresOnUTC"] is DBNull))
             {
                 d = DateTime.SpecifyKind((DateTime)rdr["AccessTokenExpiresOnUTC"], DateTimeKind.Utc);
-                record.Server.AccessTokenExpiresOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
-            }
-
-            if (!(rdr["TokenCreatedOnUTC"] is DBNull))
-            {
-                d = DateTime.SpecifyKind((DateTime)rdr["TokenCreatedOnUTC"], DateTimeKind.Utc);
-                record.Server.CreatedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
-            }
-
-            if (!(rdr["TokenModifiedOnUTC"] is DBNull))
-            {
-                d = DateTime.SpecifyKind((DateTime)rdr["TokenModifiedOnUTC"], DateTimeKind.Utc);
-                record.Server.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
+                record.Private.AccessTokenExpiresOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
             }
 
             return record;

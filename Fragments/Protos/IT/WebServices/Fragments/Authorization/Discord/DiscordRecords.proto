@@ -19,21 +19,15 @@ message DiscordMemberPrivateRecord {
 	string ModifiedById = 2;																// User ID of the User That Last Modified This Record
 	string BannedByDiscordId = 3;													// Discord ID of the Mod/Admin That Banned This Member
 	string InternalSubscriptionId = 4;												// Reference To The User's Internal Subscription Record (If Any)
-}
-
-message DiscordMemberServerRecord {
-    string AccessToken = 1;																	// Discord OAuth access token
-    string RefreshToken = 2;																	// Discord OAuth refresh token (long-lived)
-    google.protobuf.Timestamp AccessTokenExpiresOnUTC = 10;		// When the access token expires (~10 min)
-    google.protobuf.Timestamp CreatedOnUTC = 11;							// DateTimeUTC When This Record Was Created
-    google.protobuf.Timestamp ModifiedOnUTC = 12;						// DateTimeUTC When Tokens Were Last Refreshed
+	string AccessToken = 5;																// Discord OAuth access token (role_connections.write scope)
+	string RefreshToken = 6;															// Discord OAuth refresh token
+	google.protobuf.Timestamp AccessTokenExpiresOnUTC = 7;		// When the access token expires
 }
 
 message DiscordMemberRecord {
 	string UserId = 1;
 	DiscordMemberPublicRecord Public = 2;
 	DiscordMemberPrivateRecord Private = 3;
-	DiscordMemberServerRecord Server = 4;
 }
 
 enum ShunStatus {

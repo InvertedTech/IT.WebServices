@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Authorization.Discord.Helpers;
+﻿using IT.WebServices.Authentication;
+using IT.WebServices.Authorization.Discord.Helpers;
 using IT.WebServices.Authorization.Discord.Services;
 using IT.WebServices.Clients;
 using IT.WebServices.Clients.Authentication;
@@ -24,9 +25,10 @@ namespace IT.WebServices.Authorization.Discord
             if (builder.Environment.IsDevelopment())
                 builder.Services.AddHostedService<DevTunnelService>();
             builder.Services.AddSingleton<ClientGrpcHelper>();
-            builder.Services.AddSingleton<MySQLHelper>();
             builder.Services.AddSingleton<UserClient>();
             builder.Services.AddSingleton<PaymentClient>();
+            builder.Services.AddJwtAuthentication();
+            builder.Services.AddAuthenticationClasses();
             builder.Services.AddDiscordData();
             builder.Services.AddSettingsHelpers();
             builder.Services.AddDiscordSettings(builder.Configuration);
@@ -51,6 +53,8 @@ namespace IT.WebServices.Authorization.Discord
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Discord API v1");
                 });
             }
+
+            app.UseJwtApiAuthentication();
 
             app.MapControllers();
             app.MapDiscordGrpcServices();
