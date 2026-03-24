@@ -2,6 +2,7 @@
 using FortisAPI.Standard.Exceptions;
 using FortisAPI.Standard.Models;
 using IT.WebServices.Authentication;
+using IT.WebServices.Authorization.Payment.Tax.Services;
 using IT.WebServices.Fragments.Authorization.Payment.Fortis;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
@@ -16,15 +17,17 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
         private readonly AppSettings appSettings;
         private readonly ILogger logger;
         private readonly SettingsHelper settingsClient;
+        private readonly TaxServiceInternal taxService;
 
         public readonly FortisAPI.Standard.FortisAPIClient Client;
 
-        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger, SettingsHelper settingsClient)
+        public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger, SettingsHelper settingsClient, TaxServiceInternal taxService)
         {
             this.settingsHelper = settingsHelper;
             this.appSettings = appSettings.Value;
             this.logger = logger;
             this.settingsClient = settingsClient;
+            this.taxService = taxService;
 
             Client = GetClient();
         }
@@ -48,12 +51,16 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             if (!IsEnabled)
                 return null;
 
+            var taxRecord = await taxService.Get("USA", postalCode);
+            var taxCents = taxRecord is null ? 0 : (int)taxRecord.CalculateTax(amountCents);
+            var totalCents = amountCents + taxCents;
+
             ElementsController elementsController = Client.ElementsController;
             var body = new V1ElementsTransactionIntentionRequest()
             {
                 Action = ActionEnum.Sale,
-                Amount = (int)amountCents,
-                TaxAmount = null,
+                Amount = (int)totalCents,
+                TaxAmount = taxCents,
                 Methods = new(),
                 LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID
             };
