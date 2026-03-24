@@ -11,7 +11,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Helpers
     {
         public static GenericSubscriptionRecord ToSubscriptionRecord(this Subscription pRec)
         {
-            var amount = (uint)(pRec.Items.FirstOrDefault()?.Plan?.Amount ?? 0);
+            var item = pRec.Items.FirstOrDefault();
+            var amount = (uint)(item?.Plan?.Amount ?? 0);
+            var taxPercent = item?.TaxRates?.FirstOrDefault()?.Percentage ?? 0M;
+            var taxRate = taxPercent / 100M;
+            var taxThousands = (uint)(Math.Round(taxPercent * 1000M));
+            var taxAmount = amount * taxRate;
+            var taxAmountCents = (uint)(Math.Round(taxAmount));
+            var totalCents = amount + taxAmountCents;
             var status = ConvertStatus(pRec.Status);
 
             return new()
@@ -24,9 +31,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Helpers
                 CanceledOnUTC = status == SubscriptionStatus.SubscriptionStopped ? Timestamp.FromDateTime(DateTime.UtcNow) : new(),
                 Status = status,
                 AmountCents = amount,
-                TaxCents = 0,
-                TaxRateThousandPercents = 0,
-                TotalCents = amount,
+                TaxCents = taxAmountCents,
+                TaxRateThousandPercents = taxThousands,
+                TotalCents = totalCents,
             };
         }
 

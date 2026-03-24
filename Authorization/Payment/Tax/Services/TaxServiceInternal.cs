@@ -13,5 +13,9 @@ namespace IT.WebServices.Authorization.Payment.Tax.Services
         }
 
         public async Task<SalesTaxByPostalCodeRecord?> Get(string countryCode, string postalCode) => await dataProvider.Get(countryCode, postalCode);
+
+        public async Task<List<SalesTaxByPostalCodeRecord>> GetAll() => await dataProvider.GetAll().ToListAsync();
+
+        public async Task Save(SalesTaxByPostalCodeRecord record) => await dataProvider.Save(record);
     }
 }

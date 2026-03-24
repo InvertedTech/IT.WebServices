@@ -3,11 +3,13 @@ using IT.WebServices.Authorization.Payment.Generic;
 using IT.WebServices.Authorization.Payment.Helpers.Models;
 using IT.WebServices.Authorization.Payment.Stripe.Data;
 using IT.WebServices.Authorization.Payment.Stripe.Helpers;
+using IT.WebServices.Authorization.Payment.Tax.Services;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment.Stripe;
+using IT.WebServices.Fragments.Authorization.Payment.Tax;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
@@ -32,6 +34,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private readonly IProductRecordProvider recordProvider;
         private readonly ILogger<StripeClient> logger;
         private readonly SettingsHelper settingsClient;
+        private readonly TaxServiceInternal taxService;
 
         private global::Stripe.Checkout.SessionService checkoutService = new();
         private CustomerService customerService = new();
@@ -39,6 +42,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private ProductService productService = new();
         private PriceService priceService = new();
         private SubscriptionService subService = new();
+        private TaxRateService stripeTaxService = new();
 
         private object syncObject = new();
 
@@ -46,13 +50,15 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             ILogger<StripeClient> logger,
             IOptions<AppSettings> settings,
             IProductRecordProvider recordProvider,
-            SettingsHelper settingsClient
+            SettingsHelper settingsClient,
+            TaxServiceInternal taxService
         )
         {
             this.settings = settings.Value;
             this.logger = logger;
             this.settingsClient = settingsClient;
             this.recordProvider = recordProvider;
+            this.taxService = taxService;
 
             if (IsEnabled)
             {
@@ -257,16 +263,18 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return createdPrice;
         }
 
-        public async Task<StripeNewDetails?> GetNewDetails(uint level, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<StripeNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
         {
             if (!IsEnabled)
                 return null;
 
-            var product = Products.Records.FirstOrDefault(r => r.Price == level);
+            var taxRecord = await taxService.Get("US", postalCode);
+
+            var product = Products.Records.FirstOrDefault(r => r.Price == amountCents);
             if (product == null)
                 return null;
 
-            var url = await CreateCheckoutSession(product, userToken, successUrl, cancelUrl);
+            var url = await CreateCheckoutSession(product, taxRecord, userToken, successUrl, cancelUrl);
             if (url == null)
                 return null;
 
@@ -354,7 +362,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             }
         }
 
-        public async Task<string?> CreateCheckoutSession(ProductRecord product, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<string?> CreateCheckoutSession(ProductRecord product, SalesTaxByPostalCodeRecord? taxRecord, ONUser userToken, string successUrl, string cancelUrl)
         {
             if (!IsEnabled)
                 return null;
@@ -383,7 +391,12 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     Mode = "subscription",
                     LineItems = new()
                     {
-                        new() { Price = product.PriceID, Quantity = 1, },
+                        new()
+                        {
+                            Price = product.PriceID,
+                            Quantity = 1,
+                            TaxRates = string.IsNullOrWhiteSpace(taxRecord?.StripeTaxRateId) ? null : new(){ taxRecord.StripeTaxRateId }
+                        },
                     },
                     Customer = customer.Id,
 
@@ -884,6 +897,101 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             catch { }
 
             return null;
+        }
+
+        public async Task ReconcileStripeTaxRates(ONUser user, PaymentBulkActionProgress progress, CancellationToken cancelToken)
+        {
+            try
+            {
+                progress.StatusMessage = $"Pulling data from stripe";
+                var stripeTaxRecords = await GetStripeTaxRates();
+                progress.StatusMessage = $"Pulling data from database";
+                var taxRecords = (await taxService.GetAll()).ToArray();
+
+                for (int i = 0; i < taxRecords.Length; i++)
+                {
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    progress.Progress = 1F * i / taxRecords.Length;
+                    var taxRecord = taxRecords[i];
+
+                    progress.StatusMessage = $"Fixing {taxRecord.CountryCode}-{taxRecord.SubdivisionCode}-{taxRecord.PostalCode}";
+
+                    if (string.IsNullOrWhiteSpace(taxRecord.StripeTaxRateId))
+                    {
+                        var rateId = await CreateTaxRateRecord(taxRecord);
+                        taxRecord.StripeTaxRateId = rateId;
+                        await taxService.Save(taxRecord);
+                        continue;
+                    }
+
+                    var updatedRateId = await EnsureTaxRecord(taxRecord, stripeTaxRecords);
+
+                    if (taxRecord.StripeTaxRateId != updatedRateId)
+                    {
+                        taxRecord.StripeTaxRateId = updatedRateId;
+                        await taxService.Save(taxRecord);
+                        continue;
+                    }
+                }
+
+                progress.StatusMessage = "Completed Successfully";
+                progress.CompletedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                progress.Progress = 1;
+            }
+            catch (Exception ex)
+            {
+                progress.StatusMessage = ex.Message;
+                progress.Progress = 1;
+                progress.CompletedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+            }
+
+        }
+
+        private async Task<string> EnsureTaxRecord(SalesTaxByPostalCodeRecord taxRecord, List<TaxRate> stripeTaxRecords)
+        {
+            var stripeTaxRecord = stripeTaxRecords.FirstOrDefault(r => r.Id == taxRecord.StripeTaxRateId);
+            if (stripeTaxRecord == null)
+                return await CreateTaxRateRecord(taxRecord);
+
+            var percentage = taxRecord.TaxRateThousandPercents / 1000M;
+
+            if (stripeTaxRecord.Percentage == percentage)
+                return taxRecord.StripeTaxRateId;
+
+            return await CreateTaxRateRecord(taxRecord);
+        }
+
+        private async Task<string> CreateTaxRateRecord(SalesTaxByPostalCodeRecord taxRecord)
+        {
+            try
+            {
+                var rate = await stripeTaxService.CreateAsync(
+                        new()
+                        {
+                            Active = true,
+                            Country = taxRecord.CountryCode,
+                            DisplayName = $"{taxRecord.CountryCode}-{taxRecord.PostalCode}",
+                            Inclusive = false,
+                            Jurisdiction = taxRecord.PostalCode,
+                            Percentage = taxRecord.TaxRateThousandPercents / 1000M,
+                            State = taxRecord.SubdivisionCode,
+                            TaxType = "sales_tax",
+                        }
+                    );
+
+                return rate?.Id ?? "";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CreateTaxRateRecord");
+                return "";
+            }
+        }
+
+        private async Task<List<TaxRate>> GetStripeTaxRates()
+        {
+            return await stripeTaxService.ListAutoPagingAsync().ToListAsync();
         }
     }
 }

@@ -3,8 +3,11 @@ syntax = "proto3";
 package IT.WebServices.Fragments.Authorization.Payment.Tax;
 
 message SalesTaxByPostalCodeRecord {
-  string CountryCode = 1;				// ISO 3166-1 alpha-3
+  string CountryCode = 1;				// ISO 3166-1 alpha-2
   string PostalCode = 2;
-  uint32 TaxRateThousandPercents = 3;	//Tax rate 1.234% = 1234 or taxrate * 100000
+  string SubdivisionCode = 3;				// ISO 3166-2
+  uint32 TaxRateThousandPercents = 11;	// Tax rate 1.234% = 1234 or taxrate * 100000
+
+  string StripeTaxRateId = 21;
 }
 

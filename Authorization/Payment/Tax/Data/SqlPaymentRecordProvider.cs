@@ -116,6 +116,9 @@ namespace IT.WebServices.Authorization.Payment.Tax.Data
                         *
                     FROM
                         Payment_Tax_SalesTax
+                    ORDER BY
+                        CountryCode ASC,
+                        PostalCode ASC
                 ";
 
             using var rdr = await sql.ReturnReader(query);
@@ -164,17 +167,21 @@ namespace IT.WebServices.Authorization.Payment.Tax.Data
             {
                 const string query = @"
                     INSERT INTO Payment_Tax_SalesTax
-                            (CountryCode,  PostalCode,  TaxRateThousandPercents)
-                    VALUES (@CountryCode, @PostalCode, @TaxRateThousandPercents)
+                            (CountryCode,  PostalCode,  SubdivisionCode,  TaxRateThousandPercents,  StripeTaxRateId)
+                    VALUES (@CountryCode, @PostalCode, @SubdivisionCode, @TaxRateThousandPercents, @StripeTaxRateId)
                     ON DUPLICATE KEY UPDATE
-                            PostalCode = @PostalCode
+                            SubdivisionCode = @SubdivisionCode,
+                            TaxRateThousandPercents = @TaxRateThousandPercents,
+                            StripeTaxRateId = @StripeTaxRateId
                 ";
 
                 var parameters = new List<MySqlParameter>()
                 {
                     new MySqlParameter("CountryCode", record.CountryCode),
                     new MySqlParameter("PostalCode", record.PostalCode),
+                    new MySqlParameter("SubdivisionCode", record.SubdivisionCode),
                     new MySqlParameter("TaxRateThousandPercents", record.TaxRateThousandPercents),
+                    new MySqlParameter("StripeTaxRateId", record.StripeTaxRateId),
                 };
 
                 await sql.RunCmd(query, parameters.ToArray());

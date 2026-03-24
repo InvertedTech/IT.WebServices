@@ -51,7 +51,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             if (!IsEnabled)
                 return null;
 
-            var taxRecord = await taxService.Get("USA", postalCode);
+            var taxRecord = await taxService.Get("US", postalCode);
             var taxCents = taxRecord is null ? 0 : (int)taxRecord.CalculateTax(amountCents);
             var totalCents = amountCents + taxCents;
 
@@ -62,7 +62,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
                 Amount = (int)totalCents,
                 TaxAmount = taxCents,
                 Methods = new(),
-                LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID
+                LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
             };
             body.Methods.Add(new(TypeEnum.Cc, settingsHelper.Owner.Subscription.Fortis.ProductID));
 

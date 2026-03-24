@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static void MapTaxGrpcServices(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapGrpcService<TaxService>();
+            endpoints.MapGrpcService<BackupService>();
         }
     }
 }

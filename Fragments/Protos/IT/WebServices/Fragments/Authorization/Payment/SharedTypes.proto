@@ -21,10 +21,11 @@ enum PaymentStatus {
 }
 
 enum PaymentBulkAction {
-    ReconcileAll = 0;
-    LookForNewPaymentsOneDay = 1;
-    LookForNewPaymentsOneWeek = 2;
-    LookForNewPaymentsOneMonth = 3;
+    LookForNewPaymentsOneDay = 0;
+    LookForNewPaymentsOneWeek = 1;
+    LookForNewPaymentsOneMonth = 2;
+    ReconcileAll = 3;
+    ReconcileStripeTaxRates = 4;
 }
 
 message PaymentBulkActionProgress {

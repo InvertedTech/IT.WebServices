@@ -76,6 +76,8 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                     return serviceProvider.GetService<LookForNewPaymentsOneWeek>();
                 case PaymentBulkAction.ReconcileAll:
                     return serviceProvider.GetService<ReconcileAll>();
+                case PaymentBulkAction.ReconcileStripeTaxRates:
+                    return serviceProvider.GetService<ReconcileStripeTaxRates>();
             }
 
             return null;

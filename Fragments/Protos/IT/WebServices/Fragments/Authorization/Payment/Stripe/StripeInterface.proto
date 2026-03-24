@@ -8,14 +8,6 @@ import "Protos/IT/WebServices/Fragments/Authorization/Payment/SharedTypes.proto"
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/Stripe/ProductRecord.proto";
 
 service StripeInterface {
-//  rpc StripeCheckOtherSubscription (StripeCheckOtherSubscriptionRequest) returns (StripeCheckOtherSubscriptionResponse) {}
-
-//  rpc StripeCheckOwnSubscription (StripeCheckOwnSubscriptionRequest) returns (StripeCheckOwnSubscriptionResponse) {}
-
-//  rpc StripeCheckOwnOneTime (StripeCheckOwnOneTimeRequest) returns (StripeCheckOwnOneTimeResponse) {}
-
-//  rpc StripeGetAccountDetails (StripeGetAccountDetailsRequest) returns (StripeGetAccountDetailsResponse) {}
-
   rpc StripeFinishOwnSubscription (StripeFinishOwnSubscriptionRequest) returns (StripeFinishOwnSubscriptionResponse)
   {
     option (google.api.http) = {
@@ -23,87 +15,6 @@ service StripeInterface {
       body: "*"
     };
   }
-
-//  rpc StripeCreateBillingPortal (StripeCreateBillingPortalRequest) returns (StripeCreateBillingPortalResponse) {}
-
-//  rpc StripeCreateCheckoutSession(StripeCheckoutSessionRequest) returns (StripeCheckoutSessionResponse) {}
-
-//  rpc StripeEnsureOneTimeProduct(StripeEnsureOneTimeProductRequest) returns (StripeEnsureOneTimeProductResponse) {}
-}
-
-message StripeCheckOtherSubscriptionRequest {
-    string UserID = 1;
-}
-
-message StripeCheckOtherSubscriptionResponse {
-	repeated GenericSubscriptionFullRecord Records = 1;
-	string Error = 2;
-}
- 
-message StripeCheckOwnSubscriptionRequest {
-}
-
-message StripeCheckOwnSubscriptionResponse {
-	repeated GenericSubscriptionFullRecord Records = 1;
-	string Error = 2;
-}
- 
-//message StripeCheckOwnOneTimeRequest {
-//}
-
-//message StripeCheckOwnOneTimeResponse {
-//	repeated StripeOneTimePaymentRecord Records = 1;
-//	string Error = 2;
-//}
- 
-message StripeCheckoutSessionRequest {
-	string PriceID = 1;
-}
-
-message StripeCheckoutSessionResponse {
-	string SessionUrl = 1;
-	string Error = 2;
-}
- 
-message StripeCreateBillingPortalRequest {
-	string CustomerID = 1;
-}
-
-message StripeCreateBillingPortalResponse {
-	string Url = 1;
-	string Error = 2;
-}
-
-message StripeFinishOwnSubscriptionRequest {
-  string ProcessorSessionID = 1;
-}
-  
-message StripeFinishOwnSubscriptionResponse {
-  GenericSubscriptionRecord Record = 1;
-  string Error = 2;
-}
-
-message StripeGetAccountDetailsRequest {
-}
-  
-message StripeGetAccountDetailsResponse {
-  ProductList Products = 1;
-  string ClientID = 2;
-}
-  
-message StripeGetOtherSubscriptionRecordsRequest {
-  string UserID = 1;
-}
-  
-message StripeGetOtherSubscriptionRecordsResponse {
-  repeated GenericSubscriptionFullRecord Records = 1;
-}
-
-message StripeGetOwnSubscriptionRecordsRequest {
-}
-  
-message StripeGetOwnSubscriptionRecordsResponse {
-  repeated GenericSubscriptionRecord Records = 1;
 }
 
 message StripeEnsureOneTimeProductRequest {
@@ -117,21 +28,11 @@ message StripeEnsureOneTimeProductResponse {
 	string Error = 1;
 }
 
-message StripeReconcileOtherSubscriptionRequest {
-  string UserID = 1;
-  string SubscriptionID = 2;
-}
-  
-message StripeReconcileOtherSubscriptionResponse {
-  GenericSubscriptionFullRecord Record = 1;
-  string Error = 2;
+message StripeFinishOwnSubscriptionRequest {
+  string ProcessorSessionID = 1;
 }
 
-message StripeReconcileOwnSubscriptionRequest {
-  string SubscriptionID = 1;
-}
-  
-message StripeReconcileOwnSubscriptionResponse {
-  GenericSubscriptionFullRecord Record = 1;
+message StripeFinishOwnSubscriptionResponse {
+  GenericSubscriptionRecord Record = 1;
   string Error = 2;
 }

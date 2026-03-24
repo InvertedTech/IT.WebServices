@@ -11,7 +11,9 @@ namespace IT.WebServices.Authorization.Payment.Tax.Helpers
             {
                 CountryCode = rdr["CountryCode"] as string ?? "",
                 PostalCode = rdr["PostalCode"] as string ?? "",
+                SubdivisionCode = rdr["SubdivisionCode"] as string ?? "",
                 TaxRateThousandPercents = (uint)rdr["TaxRateThousandPercents"],
+                StripeTaxRateId = rdr["StripeTaxRateId"] as string ?? "",
             };
         }
 
