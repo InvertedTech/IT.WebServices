@@ -34,7 +34,7 @@ namespace IT.WebServices.Clients.Payments
         private Metadata GetMetadata()
         {
             var data = new Metadata();
-            data.Add("Authorization", "Bearer " + grpcHelper.ServiceToken);
+            data.Add("Authorization", "Bearer " + grpcHelper.ServiceToken.Value);
             return data;
         }
     }

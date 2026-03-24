@@ -180,10 +180,10 @@ namespace IT.WebServices.Authorization.Discord.Data
                     INSERT INTO Discord_Member
                             (UserID,  DiscordUserId,  DiscordUserName,  Tiers,  BannedReason,  BannedOnUTC,  BannedByDiscordId,
                              CreatedOnUTC,  CreatedById,  ModifiedOnUTC,  ModifiedById,  InternalSubscriptionId,
-                             AccessToken,  RefreshToken,  AccessTokenExpiresOnUTC,  TokenCreatedOnUTC,  TokenModifiedOnUTC)
+                             AccessToken,  RefreshToken,  AccessTokenExpiresOnUTC)
                     VALUES (@UserID, @DiscordUserId, @DiscordUserName, @Tiers, @BannedReason, @BannedOnUTC, @BannedByDiscordId,
                             @CreatedOnUTC, @CreatedById, @ModifiedOnUTC, @ModifiedById, @InternalSubscriptionId,
-                            @AccessToken, @RefreshToken, @AccessTokenExpiresOnUTC, @TokenCreatedOnUTC, @TokenModifiedOnUTC)
+                            @AccessToken, @RefreshToken, @AccessTokenExpiresOnUTC)
                     ON DUPLICATE KEY UPDATE
                             DiscordUserId = @DiscordUserId,
                             DiscordUserName = @DiscordUserName,
@@ -198,9 +198,7 @@ namespace IT.WebServices.Authorization.Discord.Data
                             InternalSubscriptionId = @InternalSubscriptionId,
                             AccessToken = @AccessToken,
                             RefreshToken = @RefreshToken,
-                            AccessTokenExpiresOnUTC = @AccessTokenExpiresOnUTC,
-                            TokenCreatedOnUTC = @TokenCreatedOnUTC,
-                            TokenModifiedOnUTC = @TokenModifiedOnUTC
+                            AccessTokenExpiresOnUTC = @AccessTokenExpiresOnUTC
                 ";
 
                 var parameters = new MySqlParameter[]
@@ -217,11 +215,9 @@ namespace IT.WebServices.Authorization.Discord.Data
                     new MySqlParameter("ModifiedOnUTC", member.Public.ModifiedOnUTC?.ToDateTime()),
                     new MySqlParameter("ModifiedById", member.Private.ModifiedById),
                     new MySqlParameter("InternalSubscriptionId", member.Private.InternalSubscriptionId),
-                    new MySqlParameter("AccessToken", member.Server.AccessToken),
-                    new MySqlParameter("RefreshToken", member.Server.RefreshToken),
-                    new MySqlParameter("AccessTokenExpiresOnUTC", member.Server.AccessTokenExpiresOnUTC?.ToDateTime()),
-                    new MySqlParameter("TokenCreatedOnUTC", member.Server.CreatedOnUTC.ToDateTime()),
-                    new MySqlParameter("TokenModifiedOnUTC", member.Server.ModifiedOnUTC?.ToDateTime()),
+                    new MySqlParameter("AccessToken", string.IsNullOrEmpty(member.Private.AccessToken) ? DBNull.Value : member.Private.AccessToken),
+                    new MySqlParameter("RefreshToken", string.IsNullOrEmpty(member.Private.RefreshToken) ? DBNull.Value : member.Private.RefreshToken),
+                    new MySqlParameter("AccessTokenExpiresOnUTC", member.Private.AccessTokenExpiresOnUTC == null ? DBNull.Value : member.Private.AccessTokenExpiresOnUTC.ToDateTime()),
                 };
 
                 await sql.RunCmd(query, parameters);

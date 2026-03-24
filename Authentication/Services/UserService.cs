@@ -1587,7 +1587,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE)]
         public override async Task<ModifyOtherUserAuthProvidersResponse> ModifyOtherUserAuthProviders(ModifyOtherUserAuthProvidersRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
@@ -1808,7 +1808,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER + "," + RoleAbilities.ROLE_SERVICE)]
         public override async Task<SearchUsersAdminResponse> SearchUsersAdmin(
             SearchUsersAdminRequest request,
             ServerCallContext context

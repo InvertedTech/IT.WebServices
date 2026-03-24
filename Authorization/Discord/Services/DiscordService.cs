@@ -86,10 +86,6 @@ namespace IT.WebServices.Authorization.Discord.Services
                 Private = new DiscordMemberPrivateRecord
                 {
                     CreatedById = request.UserId,
-                },
-                Server = new DiscordMemberServerRecord
-                {
-                    CreatedOnUTC = now
                 }
             };
 

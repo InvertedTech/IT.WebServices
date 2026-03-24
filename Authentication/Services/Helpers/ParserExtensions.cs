@@ -51,6 +51,12 @@ namespace IT.WebServices.Authentication.Services.Helpers
                         {
                             UserId = rdr["MicrosoftAuthProviderUserId"] as string ?? "",
                         },
+                        Discord = new()
+                        {
+                            DiscordId = rdr["DiscordAuthProviderUserId"] as string ?? "",
+                            AccessToken = rdr["DiscordAccessToken"] as string ?? "",
+                            RefreshToken = rdr["DiscordRefreshToken"] as string ?? "",
+                        },
                     },
                 },
             };
@@ -74,6 +80,12 @@ namespace IT.WebServices.Authentication.Services.Helpers
             {
                 d = DateTime.SpecifyKind((DateTime)rdr["DisabledOnUTC"], DateTimeKind.Utc);
                 userRecord.Normal.Public.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
+            }
+
+            if (!(rdr["DiscordAccessTokenExpiresOnUTC"] is DBNull))
+            {
+                d = DateTime.SpecifyKind((DateTime)rdr["DiscordAccessTokenExpiresOnUTC"], DateTimeKind.Utc);
+                userRecord.Server.AuthProviders.Discord.AccessTokenExpiresOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(d);
             }
 
             return userRecord;

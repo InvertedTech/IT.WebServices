@@ -62,7 +62,36 @@ namespace IT.WebServices.Authorization.Discord.Helpers
 
         public async ValueTask<DiscordInteractionMember> GetGuildMemberAsync(string guildId, string userId)
         {
-            throw new NotImplementedException();
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{V10}guilds/{guildId}/members/{userId}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bot", _settings.BotToken);
+
+            var response = await _http.SendAsync(request);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<DiscordInteractionMember>(json);
+        }
+
+        // Adds a user to the guild. Requires the access token to have the guilds.join scope.
+        public async ValueTask AddGuildMemberAsync(string guildId, string userId, string accessToken)
+        {
+            var path = $"{V10}guilds/{guildId}/members/{userId}";
+            var body = JsonSerializer.Serialize(new { access_token = accessToken });
+            var request = new HttpRequestMessage(HttpMethod.Put, path)
+            {
+                Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bot", _settings.BotToken);
+
+            var response = await _http.SendAsync(request);
+            // 201 = added, 204 = already a member — both are success
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Discord {response.StatusCode}: {errorBody}");
+            }
         }
 
         public async ValueTask AddRoleAsync(string guildId, string userId, string roleId)
@@ -131,7 +160,15 @@ namespace IT.WebServices.Authorization.Discord.Helpers
 
         public async ValueTask RevokeTokenAsync(string token)
         {
-            throw new NotImplementedException();
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "client_id",     _settings.AppId },
+                { "client_secret", _settings.ClientSecret },
+                { "token",         token },
+            });
+
+            var response = await _http.PostAsync("oauth2/token/revoke", content);
+            response.EnsureSuccessStatusCode();
         }
 
         public async ValueTask PushLinkedRoleMetadataAsync(string userAccessToken, LinkedRoleMetadata metadata)

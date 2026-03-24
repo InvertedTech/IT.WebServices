@@ -474,9 +474,11 @@ namespace IT.WebServices.Authentication.Services.Data
                     INSERT INTO Auth_User
                             (UserID,  UserName,  DisplayName,  Bio,  Roles,  Email,  OldUserID,  PasswordHash,  PasswordSalt,  OldPassword,
                              OldPasswordAlgorithm,  FirstName,  LastName,  PostalCode,  MicrosoftAuthProviderUserId,  DiscordAuthProviderUserId,
+                             DiscordAccessToken,  DiscordRefreshToken,  DiscordAccessTokenExpiresOnUTC,
                              CreatedOnUTC,  CreatedBy,  ModifiedOnUTC,  ModifiedBy,  DisabledOnUTC,  DisabledBy)
                     VALUES (@UserID, @UserName, @DisplayName, @Bio, @Roles, @Email, @OldUserID, @PasswordHash, @PasswordSalt, @OldPassword,
                             @OldPasswordAlgorithm, @FirstName, @LastName, @PostalCode, @MicrosoftAuthProviderUserId, @DiscordAuthProviderUserId,
+                            @DiscordAccessToken, @DiscordRefreshToken, @DiscordAccessTokenExpiresOnUTC,
                             @CreatedOnUTC, @CreatedBy, @ModifiedOnUTC, @ModifiedBy, @DisabledOnUTC, @DisabledBy)
                     ON DUPLICATE KEY UPDATE
                             UserName = @UserName,
@@ -494,6 +496,9 @@ namespace IT.WebServices.Authentication.Services.Data
                             PostalCode = @PostalCode,
                             MicrosoftAuthProviderUserId = @MicrosoftAuthProviderUserId,
                             DiscordAuthProviderUserId = @DiscordAuthProviderUserId,
+                            DiscordAccessToken = @DiscordAccessToken,
+                            DiscordRefreshToken = @DiscordRefreshToken,
+                            DiscordAccessTokenExpiresOnUTC = @DiscordAccessTokenExpiresOnUTC,
                             CreatedOnUTC = @CreatedOnUTC,
                             CreatedBy = @CreatedBy,
                             ModifiedOnUTC = @ModifiedOnUTC,
@@ -519,7 +524,10 @@ namespace IT.WebServices.Authentication.Services.Data
                     new MySqlParameter("LastName", user.Normal.Private.Data.LastName),
                     new MySqlParameter("PostalCode", user.Normal.Private.Data.PostalCode),
                     new MySqlParameter("MicrosoftAuthProviderUserId", user.Server.AuthProviders?.Microsoft?.UserId is null ? DBNull.Value : user.Server.AuthProviders?.Microsoft?.UserId),
-                    new MySqlParameter("DiscordAuthProviderUserId", user.Server.AuthProviders?.Discord?.UserId is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.UserId),
+                    new MySqlParameter("DiscordAuthProviderUserId", user.Server.AuthProviders?.Discord?.DiscordId is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.DiscordId),
+                    new MySqlParameter("DiscordAccessToken", user.Server.AuthProviders?.Discord?.AccessToken is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.AccessToken),
+                    new MySqlParameter("DiscordRefreshToken", user.Server.AuthProviders?.Discord?.RefreshToken is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.RefreshToken),
+                    new MySqlParameter("DiscordAccessTokenExpiresOnUTC", user.Server.AuthProviders?.Discord?.AccessTokenExpiresOnUTC is null ? DBNull.Value : user.Server.AuthProviders?.Discord?.AccessTokenExpiresOnUTC.ToDateTime()),
                     new MySqlParameter("CreatedOnUTC", user.Normal.Public.CreatedOnUTC.ToDateTime()),
                     new MySqlParameter("CreatedBy", user.Normal.Private.CreatedBy),
                     new MySqlParameter("ModifiedOnUTC", user.Normal.Public.ModifiedOnUTC?.ToDateTime()),

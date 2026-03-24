@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package IT.WebServices.Fragments.Authorization.Discord;
 
-message  DiscordPublicRecord {
+message DiscordPublicRecord {
 	bool Enabled = 1;
 }
 
@@ -10,6 +10,19 @@ message DiscordPrivateRecord {
 	string AppId = 1;
 	string OAuthRedirectUri = 2;
 	string PublicKey = 3;
+	string SignInSuccessRedirect = 4;
+	string LinkedRoleSuccessRedirect = 5;
+	string GuildId = 6;
+	string SupportChannelId = 7;
+	string ShunChannelId = 8;
+	map<string, DiscordRoleRecord> Roles = 10;    // key = tier/role name, e.g. "lounge", "shun", "admin"
+	map<string, string> CommandNameOverrides = 11; // key = default command name, value = override
+}
+
+// Configuration for a single Discord role, stored in DiscordPrivateRecord.Roles
+message DiscordRoleRecord {
+	string RoleId = 1;           // Discord snowflake role ID
+	string NameOverride = 2;     // Optional display name override for this role
 }
 
 message DiscordOwnerRecord {
