@@ -65,6 +65,11 @@
     <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Errors.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Merch\GenericMerchInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Merch\GenericMerchRecords.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Merch\MerchSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Merch\SharedMerchTypes.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Merch\Shopify\ShopifySettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\NotificationUserRecord.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Notification\UserNotificationInterface.proto" />
@@ -134,6 +139,11 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Errors.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\GenericMerchInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\GenericMerchRecords.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\MerchSettings.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\SharedMerchTypes.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\Shopify\ShopifySettings.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageRecord.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Page\PageInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Content\Stats\StatsSaveInterface.proto" />

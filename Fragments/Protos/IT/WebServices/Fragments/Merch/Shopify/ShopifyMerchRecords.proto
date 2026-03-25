@@ -1,0 +1,45 @@
+syntax = "proto3";
+package IT.WebServices.Fragments.Commerce.Merch.Shopify;
+
+import "Protos/IT/WebServices/Fragments/Commerce/Merch/SharedTypes.proto";
+
+enum ShopifyInventoryPolicy {
+  ShopifyInventoryPolicy_Unknown  = 0;
+  ShopifyInventoryPolicy_Deny     = 1;
+  ShopifyInventoryPolicy_Continue = 2;
+}
+
+message ShopifyMerchRecord {
+  string Handle = 1;
+  string ProductGID = 2;
+  string VariantGID = 3;
+  IT.WebServices.Fragments.Commerce.Merch.MerchStore Store = 4;
+  string StorefrontDomain = 5;
+  string CollectionID = 6;
+  string Price = 7;
+  string CompareAtPrice = 8;
+  string CostPerItem = 9;
+  string Title = 10;
+  string BodyHtml = 11;
+  string Vendor = 12;
+  string ProductType = 13;
+  string ProductCategory = 14;
+  repeated string Tags = 15;
+  bool Published = 16;
+  bool GiftCard = 17;
+  string SeoTitle = 18;
+  string SeoDescription = 19;
+  string ImageSrc = 20;
+  string ImageAlt = 21;
+  string CoffeeRoast = 22;
+  string VariantSku = 23;
+  string VariantImageUrl = 24;
+  bool AvailableForSale = 25;
+  bool Taxable = 26;
+  bool RequiresShipping = 27;
+  string Barcode = 28;
+  ShopifyInventoryPolicy InventoryPolicy = 29;
+  int32 InventoryQty = 30;
+  string WeightUnit = 31;
+  string TaxCode = 32;
+}

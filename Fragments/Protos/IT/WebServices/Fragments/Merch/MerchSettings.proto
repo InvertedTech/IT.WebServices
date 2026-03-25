@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/protobuf/timestamp.proto";
+import "Protos/IT/WebServices/Fragments/Merch/Shopify/ShopifySettings.proto";
+
+message MerchPublicSettings {
+	IT.WebServices.Fragments.Merch.Shopify.ShopifyPublicSettings Shopify = 1;
+}
+
+message MerchPrivateSettings {
+	IT.WebServices.Fragments.Merch.Shopify.ShopifyPrivateSettings Shopify = 1;
+}
+
+message MerchOwnerSettings {
+	IT.WebServices.Fragments.Merch.Shopify.ShopifyOwnerSettings Shopify = 1;
+}

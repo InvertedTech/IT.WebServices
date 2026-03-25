@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+import "Protos/IT/WebServices/Fragments/Merch/SharedMerchTypes.proto";
+import "Protos/IT/WebServices/Fragments/Merch/GenericMerchRecords.proto";
+
+service MerchInterface {
+  rpc GetAllMerch (GetAllMerchRequest) returns (GetAllMerchResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/merch"
+    };
+  }
+  rpc GetMerch (GetMerchRequest) returns (GetMerchResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/merch/{InternalProductId}"
+    };
+  }
+  rpc CreateMerch (CreateMerchRequest) returns (CreateMerchResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/merch/admin"
+      body: "*"
+    };
+  }
+  rpc ModifyMerch (ModifyMerchRequest) returns (ModifyMerchResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/merch/admin/{InternalProductId}"
+      body: "*"
+    };
+  }
+  rpc DeleteMerch (DeleteMerchRequest) returns (DeleteMerchResponse)
+  {
+    option (google.api.http) = {
+      delete: "/api/merch/admin/{InternalProductId}"
+    };
+  }
+}
+
+message GetAllMerchRequest {
+  uint32 PageSize = 1;
+  uint32 PageOffset = 2;
+}
+
+message GetAllMerchResponse {
+  repeated GenericMerchRecord Records = 1;
+  uint32 PageOffsetStart = 11;
+  uint32 PageOffsetEnd = 12;
+  uint32 PageTotalItems = 13;
+}
+
+message GetMerchRequest {
+  string InternalProductId = 1;
+}
+
+message GetMerchResponse {
+  GenericMerchRecord Record = 1;
+}
+
+message CreateMerchRequest {
+  GenericMerchRecord Record = 1;
+}
+
+message CreateMerchResponse {
+  GenericMerchRecord Record = 1;
+}
+
+message ModifyMerchRequest {
+  string InternalProductId = 1;
+  GenericMerchRecord Record = 2;
+}
+
+message ModifyMerchResponse {
+  GenericMerchRecord Record = 1;
+}
+
+message DeleteMerchRequest {
+  string InternalProductId = 1;
+}
+
+message DeleteMerchResponse {
+}

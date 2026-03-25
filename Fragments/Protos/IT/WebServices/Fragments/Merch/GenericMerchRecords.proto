@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/protobuf/timestamp.proto";
+import "Protos/IT/WebServices/Fragments/Merch/SharedMerchTypes.proto";
+
+message GenericMerchRecord {
+  string InternalProductId = 1;
+  string InternalVariantId = 2;
+  string ProcessorProductId = 3;
+  string ProcessorVariantId = 4;
+  string SKU = 5;
+  MerchRecordProvider Provider = 6;
+  uint32 PriceCents = 7;
+  uint32 CompareAtPriceCents = 8;
+  google.protobuf.Timestamp CreatedOnUTC = 9;
+  google.protobuf.Timestamp ModifiedOnUTC = 10;
+  string Title = 11;
+  string Vendor = 12;
+  string ProductType = 13;
+  repeated string Tags = 14;
+  string ImageUrl = 15;
+  string ImageAlt = 16;
+  bool Published = 17;
+  bool InStock = 18;
+  repeated MerchVariantOption Variants = 19;
+}

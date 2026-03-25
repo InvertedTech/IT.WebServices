@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/protobuf/timestamp.proto";
+
+enum MerchRecordProvider {
+	Shopify = 0;
+}
+
+enum MerchStatus {
+    MerchStatus_Unknown = 0;
+    MerchStatus_Active  = 1;
+    MerchStatus_Draft   = 2;
+}
+
+message MerchVariantOption {
+    string Name  = 1;
+    string Value = 2;
+}

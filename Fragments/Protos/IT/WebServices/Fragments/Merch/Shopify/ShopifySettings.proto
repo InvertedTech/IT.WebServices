@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch.Shopify;
+
+import "google/protobuf/timestamp.proto";
+
+message ShopifyPublicSettings {
+	bool IsEnabled = 1;
+}
+
+message ShopifyPrivateSettings {}
+
+message ShopifyStoreConfig {
+	string StoreName = 1;
+	string StoreAdminToken = 2;
+	string StorefrontDomain = 3;
+}
+
+message ShopifyOwnerSettings {
+	repeated ShopifyStoreConfig Stores = 1;	
+}
