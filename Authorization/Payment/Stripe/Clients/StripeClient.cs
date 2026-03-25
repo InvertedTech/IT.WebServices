@@ -7,16 +7,13 @@ using IT.WebServices.Authorization.Payment.Tax.Services;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Authorization.Payment;
-using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Fragments.Authorization.Payment.Stripe;
 using IT.WebServices.Fragments.Authorization.Payment.Tax;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
-using IT.WebServices.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Stripe;
 using Stripe;
 using Stripe.Checkout;
 

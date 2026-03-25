@@ -1,27 +1,27 @@
-using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using IT.WebServices.Authentication;
+﻿using Grpc.Core;
+using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Notification.Services.Clients;
-using IT.WebServices.Fragments;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace IT.WebServices.Notification.Services
+namespace IT.WebServices.Notification.Services.Services
 {
-    [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT)]
-    public class NotificationService : NotificationInterface.NotificationInterfaceBase
+    public class NotificationServiceInternal
     {
-        private readonly ILogger logger;
+        private readonly ILogger log;
         private readonly SendgridClient sendgridClient;
 
-        public NotificationService(ILogger<NotificationService> logger, SendgridClient sendgridClient)
+        public NotificationServiceInternal(ILogger<NotificationServiceInternal> log, SendgridClient sendgridClient)
         {
-            this.logger = logger;
+            this.log = log;
             this.sendgridClient = sendgridClient;
         }
 
-        public override async Task<SendEmailResponse> SendEmail(SendEmailRequest request, ServerCallContext context)
+        public async Task<SendEmailResponse> SendEmail(SendEmailRequest request)
         {
             try
             {
