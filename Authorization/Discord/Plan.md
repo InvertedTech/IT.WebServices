@@ -146,51 +146,58 @@ Linked Role Metadata Schema:
 ]
 ```
 
+**OAuth2 Flow:**
+
+```
+User clicks "Connect" in Discord server Linked Roles UI
+  → Discord redirects to GET /api/discord/oauth/callback?code=...&state=...
+  → ExchangeCodeAsync(code) → Discord access token + Discord user info
+  → Resolve PlatformUserId: call auth service GetUserByIdentity(discordId or stored email)
+  → GetSubscriptionByUserId(platformUserId) → level, expiry, tiers
+  → CreateMemberRecord gRPC call → DiscordMemberRecord stored
+  → PushLinkedRoleMetadataAsync → Discord assigns linked role automatically
+  → Assign tier roles via AddRoleAsync
+  → Redirect to success page
+```
+
+**Metadata Push on Subscription Change:**
+The payment service's `BulkHelper` pattern triggers `PushLinkedRoleMetadataAsync` when a
+user's subscription level changes, keeping linked role metadata in sync automatically.
+
 ---
 
-## Phase 5: OAuth2 🔧
+## Phase 5.5: Sign in with Discord
 
-### OAuth2 Overview
+Discord supports OAuth2 as an identity provider (`identify` + `email` scopes), letting users
+log into the platform using their Discord account — no separate registration required.
 
-Two flows share a single callback. Both use Authorization Code Grant.
+**New route on `DiscordOAuthController`:**
 
-> ⚠️ **TODO: UX — Split the flows visually**
-> Currently sign-in immediately redirects into the Linked Roles OAuth, so the user sees two Discord authorization pages back-to-back with no explanation. This looks like the first one failed.
-> Fix: after sign-in completes, land the user on an intermediate page (e.g. `/discord/linked-roles`) that explains what Linked Roles is and has an explicit "Connect" button that triggers `/api/discord/oauth/link`. The Linked Roles flow should be opt-in, not automatic.
+| Route                             | Auth | Purpose                                                                                              |
+| --------------------------------- | ---- | ---------------------------------------------------------------------------------------------------- |
+| `GET /api/discord/oauth/signin`   | None | Builds Discord authorize URL (`scope=identify+email`), signs state with `flowType=signin`, redirects |
+| `GET /api/discord/oauth/callback` | None | Handles both Linked Roles and Sign-in flows based on decoded `state.flow`                            |
 
-| Flow                 | Scopes                            | Purpose                                                                |
-| -------------------- | --------------------------------- | ---------------------------------------------------------------------- |
-| Sign in with Discord | `identify email`                  | Log into platform using Discord account                                |
-| Linked Roles         | `identify role_connections.write` | Link logged-in platform account to Discord; push subscription metadata |
+**Scope difference:**
 
-### State Parameter
+| Flow                 | Scopes                            |
+| -------------------- | --------------------------------- |
+| Linked Roles         | `identify role_connections.write` |
+| Sign in with Discord | `identify email`                  |
 
-Signed HMAC payload — built by `CryptoHelper`:
+**Updated state payload** — JSON-encoded before HMAC signing:
+
+```json
+{ "flow": "link",   "uid": "platform-user-guid" }   // Linked Roles
+{ "flow": "signin"                               }   // Sign in with Discord
+```
+
+**Sign in with Discord flow:**
 
 ```
-state = Base64Url( HEX(HMAC-SHA256(payload, DISCORD_STATE_SECRET)) + ":" + payload )
-
-payload = "signin"          → Sign in flow (platformUserId = null on decode)
-payload = "{platformGuid}"  → Link flow (platformUserId = the GUID on decode)
-```
-
-### Routes
-
-| Route                                                | Status |
-| ---------------------------------------------------- | ------ |
-| `GET /api/discord/oauth/signin`                      | ✅     |
-| `GET /api/discord/oauth/callback` — state validation | ✅     |
-| `GET /api/discord/oauth/callback` — code exchange    | ✅     |
-| `GET /api/discord/oauth/callback` — get Discord user | ✅     |
-| `GET /api/discord/oauth/callback` — flow branch      | ✅     |
-| `DELETE /api/discord/link`                           | 🔲     |
-
-### Sign in with Discord Flow ✅
-
-```
-GET /api/discord/oauth/signin?returnUrl=...
-  → store returnUrl in 10-min HttpOnly cookie
-  → state = CryptoHelper.GenerateSignInState(secret)
+User clicks "Sign in with Discord"
+  → GET /api/discord/oauth/signin
+  → state = sign({ flow: "signin" })
   → redirect to discord.com/oauth2/authorize?scope=identify+email&state=...
 
 Callback (platformUserId == null):
