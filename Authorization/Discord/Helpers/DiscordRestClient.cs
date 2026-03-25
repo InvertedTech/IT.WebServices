@@ -173,12 +173,43 @@ namespace IT.WebServices.Authorization.Discord.Helpers
 
         public async ValueTask PushLinkedRoleMetadataAsync(string userAccessToken, LinkedRoleMetadata metadata)
         {
-            throw new NotImplementedException();
+            var path = $"{V10}users/@me/applications/{_settings.AppId}/role-connection";
+            var body = JsonSerializer.Serialize(new
+            {
+                platform_name = metadata.PlatformName,
+                platform_username = metadata.PlatformUsername,
+                metadata = metadata.Metadata
+            });
+            var request = new HttpRequestMessage(HttpMethod.Put, path)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", userAccessToken);
+
+            var response = await _http.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Discord {response.StatusCode}: {errorBody}");
+            }
         }
 
         public async ValueTask RegisterRoleMetadataAsync(IEnumerable<RoleMetadataSchema> schema)
         {
-            throw new NotImplementedException();
+            var path = $"{V10}applications/{_settings.AppId}/role-connections/metadata";
+            var body = JsonSerializer.Serialize(schema);
+            var request = new HttpRequestMessage(HttpMethod.Put, path)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bot", _settings.BotToken);
+
+            var response = await _http.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Discord {response.StatusCode}: {errorBody}");
+            }
         }
     }
 }

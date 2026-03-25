@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<DiscordCommandRouter>();
-            services.AddHostedService<DiscordCommandRegistrationService>();
+            services.AddHostedService<MetadataRegistrationService>();
             services.AddSingleton<DiscordService>();
             return services;
         }

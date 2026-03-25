@@ -2,6 +2,7 @@
 using IT.WebServices.Authentication.Services.Helpers;
 using IT.WebServices.Authorization.Discord.Helpers;
 using IT.WebServices.Authorization.Discord.Models.Interactions;
+using IT.WebServices.Authorization.Discord.Models.LinkedRoles;
 using IT.WebServices.Authorization.Discord.Models.OAuth;
 using IT.WebServices.Authorization.Discord.Data;
 using IT.WebServices.Clients.Authentication;
@@ -9,6 +10,7 @@ using IT.WebServices.Clients.Payments;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Fragments.Authorization.Discord;
+using IT.WebServices.Helpers;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,8 +31,9 @@ namespace IT.WebServices.Authorization.Discord.Controllers
         private readonly TokenHelper _tokenHelper;
         private readonly IMemberDataProvider _members;
         private readonly PaymentClient _payments;
+        private readonly SettingsHelper _settingsHelper;
 
-        public DiscordController(DiscordCommandRouter commandRouter, DiscordSettings settings, DiscordRestClient client, ILogger<DiscordController> logger, UserClient users, TokenHelper tokenHelper, IMemberDataProvider members, PaymentClient payments)
+        public DiscordController(DiscordCommandRouter commandRouter, DiscordSettings settings, DiscordRestClient client, ILogger<DiscordController> logger, UserClient users, TokenHelper tokenHelper, IMemberDataProvider members, PaymentClient payments, SettingsHelper settingsHelper)
         {
             _interactionValidator = new InteractionValidator();
             _commandRouter = commandRouter;
@@ -41,6 +44,7 @@ namespace IT.WebServices.Authorization.Discord.Controllers
             _tokenHelper = tokenHelper;
             _members = members;
             _payments = payments;
+            _settingsHelper = settingsHelper;
         }
 
         [HttpPost("interactions")]
@@ -214,10 +218,34 @@ namespace IT.WebServices.Authorization.Discord.Controllers
                 member.Private.InternalSubscriptionId = subscription.SubscriptionRecord.InternalSubscriptionID;
 
             // TODO: derive tiers from subscription amount/tier config and populate member.Public.Tiers
-            // TODO: PushLinkedRoleMetadataAsync
             // TODO: ReconcileRolesAsync
 
             await _members.Save(member);
+
+            try
+            {
+                var platformUser = await _users.GetOtherUserAsync(platformUserId);
+                var platformName = _settingsHelper.Public?.Personalization?.Title ?? "Platform";
+                var platformUsername = platformUser?.Public.Data.DisplayName ?? platformUser?.Public.Data.UserName ?? discordUser.Username;
+
+                var metadata = new LinkedRoleMetadata
+                {
+                    PlatformName = platformName,
+                    PlatformUsername = platformUsername,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["is_subscriber"] = subscription != null ? "1" : "0",
+                        ["member_since"] = member.Public.CreatedOnUTC.ToDateTime().ToString("o"),
+                        ["sub_level"] = subscription?.SubscriptionRecord.AmountCents.ToString() ?? "0"
+                    }
+                };
+
+                await _client.PushLinkedRoleMetadataAsync(tokens.AccessToken, metadata);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to push linked role metadata for user {UserId}", platformUserId);
+            }
 
             var returnUrl = Request.Cookies["discord_return_url"]
                 ?? _settings.LinkedRoleSuccessRedirect
