@@ -14,14 +14,14 @@ namespace IT.WebServices.Authorization.Discord.Helpers
     public class DiscordRestClient
     {
         private const string V10 = "v10/";
-
         private readonly HttpClient _http;
         private readonly DiscordSettings _settings;
-
-        public DiscordRestClient(HttpClient http, DiscordSettings settings)
+        private readonly DiscordBotSettings _botSettings;
+        public DiscordRestClient(HttpClient http, DiscordSettings settings, DiscordBotSettings botSettings)
         {
             _http = http;
             _settings = settings;
+            _botSettings = botSettings;
         }
 
         // <summary>
@@ -45,19 +45,40 @@ namespace IT.WebServices.Authorization.Discord.Helpers
             }
         }
 
-        public async ValueTask RespondToInteractionAsync(string interactionId, string interactionToken,  InteractionResponse response)
+        public async ValueTask RespondToInteractionAsync(string interactionId, string interactionToken, InteractionResponse response)
         {
-            throw new NotImplementedException();
+            var path = $"{V10}interactions/{interactionId}/{interactionToken}/callback";
+            using var content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json");
+            var res = await _http.PostAsync(path, content);
+            if (!res.IsSuccessStatusCode)
+            {
+                var body = await res.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Discord {res.StatusCode}: {body}");
+            }
         }
 
         public async ValueTask DeferInteractionAsync(string interactionId, string interactionToken, bool ephemeral = false)
         {
-            throw new NotImplementedException();
+            await RespondToInteractionAsync(interactionId, interactionToken, new InteractionResponse
+            {
+                Type = 5,
+                Data = ephemeral ? new InteractionCallbackData { Flags = 64 } : null
+            });
         }
 
         public async ValueTask EditInteractionResponseAsync(string interactionToken, InteractionCallbackData data)
         {
-            throw new NotImplementedException();
+            var path = $"{V10}webhooks/{_settings.AppId}/{interactionToken}/messages/@original";
+            var request = new HttpRequestMessage(HttpMethod.Patch, path)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
+            };
+            var res = await _http.SendAsync(request);
+            if (!res.IsSuccessStatusCode)
+            {
+                var body = await res.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Discord {res.StatusCode}: {body}");
+            }
         }
 
         public async ValueTask<DiscordInteractionMember> GetGuildMemberAsync(string guildId, string userId)
