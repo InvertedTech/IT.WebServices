@@ -9,6 +9,7 @@ export * as Comment from './Comment';
 export * as Content from './Content';
 export * as Dashboard from './Dashboard';
 export * as Generic from './Generic';
+export * as Merch from './Merch';
 export * as Notification from './Notification';
 export * as Page from './Page';
 export * as Settings from './Settings';

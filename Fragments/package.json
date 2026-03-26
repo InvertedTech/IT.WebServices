@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.11.3",
+	"version": "0.12.3",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
@@ -25,273 +25,120 @@
 			"import": "./dist/esm/index.js",
 			"default": "./dist/esm/index.js"
 		},
-		"./protos/": {
-			"types": "./dist/protos/",
-			"import": "./dist/esm/"
-		},
-		"./protos/*": {
-			"types": "./dist/protos/*.d.ts",
-			"import": "./dist/esm/*.js"
-		},
 		"./AuditLog": {
 			"types": "./dist/protos/AuditLog/index.d.ts",
 			"import": "./dist/esm/AuditLog/index.js",
 			"default": "./dist/esm/AuditLog/index.js"
-		},
-		"./AuditLog/": {
-			"types": "./dist/protos/AuditLog/",
-			"import": "./dist/esm/AuditLog/"
-		},
-		"./AuditLog/*": {
-			"types": "./dist/protos/AuditLog/*.d.ts",
-			"import": "./dist/esm/AuditLog/*.js"
 		},
 		"./Authorization": {
 			"types": "./dist/protos/Authorization/index.d.ts",
 			"import": "./dist/esm/Authorization/index.js",
 			"default": "./dist/esm/Authorization/index.js"
 		},
-		"./Authorization/": {
-			"types": "./dist/protos/Authorization/",
-			"import": "./dist/esm/Authorization/"
-		},
-		"./Authorization/*": {
-			"types": "./dist/protos/Authorization/*.d.ts",
-			"import": "./dist/esm/Authorization/*.js"
-		},
 		"./Authorization/Events": {
 			"types": "./dist/protos/Authorization/Events/index.d.ts",
 			"import": "./dist/esm/Authorization/Events/index.js",
 			"default": "./dist/esm/Authorization/Events/index.js"
 		},
-		"./Authorization/Events/": {
-			"types": "./dist/protos/Authorization/Events/",
-			"import": "./dist/esm/Authorization/Events/"
+		"./Authorization/Payment": {
+			"types": "./dist/protos/Authorization/Payment/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/index.js",
+			"default": "./dist/esm/Authorization/Payment/index.js"
 		},
-		"./Authorization/Events/*": {
-			"types": "./dist/protos/Authorization/Events/*.d.ts",
-			"import": "./dist/esm/Authorization/Events/*.js"
+		"./Authorization/Payment/Crypto": {
+			"types": "./dist/protos/Authorization/Payment/Crypto/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Crypto/index.js",
+			"default": "./dist/esm/Authorization/Payment/Crypto/index.js"
 		},
-		"./Authorization/Payments": {
-			"types": "./dist/protos/Authorization/Payments/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/index.js",
-			"default": "./dist/esm/Authorization/Payments/index.js"
+		"./Authorization/Payment/Fortis": {
+			"types": "./dist/protos/Authorization/Payment/Fortis/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Fortis/index.js",
+			"default": "./dist/esm/Authorization/Payment/Fortis/index.js"
 		},
-		"./Authorization/Payments/": {
-			"types": "./dist/protos/Authorization/Payments/",
-			"import": "./dist/esm/Authorization/Payments/"
+		"./Authorization/Payment/Manual": {
+			"types": "./dist/protos/Authorization/Payment/Manual/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Manual/index.js",
+			"default": "./dist/esm/Authorization/Payment/Manual/index.js"
 		},
-		"./Authorization/Payments/*": {
-			"types": "./dist/protos/Authorization/Payments/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/*.js"
+		"./Authorization/Payment/Paypal": {
+			"types": "./dist/protos/Authorization/Payment/Paypal/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Paypal/index.js",
+			"default": "./dist/esm/Authorization/Payment/Paypal/index.js"
 		},
-		"./Authorization/Payments/Crypto": {
-			"types": "./dist/protos/Authorization/Payments/Crypto/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Crypto/index.js",
-			"default": "./dist/esm/Authorization/Payments/Crypto/index.js"
+		"./Authorization/Payment/Stripe": {
+			"types": "./dist/protos/Authorization/Payment/Stripe/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Stripe/index.js",
+			"default": "./dist/esm/Authorization/Payment/Stripe/index.js"
 		},
-		"./Authorization/Payments/Crypto/": {
-			"types": "./dist/protos/Authorization/Payments/Crypto/",
-			"import": "./dist/esm/Authorization/Payments/Crypto/"
-		},
-		"./Authorization/Payments/Crypto/*": {
-			"types": "./dist/protos/Authorization/Payments/Crypto/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Crypto/*.js"
-		},
-		"./Authorization/Payments/Fortis": {
-			"types": "./dist/protos/Authorization/Payments/Fortis/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Fortis/index.js",
-			"default": "./dist/esm/Authorization/Payments/Fortis/index.js"
-		},
-		"./Authorization/Payments/Fortis/": {
-			"types": "./dist/protos/Authorization/Payments/Fortis/",
-			"import": "./dist/esm/Authorization/Payments/Fortis/"
-		},
-		"./Authorization/Payments/Fortis/*": {
-			"types": "./dist/protos/Authorization/Payments/Fortis/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Fortis/*.js"
-		},
-		"./Authorization/Payments/Manual": {
-			"types": "./dist/protos/Authorization/Payments/Manual/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Manual/index.js",
-			"default": "./dist/esm/Authorization/Payments/Manual/index.js"
-		},
-		"./Authorization/Payments/Manual/": {
-			"types": "./dist/protos/Authorization/Payments/Manual/",
-			"import": "./dist/esm/Authorization/Payments/Manual/"
-		},
-		"./Authorization/Payments/Manual/*": {
-			"types": "./dist/protos/Authorization/Payments/Manual/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Manual/*.js"
-		},
-		"./Authorization/Payments/Paypal": {
-			"types": "./dist/protos/Authorization/Payments/Paypal/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Paypal/index.js",
-			"default": "./dist/esm/Authorization/Payments/Paypal/index.js"
-		},
-		"./Authorization/Payments/Paypal/": {
-			"types": "./dist/protos/Authorization/Payments/Paypal/",
-			"import": "./dist/esm/Authorization/Payments/Paypal/"
-		},
-		"./Authorization/Payments/Paypal/*": {
-			"types": "./dist/protos/Authorization/Payments/Paypal/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Paypal/*.js"
-		},
-		"./Authorization/Payments/Stripe": {
-			"types": "./dist/protos/Authorization/Payments/Stripe/index.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Stripe/index.js",
-			"default": "./dist/esm/Authorization/Payments/Stripe/index.js"
-		},
-		"./Authorization/Payments/Stripe/": {
-			"types": "./dist/protos/Authorization/Payments/Stripe/",
-			"import": "./dist/esm/Authorization/Payments/Stripe/"
-		},
-		"./Authorization/Payments/Stripe/*": {
-			"types": "./dist/protos/Authorization/Payments/Stripe/*.d.ts",
-			"import": "./dist/esm/Authorization/Payments/Stripe/*.js"
+		"./Authorization/Payment/Tax": {
+			"types": "./dist/protos/Authorization/Payment/Tax/index.d.ts",
+			"import": "./dist/esm/Authorization/Payment/Tax/index.js",
+			"default": "./dist/esm/Authorization/Payment/Tax/index.js"
 		},
 		"./Authentication": {
 			"types": "./dist/protos/Authentication/index.d.ts",
 			"import": "./dist/esm/Authentication/index.js",
 			"default": "./dist/esm/Authentication/index.js"
 		},
-		"./Authentication/": {
-			"types": "./dist/protos/Authentication/",
-			"import": "./dist/esm/Authentication/"
-		},
-		"./Authentication/*": {
-			"types": "./dist/protos/Authentication/*.d.ts",
-			"import": "./dist/esm/Authentication/*.js"
-		},
 		"./Careers": {
 			"types": "./dist/protos/Careers/index.d.ts",
 			"import": "./dist/esm/Careers/index.js",
 			"default": "./dist/esm/Careers/index.js"
-		},
-		"./Careers/": {
-			"types": "./dist/protos/Careers/",
-			"import": "./dist/esm/Careers/"
-		},
-		"./Careers/*": {
-			"types": "./dist/protos/Careers/*.d.ts",
-			"import": "./dist/esm/Careers/*.js"
 		},
 		"./Comment": {
 			"types": "./dist/protos/Comment/index.d.ts",
 			"import": "./dist/esm/Comment/index.js",
 			"default": "./dist/esm/Comment/index.js"
 		},
-		"./Comment/": {
-			"types": "./dist/protos/Comment/",
-			"import": "./dist/esm/Comment/"
-		},
-		"./Comment/*": {
-			"types": "./dist/protos/Comment/*.d.ts",
-			"import": "./dist/esm/Comment/*.js"
-		},
 		"./Content": {
 			"types": "./dist/protos/Content/index.d.ts",
 			"import": "./dist/esm/Content/index.js",
 			"default": "./dist/esm/Content/index.js"
-		},
-		"./Content/": {
-			"types": "./dist/protos/Content/",
-			"import": "./dist/esm/Content/"
-		},
-		"./Content/*": {
-			"types": "./dist/protos/Content/*.d.ts",
-			"import": "./dist/esm/Content/*.js"
 		},
 		"./Content/Music": {
 			"types": "./dist/protos/Content/Music/index.d.ts",
 			"import": "./dist/esm/Content/Music/index.js",
 			"default": "./dist/esm/Content/Music/index.js"
 		},
-		"./Content/Music/": {
-			"types": "./dist/protos/Content/Music/",
-			"import": "./dist/esm/Content/Music/"
-		},
-		"./Content/Music/*": {
-			"types": "./dist/protos/Content/Music/*.d.ts",
-			"import": "./dist/esm/Content/Music/*.js"
-		},
 		"./Content/Stats": {
 			"types": "./dist/protos/Content/Stats/index.d.ts",
 			"import": "./dist/esm/Content/Stats/index.js",
 			"default": "./dist/esm/Content/Stats/index.js"
-		},
-		"./Content/Stats/": {
-			"types": "./dist/protos/Content/Stats/",
-			"import": "./dist/esm/Content/Stats/"
-		},
-		"./Content/Stats/*": {
-			"types": "./dist/protos/Content/Stats/*.d.ts",
-			"import": "./dist/esm/Content/Stats/*.js"
 		},
 		"./Dashboard": {
 			"types": "./dist/protos/Dashboard/index.d.ts",
 			"import": "./dist/esm/Dashboard/index.js",
 			"default": "./dist/esm/Dashboard/index.js"
 		},
-		"./Dashboard/": {
-			"types": "./dist/protos/Dashboard/",
-			"import": "./dist/esm/Dashboard/"
-		},
-		"./Dashboard/*": {
-			"types": "./dist/protos/Dashboard/*.d.ts",
-			"import": "./dist/esm/Dashboard/*.js"
-		},
 		"./Generic": {
 			"types": "./dist/protos/Generic/index.d.ts",
 			"import": "./dist/esm/Generic/index.js",
 			"default": "./dist/esm/Generic/index.js"
 		},
-		"./Generic/": {
-			"types": "./dist/protos/Generic/",
-			"import": "./dist/esm/Generic/"
+		"./Merch": {
+			"types": "./dist/protos/Merch/index.d.ts",
+			"import": "./dist/esm/Merch/index.js",
+			"default": "./dist/esm/Merch/index.js"
 		},
-		"./Generic/*": {
-			"types": "./dist/protos/Generic/*.d.ts",
-			"import": "./dist/esm/Generic/*.js"
+		"./Merch/Shopify": {
+			"types": "./dist/protos/Merch/Shopify/index.d.ts",
+			"import": "./dist/esm/Merch/Shopify/index.js",
+			"default": "./dist/esm/Merch/Shopify/index.js"
 		},
 		"./Notification": {
 			"types": "./dist/protos/Notification/index.d.ts",
 			"import": "./dist/esm/Notification/index.js",
 			"default": "./dist/esm/Notification/index.js"
 		},
-		"./Notification/": {
-			"types": "./dist/protos/Notification/",
-			"import": "./dist/esm/Notification/"
-		},
-		"./Notification/*": {
-			"types": "./dist/protos/Notification/*.d.ts",
-			"import": "./dist/esm/Notification/*.js"
-		},
 		"./Page": {
 			"types": "./dist/protos/Page/index.d.ts",
 			"import": "./dist/esm/Page/index.js",
 			"default": "./dist/esm/Page/index.js"
 		},
-		"./Page/": {
-			"types": "./dist/protos/Page/",
-			"import": "./dist/esm/Page/"
-		},
-		"./Page/*": {
-			"types": "./dist/protos/Page/*.d.ts",
-			"import": "./dist/esm/Page/*.js"
-		},
 		"./Settings": {
 			"types": "./dist/protos/Settings/index.d.ts",
 			"import": "./dist/esm/Settings/index.js",
 			"default": "./dist/esm/Settings/index.js"
-		},
-		"./Settings/": {
-			"types": "./dist/protos/Settings/",
-			"import": "./dist/esm/Settings/"
-		},
-		"./Settings/*": {
-			"types": "./dist/protos/Settings/*.d.ts",
-			"import": "./dist/esm/Settings/*.js"
 		},
 		"./validation": {
 			"types": "./dist/protos/validation.d.ts",
@@ -300,10 +147,6 @@
 		"./api": {
 			"types": "./dist/protos/api.d.ts",
 			"import": "./dist/esm/api.js"
-		},
-		"./*": {
-			"types": "./dist/*",
-			"import": "./dist/esm/*"
 		},
 		"./errors": {
 			"types": "./dist/protos/Errors_pb.d.ts",
@@ -360,7 +203,7 @@
 	"dependencies": {
 		"@bufbuild/protobuf": "^2.10.0",
 		"@bufbuild/protovalidate": "^1.0.0",
-		"@connectrpc/connect": "^1.7.0",
+		"@connectrpc/connect": "^2.1.1",
 		"pino": "^10.3.1"
 	}
 }

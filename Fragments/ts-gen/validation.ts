@@ -15,6 +15,7 @@ import * as Page from './Page/index.js';
 import * as Settings from './Settings/index.js';
 import * as FragmentsRoot from './index.js';
 import * as Careers from './Careers';
+import * as Merch from './Merch';
 
 // Runtime guard (don’t use a type predicate over a module union)
 function looksLikeGenFile(x: unknown): x is GenFile {

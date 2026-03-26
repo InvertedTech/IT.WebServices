@@ -18,7 +18,7 @@ namespace ShopifySharp
             {
                 InternalProductId = Guid.NewGuid().ToString(),
                 InternalStoreId = storeId,
-                Provider = MerchRecordProvider.Shopify,
+                Provider = MerchRecordProvider.ShopifyRecordProvider,
                 ProcessorProductId = item.Id.ToString(),
                 Title = item.Title,
                 Description = item.BodyHtml,

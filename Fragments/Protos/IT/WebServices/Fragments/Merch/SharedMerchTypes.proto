@@ -5,7 +5,7 @@ package IT.WebServices.Fragments.Merch;
 import "google/protobuf/timestamp.proto";
 
 enum MerchRecordProvider {
-	Shopify = 0;
+	ShopifyRecordProvider = 0;
 }
 
 enum MerchStatus {

@@ -227,7 +227,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             {
                 InternalProductId = Guid.NewGuid().ToString(),
                 InternalStoreId = storeId,
-                Provider = MerchRecordProvider.Shopify,
+                Provider = MerchRecordProvider.ShopifyRecordProvider,
                 ProcessorProductId = node.GetProperty("id").GetString() ?? "",
                 Title = node.GetProperty("title").GetString() ?? "",
                 Description = node.GetProperty("description").GetString() ?? "",

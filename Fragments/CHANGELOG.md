@@ -1,5 +1,29 @@
 # @inverted-tech/fragments
 
+## 0.12.3
+
+### Patch Changes
+
+- Automated patch bump
+
+## 0.12.2
+
+### Patch Changes
+
+- Fix generation issue
+
+## 0.12.1
+
+### Patch Changes
+
+- Update consumer importss
+
+## 0.12.0
+
+### Minor Changes
+
+- Added Product Service Protos
+
 ## 0.11.3
 
 ### Patch Changes

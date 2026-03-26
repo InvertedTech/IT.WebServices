@@ -254,12 +254,6 @@ async function relocateFragmentsTopLevel() {
   const baseOf = (n) => stripTs(n).replace(/_(pb|connect)$/, '');
   const hasSuffix = (n, s) => n.toLowerCase().endsWith(s.toLowerCase());
 
-  // Prefer qualified "*Backup_pb.ts" over generic "Backup_pb.ts"
-  const filterGenericVsQualifiedPb = (list) => {
-    const hasQualifiedBackup = list.some(n => /[A-Za-z0-9]+Backup_pb\.ts$/.test(n) && n !== 'Backup_pb.ts');
-    return list.filter(n => !(n === 'Backup_pb.ts' && hasQualifiedBackup));
-  };
-
   const relDeep = (from, to) => path.relative(from, to).replace(/\\/g, '/');
 
   async function moveDir(deepDir, outDir) {
@@ -268,12 +262,9 @@ async function relocateFragmentsTopLevel() {
     const subdirs = entries.filter(e => e.isDirectory()).map(e => e.name).sort();
 
     const connectFiles = files.filter(n => hasSuffix(n, '_connect.ts')).sort();
-    let pbFiles = files.filter(n => hasSuffix(n, '_pb.ts')).sort();
+    const pbFiles = files.filter(n => hasSuffix(n, '_pb.ts')).sort();
 
-    // Keep both pb and connect files; only filter generic Backup_pb duplicates
-    pbFiles = filterGenericVsQualifiedPb(pbFiles);
-
-    // Move PB files in-place (drop barrels)
+    // Move ALL PB files — filtering for index generation happens separately
     fs.mkdirSync(outDir, { recursive: true });
     for (const f of pbFiles) {
       const src = path.join(deepDir, f);
@@ -513,6 +504,11 @@ async function buildMinimalIndexes() {
     return true;
   }
 
+  const filterGenericVsQualifiedPb = (list) => {
+    const hasQualifiedBackup = list.some(n => /[A-Za-z0-9]+Backup_pb\.ts$/.test(n) && n !== 'Backup_pb.ts');
+    return list.filter(n => !(n === 'Backup_pb.ts' && hasQualifiedBackup));
+  };
+
   function writeIndex(dir) {
     if (!fs.existsSync(dir)) return;
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -525,7 +521,7 @@ async function buildMinimalIndexes() {
       .filter(n => !skip.has(n))
       .sort();
 
-    const pbFiles = files.filter(n => n.endsWith('_pb.ts')).sort();
+    const pbFiles = filterGenericVsQualifiedPb(files.filter(n => n.endsWith('_pb.ts'))).sort();
     let idx = `// Auto-generated - DO NOT EDIT\n`;
     for (const f of pbFiles) {
       const base = f.replace(/\.ts$/, '');
@@ -535,17 +531,16 @@ async function buildMinimalIndexes() {
     const connectDir = path.join(dir, 'connect');
     const subdirsFiltered = subdirs.filter(sd => sd !== 'connect');
     if (fs.existsSync(connectDir)) {
-      const had = writeConnectIndex(connectDir);
-      if (had) {
-        idx += `export * as connect from './connect';\n`;
-      }
+      writeConnectIndex(connectDir);
     }
     for (const sd of subdirsFiltered) {
       idx += `export * as ${sd.replace(/[^A-Za-z0-9_]/g,'')} from './${sd}';\n`;
     }
     fs.writeFileSync(path.join(dir, 'index.ts'), idx, 'utf8');
 
-    for (const sd of subdirs) writeIndex(path.join(dir, sd));
+    for (const sd of subdirs) {
+      if (sd !== 'connect') writeIndex(path.join(dir, sd));
+    }
   }
 
   writeIndex(root);
