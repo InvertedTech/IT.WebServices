@@ -19,4 +19,5 @@ message ShopifyStoreConfig {
 	string StoreName = 2;
 	string StoreAdminToken = 3;
 	string StorefrontDomain = 4;
+	repeated string CollectionIds = 5;
 }

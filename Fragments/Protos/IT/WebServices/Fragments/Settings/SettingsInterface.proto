@@ -7,6 +7,7 @@ import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
+import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
 
 // Service for Settings service fragment interface
@@ -217,6 +218,20 @@ service SettingsInterface {
       body: "*"
     };
   }
+
+  rpc ModifyMerchPublicSettings (ModifyMerchPublicSettingsRequest) returns (ModifyMerchPublicSettingsResponse) {
+    option (google.api.http) = {
+        post: "/api/settings/merch/public"
+        body: "*"
+    };
+  }
+
+  rpc ModifyMerchOwnerSettings (ModifyMerchOwnerSettingsRequest) returns (ModifyMerchOwnerSettingsResponse) {
+    option (google.api.http) = {
+        post: "/api/settings/merch/owner",
+        body: "*"
+    };
+  };
 }
 
 message GetPublicDataRequest {
@@ -415,5 +430,21 @@ message ModifyEventOwnerSettingsRequest {
 
 message ModifyEventOwnerSettingsResponse {
   APIError Error = 1;
+}
+
+message ModifyMerchPublicSettingsRequest {
+    IT.WebServices.Fragments.Merch.MerchPublicSettings Data = 1;
+}
+
+message ModifyMerchPublicSettingsResponse {
+    APIError Error = 1;
+}
+
+message ModifyMerchOwnerSettingsRequest {
+    IT.WebServices.Fragments.Merch.MerchOwnerSettings Data = 1;
+}
+
+message ModifyMerchOwnerSettingsResponse {
+    APIError Error = 1;
 }
 

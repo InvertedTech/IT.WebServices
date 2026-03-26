@@ -861,12 +861,19 @@ namespace IT.WebServices.Settings.Services
                                 WrittenMenuLinkName = "Read",
                             },
                         },
+                        Merch = new() {
+                            Shopify = new()
+                        }
                     },
                     Private = new()
                     {
                         Comments = new() { },
                         Personalization = new() { },
                         Subscription = new() { },
+                        Merch = new()
+                        {
+                            Shopify = new()
+                        }
                     },
                     Owner = new()
                     {
@@ -878,6 +885,10 @@ namespace IT.WebServices.Settings.Services
                             //Stripe = new(),
                             Paypal = new(),
                         },
+                        Merch = new()
+                        {
+                            Shopify = new()
+                        }
                     },
                 };
 
@@ -1040,6 +1051,99 @@ namespace IT.WebServices.Settings.Services
             catch
             {
                 return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred") };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyMerchPublicSettingsResponse> ModifyMerchPublicSettings(ModifyMerchPublicSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request Body Must Be Provided") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Public.Merch = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Merch Public Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
+
+                return new ModifyMerchPublicSettingsResponse
+                {
+                    Error = null,
+                };
+            } catch (Exception ex)
+            {
+                return new ModifyMerchPublicSettingsResponse()
+                {
+                    Error = new APIError()
+                    {
+                        Reason = APIErrorReason.ErrorReasonUnknown,
+                        Message = ex.Message,
+                    }
+                };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyMerchOwnerSettingsResponse> ModifyMerchOwnerSettings(ModifyMerchOwnerSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request Body Must Be Provided") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Owner.Merch = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Merch Public Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    }, logger);
+
+                return new ModifyMerchOwnerSettingsResponse
+                {
+                    Error = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ModifyMerchOwnerSettingsResponse()
+                {
+                    Error = new APIError()
+                    {
+                        Reason = APIErrorReason.ErrorReasonUnknown,
+                        Message = ex.Message,
+                    }
+                };
             }
         }
     }

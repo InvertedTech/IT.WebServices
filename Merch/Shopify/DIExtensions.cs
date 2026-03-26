@@ -2,6 +2,8 @@
 using IT.WebServices.Merch.Jobs;
 using IT.WebServices.Merch.Shopify.Jobs;
 using Microsoft.AspNetCore.Routing;
+using ShopifySharp;
+using ShopifySharp.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -11,7 +13,11 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddMerchBaseClasses();
 
+            services.AddHttpClient();
             services.AddSingleton<SettingsHelper>();
+            services.AddShopifySharpServiceFactories();
+            services.AddShopifySharpUtilities();
+            services.AddShopifySharp<LeakyBucketExecutionPolicy>();
 
             services.AddSingleton<IPullFromAllProcessor, PullFromShopifyProcessor>();
 

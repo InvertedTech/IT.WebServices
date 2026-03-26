@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ShopifySharp" Version="6.28.0" />
+    <PackageReference Include="ShopifySharp.Extensions.DependencyInjection" Version="1.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Base\IT.WebServices.Merch.Base\IT.WebServices.Merch.Base.csproj" />
   </ItemGroup>
 
