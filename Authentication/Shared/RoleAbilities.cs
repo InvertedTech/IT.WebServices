@@ -56,6 +56,7 @@ namespace IT.WebServices.Authentication
 
         public const string ROLE_CAN_BACKUP = ROLE_OWNER + "," + ROLE_BACKUP;
         public const string ROLE_CAN_CREATE_CONTENT = ROLE_CAN_PUBLISH + "," + ROLE_CONTENT_WRITER;
+        public const string ROLE_CAN_CREATE_CONTENT_OR_SERVICE = ROLE_CAN_CREATE_CONTENT + "," + ROLE_SERVICE;
         public const string ROLE_CAN_MODERATE_COMMENT = ROLE_IS_COMMENT_MODERATOR_OR_HIGHER;
         public const string ROLE_CAN_PUBLISH = ROLE_IS_ADMIN_OR_OWNER + "," + ROLE_CONTENT_PUBLISHER;
 

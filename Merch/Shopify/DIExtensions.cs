@@ -1,4 +1,6 @@
-﻿using IT.WebServices.Helpers;
+﻿using IT.WebServices.Clients;
+using IT.WebServices.Clients.CMS;
+using IT.WebServices.Helpers;
 using IT.WebServices.Merch.Jobs;
 using IT.WebServices.Merch.Shopify.Jobs;
 using Microsoft.AspNetCore.Routing;
@@ -18,6 +20,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddShopifySharpServiceFactories();
             services.AddShopifySharpUtilities();
             services.AddShopifySharp<LeakyBucketExecutionPolicy>();
+
+            services.AddSingleton<ClientGrpcHelper>();
+            services.AddSingleton<AssetClient>();
 
             services.AddSingleton<IPullFromAllProcessor, PullFromShopifyProcessor>();
             services.AddSingleton<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();

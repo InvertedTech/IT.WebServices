@@ -1,5 +1,6 @@
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using IT.WebServices.Clients.CMS;
 using IT.WebServices.Content.CMS.Services.Data;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Merch;
@@ -11,14 +12,13 @@ namespace IT.WebServices.Merch.Shopify.Jobs
     public class PullImagesFromShopifyProcessor : IPullImagesFromAllProcessor
     {
         private readonly IGenericMerchRecordProvider recordProvider;
-        //private readonly IAssetDataProvider assetDataProvider;
         private readonly IHttpClientFactory httpClientFactory;
-
-        public PullImagesFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, /*IAssetDataProvider assetDataProvider,*/ IHttpClientFactory httpClientFactory)
+        private readonly AssetClient assetClient;
+        public PullImagesFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, IHttpClientFactory httpClientFactory, AssetClient assetClient)
         {
             this.recordProvider = recordProvider;
-            //this.assetDataProvider = assetDataProvider;
             this.httpClientFactory = httpClientFactory;
+            this.assetClient = assetClient;
         }
 
         public async Task Run(MerchBulkActionProgress progress, CancellationToken cancellationToken)
@@ -53,28 +53,31 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                     var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
                     var filename = Path.GetFileName(new Uri(image.Url).LocalPath);
 
-                    //var assetRecord = new AssetRecord
-                    //{
-                    //    Image = new ImageAssetRecord
-                    //    {
-                    //        Public = new ImageAssetPublicRecord
-                    //        {
-                    //            AssetID = Guid.NewGuid().ToString(),
-                    //            CreatedOnUTC = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
-                    //            Data = new ImageAssetPublicData
-                    //            {
-                    //                Title = filename,
-                    //                MimeType = contentType,
-                    //                Data = ByteString.CopyFrom(bytes),
-                    //            }
-                    //        },
-                    //        Private = new ImageAssetPrivateRecord()
-                    //    }
-                    //};
+                    var asset = new ImageAssetData
+                    {
+                        Public = new ImageAssetPublicData
+                        {
+                            Title = filename,
+                            MimeType = contentType,
+                            Data = ByteString.CopyFrom(bytes),
+                        },
+                        Private = new()
+                    };
+                    var res = await assetClient.SaveAsset(new CreateAssetRequest
+                    {
+                        Image = asset
+                    });
 
-                    //await assetDataProvider.Save(assetRecord);
-                    //image.ImageAssetID = assetRecord.Image.Public.AssetID;
+                    if (res is null)
+                    {
+                        totalSkipped++;
+                        continue;
+                    }
+
+                    image.ImageAssetID = res.AssetIDGuid.ToString();
                     totalSaved++;
+
+                    await Task.Delay(500, cancellationToken);
                 }
 
                 await recordProvider.Save(record);
@@ -87,11 +90,14 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
         private IEnumerable<GenericMerchImageRecord> GetImagesToPull(GenericMerchRecord record)
         {
-            if (record.FeaturedImage is not null && !string.IsNullOrEmpty(record.FeaturedImage.Url) && string.IsNullOrEmpty(record.FeaturedImage.ImageAssetID))
+            if (record.FeaturedImage is not null 
+                && !string.IsNullOrEmpty(record.FeaturedImage.Url) 
+                && string.IsNullOrEmpty(record.FeaturedImage.ImageAssetID))
                 yield return record.FeaturedImage;
 
             foreach (var img in record.OtherImages)
-                if (!string.IsNullOrEmpty(img.Url) && string.IsNullOrEmpty(img.ImageAssetID))
+                if (!string.IsNullOrEmpty(img.Url) 
+                    && string.IsNullOrEmpty(img.ImageAssetID))
                     yield return img;
 
             foreach (var variant in record.Variants)

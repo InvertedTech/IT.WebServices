@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IT.WebServices.Content.CMS.Services
 {
-    [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)]
     public class AssetService : AssetInterface.AssetInterfaceBase
     {
         private readonly ILogger logger;
@@ -26,7 +26,7 @@ namespace IT.WebServices.Content.CMS.Services
             this.dataProvider = dataProvider;
         }
 
-        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)]
         public override async Task<CreateAssetResponse> CreateAsset(
             CreateAssetRequest request,
             ServerCallContext context
