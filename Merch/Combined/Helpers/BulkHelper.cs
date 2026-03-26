@@ -70,6 +70,8 @@ namespace IT.WebServices.Merch.Combined.Helpers
             {
                 case MerchBulkAction.PullFromAll:
                     return serviceProvider.GetService<PullFromAll>();
+                case MerchBulkAction.PullImagesFromAll:
+                    return serviceProvider.GetService<PullImagesFromAll>();
             }
 
             return null;

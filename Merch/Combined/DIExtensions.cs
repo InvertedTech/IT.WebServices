@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<BulkHelper>();
 
             services.AddSingleton<PullFromAll>();
+            services.AddSingleton<PullImagesFromAll>();
 
             return services;
         }

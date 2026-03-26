@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddShopifySharp<LeakyBucketExecutionPolicy>();
 
             services.AddSingleton<IPullFromAllProcessor, PullFromShopifyProcessor>();
+            services.AddSingleton<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();
 
             return services;
         }
