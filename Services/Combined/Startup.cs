@@ -106,6 +106,7 @@ namespace IT.WebServices.Services.Combined
             services.AddDashboardClasses();
             services.AddCareersClasses();
             services.AddNotificationClasses();
+            services.AddMerchClasses();
 
             CryptoProviderFactory.DefaultCacheSignatureProviders = false;
 
@@ -150,6 +151,7 @@ namespace IT.WebServices.Services.Combined
                 endpoints.MapDashboardGrpcServices();
                 endpoints.MapCareersGrpcServices();
                 endpoints.MapNotificationGrpcServices();
+                endpoints.MapMerchGrpcServices();
                 //endpoints.MapGrpcReflectionService();
 
                 endpoints.MapControllerRoute(

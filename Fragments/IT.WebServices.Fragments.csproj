@@ -65,7 +65,6 @@
     <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Errors.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\Merch\GenericMerchInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Merch\GenericMerchRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Merch\MerchSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Merch\SharedMerchTypes.proto" />
@@ -139,7 +138,8 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Dashboard\DashboardMetrics.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Errors.proto" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\GenericMerchInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\AdminMerchInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\MerchInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\GenericMerchRecords.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\MerchSettings.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Merch\SharedMerchTypes.proto" />

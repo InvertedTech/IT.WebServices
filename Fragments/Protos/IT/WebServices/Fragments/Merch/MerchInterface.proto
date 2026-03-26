@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Merch/SharedMerchTypes.proto";
+import "Protos/IT/WebServices/Fragments/Merch/GenericMerchRecords.proto";
+
+service MerchInterface {
+  rpc GetMerch (GetMerchRequest) returns (GetMerchResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/merch/{InternalProductId}"
+    };
+  }
+
+  rpc SearchMerch (SearchMerchRequest) returns (SearchMerchResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/merch/search"
+    };
+  }
+}
+
+message GetMerchRequest {
+  string InternalProductId = 1;
+}
+
+message GetMerchResponse {
+  GenericMerchRecord Record = 1;
+}
+
+message SearchMerchRequest {
+  uint32 PageSize = 1;
+  uint32 PageOffset = 2;
+  string Query = 6;
+  PriceRangeSearch PriceRangeSearch = 11;
+  string InternalStoreId = 12;
+  repeated MerchRecordProvider Providers = 13;
+  string Tag = 14;
+  bool OnlyInStock = 15;
+}
+
+message SearchMerchResponse {
+  repeated GenericMerchRecord Records = 1;
+  uint32 PageOffsetStart = 11;
+  uint32 PageOffsetEnd = 12;
+  uint32 PageTotalItems = 13;
+}
+
+message PriceRangeSearch {
+  uint32 MinimumRange = 1;
+  uint32 MaximumRange = 2;
+}

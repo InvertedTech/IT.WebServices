@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Merch;
+
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Merch/SharedMerchTypes.proto";
+
+service AdminMerchInterface {
+  rpc MerchBulkActionCancel (MerchBulkActionCancelRequest) returns (MerchBulkActionCancelResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/merch/admin/bulk/cancel"
+      body: "*"
+    };
+  }
+
+  rpc MerchBulkActionStart (MerchBulkActionStartRequest) returns (MerchBulkActionStartResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/merch/admin/bulk/start"
+      body: "*"
+    };
+  }
+
+  rpc MerchBulkActionStatus (MerchBulkActionStatusRequest) returns (MerchBulkActionStatusResponse)
+  {
+    option (google.api.http) = {
+      get: "/api/merch/admin/bulk"
+    };
+  }
+}
+
+message MerchBulkActionCancelRequest {
+  MerchBulkAction Action = 1;
+}
+
+message MerchBulkActionCancelResponse {
+  repeated MerchBulkActionProgress RunningActions = 1;
+}
+
+message MerchBulkActionStartRequest {
+  MerchBulkAction Action = 1;
+}
+
+message MerchBulkActionStartResponse {
+  repeated MerchBulkActionProgress RunningActions = 1;
+}
+
+message MerchBulkActionStatusRequest {
+}
+
+message MerchBulkActionStatusResponse {
+  repeated MerchBulkActionProgress RunningActions = 1;
+}
