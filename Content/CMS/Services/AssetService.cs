@@ -1,21 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using IT.WebServices.Authentication;
 using IT.WebServices.Content.CMS.Services.Data;
+using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Generic;
-using IT.WebServices.Fragments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IT.WebServices.Content.CMS.Services
 {
     [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)]
-    public class AssetService : AssetInterface.AssetInterfaceBase
+    public class AssetService : AssetInterface.AssetInterfaceBase, IAssetService
     {
         private readonly ILogger logger;
         private readonly IAssetDataProvider dataProvider;
@@ -45,8 +45,11 @@ namespace IT.WebServices.Content.CMS.Services
                     "Not Authenticated"
                 );
 
-            AssetRecord record = new();
+            return await CreateAssetInternal(request, user);
+        }
 
+        public async Task<CreateAssetResponse> CreateAssetInternal(CreateAssetRequest request, ONUser user)
+        {
             switch (request.CreateAssetRequestOneofCase)
             {
                 case CreateAssetRequest.CreateAssetRequestOneofOneofCase.Audio:

@@ -24,8 +24,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ClientGrpcHelper>();
             services.AddSingleton<AssetClient>();
 
-            services.AddSingleton<IPullFromAllProcessor, PullFromShopifyProcessor>();
-            services.AddSingleton<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();
+            services.AddTransient<IPullFromAllProcessor, PullFromShopifyProcessor>();
+            services.AddTransient<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();
 
             return services;
         }

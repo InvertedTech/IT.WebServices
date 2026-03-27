@@ -1,7 +1,6 @@
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using IT.WebServices.Clients.CMS;
-using IT.WebServices.Content.CMS.Services.Data;
+using IT.WebServices.Content.CMS;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Merch;
 using IT.WebServices.Merch.Generic.Data;
@@ -13,16 +12,20 @@ namespace IT.WebServices.Merch.Shopify.Jobs
     {
         private readonly IGenericMerchRecordProvider recordProvider;
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly AssetClient assetClient;
-        public PullImagesFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, IHttpClientFactory httpClientFactory, AssetClient assetClient)
+        private readonly IAssetService assetClient;
+        public PullImagesFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, IHttpClientFactory httpClientFactory, IAssetService assetClient)
         {
             this.recordProvider = recordProvider;
             this.httpClientFactory = httpClientFactory;
             this.assetClient = assetClient;
         }
 
-        public async Task Run(MerchBulkActionProgress progress, CancellationToken cancellationToken)
+        private IBulkJob job;
+
+        public async Task Run(IBulkJob job)
         {
+            this.job = job;
+
             var client = httpClientFactory.CreateClient();
             var records = recordProvider.GetAll();
             int totalSaved = 0;
@@ -30,7 +33,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
             await foreach (var record in records)
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (job.CancelToken.IsCancellationRequested)
                     return;
 
                 var imagesToPull = GetImagesToPull(record).ToList();
@@ -40,16 +43,16 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 for (int i = 0; i < imagesToPull.Count; i++)
                 {
                     var image = imagesToPull[i];
-                    progress.StatusMessage = $"Pulling image {i + 1}/{imagesToPull.Count} for {record.Title} ({totalSaved} saved, {totalSkipped} skipped)";
+                    job.Progress.StatusMessage = $"Pulling image {i + 1}/{imagesToPull.Count} for {record.Title} ({totalSaved} saved, {totalSkipped} skipped)";
 
-                    var response = await client.GetAsync(image.Url, cancellationToken);
+                    var response = await client.GetAsync(image.Url, job.CancelToken);
                     if (!response.IsSuccessStatusCode)
                     {
                         totalSkipped++;
                         continue;
                     }
 
-                    var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+                    var bytes = await response.Content.ReadAsByteArrayAsync(job.CancelToken);
                     var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
                     var filename = Path.GetFileName(new Uri(image.Url).LocalPath);
 
@@ -63,10 +66,10 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                         },
                         Private = new()
                     };
-                    var res = await assetClient.SaveAsset(new CreateAssetRequest
+                    var res = await assetClient.CreateAssetInternal(new CreateAssetRequest
                     {
                         Image = asset
-                    });
+                    }, job.StartedBy);
 
                     if (res is null)
                     {
@@ -74,18 +77,18 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                         continue;
                     }
 
-                    image.ImageAssetID = res.AssetIDGuid.ToString();
+                    image.ImageAssetID = res.Record.AssetIDGuid.ToString();
                     totalSaved++;
 
-                    await Task.Delay(500, cancellationToken);
+                    await Task.Delay(500, job.CancelToken);
                 }
 
                 await recordProvider.Save(record);
             }
 
-            progress.CompletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
-            progress.Progress = 100;
-            progress.StatusMessage = $"Completed — {totalSaved} images saved, {totalSkipped} skipped";
+            job.Progress.CompletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
+            job.Progress.Progress = 100;
+            job.Progress.StatusMessage = $"Completed — {totalSaved} images saved, {totalSkipped} skipped";
         }
 
         private IEnumerable<GenericMerchImageRecord> GetImagesToPull(GenericMerchRecord record)

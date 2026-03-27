@@ -1,6 +1,7 @@
 ﻿using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Merch;
 using IT.WebServices.Merch.Combined.Helpers.BulkJobs;
+using IT.WebServices.Merch.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;

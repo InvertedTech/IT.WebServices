@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Content.CMS.Services;
+﻿using IT.WebServices.Content.CMS;
+using IT.WebServices.Content.CMS.Services;
 using IT.WebServices.Content.CMS.Services.Data;
 using IT.WebServices.Content.CMS.Services.Helpers;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +21,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IAssetDataProvider, MemCachedFileSystemAssetDataProvider>();
             services.AddSingleton<IContentDataProvider, MemCachedSqlContentDataProvider>();
             services.AddSingleton<IPageDataProvider, MemCachedFileSystemPageDataProvider>();
+
+            services.AddSingleton<IAssetService, AssetService>();
+
             services.AddSingleton<FileSystemAssetDataProvider>();
             services.AddSingleton<FileSystemContentDataProvider>();
             services.AddSingleton<FileSystemPageDataProvider>();

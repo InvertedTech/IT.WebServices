@@ -19,7 +19,9 @@ namespace IT.WebServices.Merch.Combined.Helpers.BulkJobs
             this.log = log;
         }
 
+        public CancellationToken CancelToken => cancelToken.Token;
         public MerchBulkActionProgress Progress { get; init; } = new() { Action = MerchBulkAction.PullFromAll };
+        public ONUser StartedBy { get; private set; }
 
         public void Cancel(ONUser user)
         {
@@ -33,6 +35,8 @@ namespace IT.WebServices.Merch.Combined.Helpers.BulkJobs
 
         public void Start(ONUser user)
         {
+            StartedBy = user;
+
             Progress.CreatedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
             Progress.CreatedBy = user.Id.ToString();
             Progress.Progress = 0;
