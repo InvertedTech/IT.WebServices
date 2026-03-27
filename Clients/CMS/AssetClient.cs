@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IT.WebServices.Clients.CMS
@@ -19,12 +20,13 @@ namespace IT.WebServices.Clients.CMS
             this.log = log;
         }
 
-        public async Task<ImageAssetRecord?> SaveAsset(CreateAssetRequest request)
+        public async Task<ImageAssetRecord?> SaveAsset(CreateAssetRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
-                var client = new AssetInterface.AssetInterfaceClient(nameHelper.ContentServiceChannel );
-                var res = await client.CreateAssetAsync(request, GetMetadata());
+                var client = new AssetInterface.AssetInterfaceClient(nameHelper.ContentServiceChannel);
+                var options = new CallOptions(GetMetadata(), cancellationToken: cancellationToken);
+                var res = await client.CreateAssetAsync(request, options);
                 if (res.Error is not null)
                 {
                     log.LogError(res.Error.Message, res.Error);

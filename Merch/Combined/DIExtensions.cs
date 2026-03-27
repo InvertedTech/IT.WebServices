@@ -2,6 +2,7 @@
 using IT.WebServices.Merch.Combined.Helpers;
 using IT.WebServices.Merch.Combined.Helpers.BulkJobs;
 using IT.WebServices.Merch.Combined.Services;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
@@ -16,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<BulkHelper>();
 
             services.AddSingleton<PullFromAll>();
-            services.AddSingleton<PullImagesFromAll>();
 
             return services;
         }

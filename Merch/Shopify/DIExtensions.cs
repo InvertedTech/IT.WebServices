@@ -3,6 +3,7 @@ using IT.WebServices.Clients.CMS;
 using IT.WebServices.Helpers;
 using IT.WebServices.Merch.Jobs;
 using IT.WebServices.Merch.Shopify.Jobs;
+
 using Microsoft.AspNetCore.Routing;
 using ShopifySharp;
 using ShopifySharp.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<ClientGrpcHelper>();
             services.AddSingleton<AssetClient>();
-
+            
             services.AddTransient<IPullFromAllProcessor, PullFromShopifyProcessor>();
             services.AddTransient<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();
 
