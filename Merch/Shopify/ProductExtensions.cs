@@ -28,8 +28,12 @@ namespace ShopifySharp
                 InStock = variants.Any(v => (v.InventoryQuantity ?? 0) > 0),
                 CreatedOnUTC = Timestamp.FromDateTimeOffset(item.CreatedAt ?? new DateTimeOffset()),
                 ModifiedOnUTC = Timestamp.FromDateTimeOffset(item.UpdatedAt ?? new DateTimeOffset()),
-                PublishOnUTC = Timestamp.FromDateTimeOffset(item.PublishedAt ?? new DateTimeOffset())
             };
+
+            if (item.PublishedAt is not null)
+            {
+                rec.PublishOnUTC = Timestamp.FromDateTimeOffset(item.PublishedAt.Value);
+            }
 
             if (!string.IsNullOrEmpty(item.Tags))
                 rec.Tags.Add(item.Tags);
