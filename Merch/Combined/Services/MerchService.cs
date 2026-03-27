@@ -11,7 +11,6 @@ using System.Linq;
 
 namespace IT.WebServices.Merch.Combined.Services
 {
-    [Authorize]
     public class MerchService : MerchInterface.MerchInterfaceBase
     {
         private readonly ILogger logger;
@@ -23,6 +22,7 @@ namespace IT.WebServices.Merch.Combined.Services
             this.recordProvider = recordProvider;
         }
 
+        [AllowAnonymous]
         public override async Task<GetMerchResponse> GetMerch(GetMerchRequest request, ServerCallContext context)
         {
             try
@@ -40,6 +40,7 @@ namespace IT.WebServices.Merch.Combined.Services
             return new();
         }
 
+        [AllowAnonymous]
         public override async Task<SearchMerchResponse> SearchMerch(SearchMerchRequest request, ServerCallContext context)
         {
             try
