@@ -116,7 +116,10 @@ namespace IT.WebServices.Authentication.Services
                     return new AuthenticateUserResponse
                     {
                         Ok = false,
-                        Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User Not Found")
+                        Error = GenericErrorExtensions.CreateError(
+                            APIErrorReason.ErrorReasonInvalidContent,
+                            "Check Credentials and try Again"
+                        )
                     };
             }
 
@@ -2154,7 +2157,7 @@ namespace IT.WebServices.Authentication.Services
 
         private async Task EnsureDevOwnerLogin()
         {
-            if (await dataProvider.LoginExists("owner"))
+            if (await HasDataInDatabase())
                 return;
 
             var date = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
@@ -2188,6 +2191,19 @@ namespace IT.WebServices.Authentication.Services
             record.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash("owner", salt));
 
             await dataProvider.Create(record);
+        }
+
+        private async Task<bool> HasDataInDatabase()
+        {
+            var records = dataProvider.GetAll();
+
+            await foreach (var record in records)
+            {
+                if (record is not null)
+                    return true;
+            }
+
+            return false;
         }
     }
 }
