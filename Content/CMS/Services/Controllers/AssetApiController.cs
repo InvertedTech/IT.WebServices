@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using IT.WebServices.Fragments.Generic;
-using Microsoft.Extensions.Logging;
+﻿using IT.WebServices.Authentication;
 using IT.WebServices.Content.CMS.Services.Data;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using IT.WebServices.Content.CMS.Services.Models;
+using IT.WebServices.Fragments.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace IT.WebServices.Content.CMS.Services.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
     [Route("/api/cms/asset")]
     [ApiController]
     public class AssetApiController : Controller
@@ -23,6 +24,7 @@ namespace IT.WebServices.Content.CMS.Services.Controllers
             this.dataProvider = dataProvider;
         }
 
+        [AllowAnonymous]
         [HttpGet("{assetID}/data")]
         public async Task<IActionResult> GetAssetPublic(string assetID)
         {
@@ -43,6 +45,7 @@ namespace IT.WebServices.Content.CMS.Services.Controllers
             return NotFound();
         }
 
+        [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
         [HttpPost("audio")]
         public IActionResult UploadAudio(UploadAudioRequest req)
         {

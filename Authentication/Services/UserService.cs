@@ -1380,7 +1380,7 @@ namespace IT.WebServices.Authentication.Services
             return new() { Record = record?.Normal };
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override Task<GetOtherPublicUserResponse> GetOtherPublicUser(
             GetOtherPublicUserRequest request,
             ServerCallContext context
@@ -1392,7 +1392,7 @@ namespace IT.WebServices.Authentication.Services
             return userServiceInternal.GetOtherPublicUserInternal(request.UserID.ToGuid());
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override async Task<GetOtherPublicUserByUserNameResponse> GetOtherPublicUserByUserName(
             GetOtherPublicUserByUserNameRequest request,
             ServerCallContext context
@@ -1495,7 +1495,7 @@ namespace IT.WebServices.Authentication.Services
             return new() { Record = record?.Normal };
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
         public override Task<GetUserIdListResponse> GetUserIdList(
             GetUserIdListRequest request,
             ServerCallContext context
