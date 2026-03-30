@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using IT.WebServices.Authentication;
+using IT.WebServices.Dashboard.Services.Data;
 using IT.WebServices.Fragments.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
@@ -11,20 +12,41 @@ namespace IT.WebServices.Dashboard.Services
     public class DashboardService : DashboardInterface.DashboardInterfaceBase
     {
         private readonly ILogger<DashboardService> logger;
-        private readonly IKpiMockDataProvider kpiMockDataProvider;
+        private readonly IUserDataProvider users;
+        private readonly ISubscriptionDataProvider subs;
 
         public DashboardService(
             ILogger<DashboardService> logger,
-            IKpiMockDataProvider kpiMockDataProvider)
+            IUserDataProvider users,
+            ISubscriptionDataProvider subs)
         {
             this.logger = logger;
-            this.kpiMockDataProvider = kpiMockDataProvider;
+            this.users = users;
+            this.subs = subs;
         }
 
-        public override Task<GetKpisResponse> GetKpis(GetKpisRequest request, ServerCallContext context)
+        public override async Task<GetKpisResponse> GetKpis(GetKpisRequest request, ServerCallContext context)
         {
-            logger.LogInformation("Serving dashboard KPIs with mock data.");
-            return Task.FromResult(kpiMockDataProvider.CreateResponse());
+            var usersTask = GetUserKpis();
+            var subscriptionsTask = GetSubscriptionKpis();
+
+            await Task.WhenAll(usersTask, subscriptionsTask);
+
+            return new GetKpisResponse
+            {
+                Users = await usersTask,
+                Subscriptions = await subscriptionsTask,
+            };
+        }
+
+        private  async Task<UserKpis> GetUserKpis()
+        {
+            return await users.GetUserKpis();
+        }
+
+        private async Task<SubscriptionKpis> GetSubscriptionKpis()
+        {
+            return await subs.GetSubscriptionKpis();
         }
     }
 }

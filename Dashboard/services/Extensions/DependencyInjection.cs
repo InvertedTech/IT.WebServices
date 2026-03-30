@@ -1,4 +1,5 @@
 ﻿using IT.WebServices.Dashboard.Services;
+using IT.WebServices.Dashboard.Services.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using System;
@@ -11,7 +12,8 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddDashboardClasses(this IServiceCollection services)
         {
-            services.AddSingleton<IKpiMockDataProvider, KpiMockDataProvider>();
+            services.AddSingleton<IUserDataProvider, SqlUserDataProvider>();
+            services.AddSingleton<ISubscriptionDataProvider, SqlSubscriptionDataProvider>();
             return services;
         }
 
