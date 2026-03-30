@@ -26,7 +26,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<AssetClient>();
             
             services.AddTransient<IPullFromAllProcessor, PullFromShopifyProcessor>();
-            services.AddTransient<IPullImagesFromAllProcessor, PullImagesFromShopifyProcessor>();
 
             return services;
         }

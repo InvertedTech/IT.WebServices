@@ -4,6 +4,6 @@ namespace IT.WebServices.Merch.Jobs
 {
     public interface IPullFromAllProcessor
     {
-        public Task Run(MerchBulkActionProgress progress, CancellationToken cancellationToken);
+        public Task Run(IBulkJob job);
     }
 }

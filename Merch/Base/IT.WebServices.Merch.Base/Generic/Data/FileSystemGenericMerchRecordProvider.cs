@@ -71,6 +71,11 @@ namespace IT.WebServices.Merch.Generic.Data
             return ReadFromFile(fi);
         }
 
+        public async Task<GenericMerchRecord?> GetByProcessorProductId(string processorProductId)
+        {
+            return (await GetAll().ToArrayAsync()).FirstOrDefault(r => r.ProcessorProductId == processorProductId);
+        }
+
         public async Task Save(GenericMerchRecord rec)
         {
             var internalProductId = rec.InternalProductId.ToGuid();

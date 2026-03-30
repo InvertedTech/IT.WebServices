@@ -2,16 +2,21 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments.Content;
+using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Fragments.Merch;
 using IT.WebServices.Fragments.Merch.Shopify;
 using IT.WebServices.Helpers;
 using IT.WebServices.Merch.Generic.Data;
+using IT.WebServices.Merch.Helpers;
 using IT.WebServices.Merch.Jobs;
 using Microsoft.Extensions.Logging;
+using Mysqlx.Crud;
 using ShopifySharp;
 using ShopifySharp.Credentials;
 using ShopifySharp.Factories;
+using ShopifySharp.GraphQL;
 using System.Net.Http.Json;
+using System.Security.Policy;
 using System.Text.Json;
 
 namespace IT.WebServices.Merch.Shopify.Jobs
@@ -23,7 +28,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
         private readonly ILogger log;
         private readonly IProductServiceFactory productsService;
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly AssetClient assetClient;
+        private readonly ImagePullHelper imagePullHelper;
 
         private const string StorefrontQuery = """
             query CollectionProducts($id: ID!, $cursor: String) {
@@ -86,18 +91,23 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             }
             """;
 
-        public PullFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, SettingsHelper settingsClient, ILogger<PullFromShopifyProcessor> log, IProductServiceFactory productsService, IHttpClientFactory httpClientFactory, AssetClient assetClient)
+        public PullFromShopifyProcessor(IGenericMerchRecordProvider recordProvider, SettingsHelper settingsClient, ILogger<PullFromShopifyProcessor> log, IProductServiceFactory productsService, IHttpClientFactory httpClientFactory, ImagePullHelper imagePullHelper)
         {
             this.recordProvider = recordProvider;
             this.settingsClient = settingsClient;
             this.log = log;
             this.productsService = productsService;
             this.httpClientFactory = httpClientFactory;
-            this.assetClient = assetClient;
+            this.imagePullHelper = imagePullHelper;
         }
 
-        public async Task Run(MerchBulkActionProgress progress, CancellationToken cancellationToken)
+        private IBulkJob job;
+        private List<string> internalIdsLoaded = new();
+
+        public async Task Run(IBulkJob job)
         {
+            this.job = job;
+
             if (!(settingsClient.Public.Merch?.Shopify?.IsEnabled ?? false))
                 return;
 
@@ -111,25 +121,25 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
             for (int i = 0; i < stores.Length; i++)
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (job.CancelToken.IsCancellationRequested)
                     return;
 
                 var store = stores[i];
                 ShopifyApiCredentials creds = new ShopifyApiCredentials(store.StorefrontDomain, store.StoreAdminToken);
                 var service = productsService.Create(creds);
 
-                progress.Progress = 1.0F * i / numRuns;
-                progress.StatusMessage = $"Pulling from Shopify: {store.StoreName}";
+                job.Progress.Progress = 1.0F * i / numRuns;
+                job.Progress.StatusMessage = $"Pulling from Shopify: {store.StoreName}";
 
                 try
                 {
                     var page = await service.ListAsync(new ShopifySharp.Filters.ProductListFilter { Limit = 250 });
-                    await ProductItemsToRecords(page.Items, store.InternalStoreID, progress, i, numRuns, imageClient, cancellationToken);
+                    await ProductItemsToRecords(page.Items, store.InternalStoreID, i, numRuns, imageClient);
 
                     while (page.HasNextPage)
                     {
                         page = await service.ListAsync(page.GetNextPageFilter(250));
-                        await ProductItemsToRecords(page.Items, store.InternalStoreID, progress, i, numRuns, imageClient, cancellationToken);
+                        await ProductItemsToRecords(page.Items, store.InternalStoreID, i, numRuns, imageClient);
                     }
                 }
                 catch (ShopifySharp.ShopifyHttpException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -137,23 +147,26 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                     if (store.CollectionIds.Count == 0)
                         continue;
 
-                    progress.StatusMessage = $"Falling back to storefront pull: {store.StoreName}";
-                    await FetchFromStorefrontAsync(store, progress, i, numRuns, imageClient, cancellationToken);
+                    job.Progress.StatusMessage = $"Falling back to storefront pull: {store.StoreName}";
+                    await FetchFromStorefrontAsync(store, i, numRuns, imageClient);
                 }
                 catch (Exception ex)
                 {
                     log.LogError(ex, "Error pulling from Shopify store {StoreName}", store.StoreName);
                 }
-
-                await Task.Delay(10000, cancellationToken);
             }
 
-            progress.CompletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
-            progress.Progress = 100;
-            progress.StatusMessage = "Completed";
+            var curIdsInDb = (await recordProvider.GetAll().ToListAsync()).Select(r => r.InternalProductId).ToList();
+            var extraIds = curIdsInDb.Where(id => !internalIdsLoaded.Contains(id)).ToList();
+            foreach(var id in extraIds)
+                await recordProvider.Delete(id.ToGuid());
+
+            job.Progress.CompletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
+            job.Progress.Progress = 100;
+            job.Progress.StatusMessage = "Completed";
         }
 
-        private async Task FetchFromStorefrontAsync(ShopifyStoreConfig store, MerchBulkActionProgress progress, int storeIndex, int numStores, HttpClient imageClient, CancellationToken cancellationToken)
+        private async Task FetchFromStorefrontAsync(ShopifyStoreConfig store, int storeIndex, int numStores, HttpClient imageClient)
         {
             var client = CreateStorefrontClient(store);
             var apiUrl = $"https://{store.StorefrontDomain}/api/2024-10/graphql.json";
@@ -161,7 +174,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
             for (int c = 0; c < collectionIds.Count; c++)
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (job.CancelToken.IsCancellationRequested)
                     return;
 
                 var gid = $"gid://shopify/Collection/{collectionIds[c]}";
@@ -169,7 +182,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
                 do
                 {
-                    var (items, hasNextPage, endCursor) = await FetchStorefrontPageAsync(client, apiUrl, gid, cursor, store.StoreName, cancellationToken);
+                    var (items, hasNextPage, endCursor) = await FetchStorefrontPageAsync(client, apiUrl, gid, cursor, store.StoreName);
                     if (items is null)
                         break;
 
@@ -178,15 +191,21 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                     for (int j = 0; j < items.Count; j++)
                     {
                         var node = items[j];
-                        progress.Progress = 1.0F * (storeIndex + (1.0F * j / items.Count)) / numStores;
-                        progress.StatusMessage = $"Storefront pull: {node.GetProperty("title").GetString()} ({j + 1}/{items.Count})";
+                        job.Progress.Progress = 1.0F * (storeIndex + (1.0F * j / items.Count)) / numStores;
+                        job.Progress.StatusMessage = $"Storefront pull: {node.GetProperty("title").GetString()} ({j + 1}/{items.Count})";
 
                         try
                         {
                             var rec = StorefrontNodeToRecord(node, store.InternalStoreID);
+
+                            var oldRec = await recordProvider.GetByProcessorProductId(rec.ProcessorProductId);
+                            if (oldRec is not null)
+                                UpdateRecord(rec, oldRec);
+
+                            await imagePullHelper.PullImagesForRecord(rec, job);
+
                             await recordProvider.Save(rec);
-                            await PullImagesForRecord(rec, imageClient, cancellationToken);
-                            await recordProvider.Save(rec);
+                            internalIdsLoaded.Add(rec.InternalProductId);
                         }
                         catch (Exception ex)
                         {
@@ -205,10 +224,10 @@ namespace IT.WebServices.Merch.Shopify.Jobs
         }
 
         private async Task<(List<JsonElement>? Items, bool HasNextPage, string? EndCursor)> FetchStorefrontPageAsync(
-            HttpClient client, string apiUrl, string gid, string? cursor, string storeName, CancellationToken cancellationToken)
+            HttpClient client, string apiUrl, string gid, string? cursor, string storeName)
         {
             var body = new { query = StorefrontQuery, variables = new { id = gid, cursor } };
-            var response = await client.PostAsJsonAsync(apiUrl, body, cancellationToken);
+            var response = await client.PostAsJsonAsync(apiUrl, body, job.CancelToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -216,7 +235,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 return (null, false, null);
             }
 
-            using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
+            using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(job.CancelToken), cancellationToken: job.CancelToken);
             var productsEl = doc.RootElement
                 .GetProperty("data")
                 .GetProperty("collection")
@@ -305,7 +324,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             return variant;
         }
 
-        private async Task ProductItemsToRecords(IEnumerable<ShopifySharp.Product> items, string storeId, MerchBulkActionProgress progress, int storeIndex, int numStores, HttpClient imageClient, CancellationToken cancellationToken)
+        private async Task ProductItemsToRecords(IEnumerable<ShopifySharp.Product> items, string storeId, int storeIndex, int numStores, HttpClient imageClient)
         {
             var itemList = items.ToList();
             var itemCount = itemList.Count;
@@ -313,14 +332,20 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             for (int i = 0; i < itemCount; i++)
             {
                 var item = itemList[i];
-                progress.Progress = 1.0F * (storeIndex + (1.0F * i / itemCount)) / numStores;
-                progress.StatusMessage = $"Pulling from Shopify: {item.Title} ({i + 1}/{itemCount})";
+                job.Progress.Progress = 1.0F * (storeIndex + (1.0F * i / itemCount)) / numStores;
+                job.Progress.StatusMessage = $"Pulling from Shopify: {item.Title} ({i + 1}/{itemCount})";
                 try
                 {
                     var rec = item.ProductToRecord(storeId);
+
+                    var oldRec = await recordProvider.GetByProcessorProductId(rec.ProcessorProductId);
+                    if (oldRec is not null)
+                        UpdateRecord(rec, oldRec);
+
+                    await imagePullHelper.PullImagesForRecord(rec, job);
+
                     await recordProvider.Save(rec);
-                    await PullImagesForRecord(rec, imageClient, cancellationToken);
-                    await recordProvider.Save(rec);
+                    internalIdsLoaded.Add(rec.InternalProductId);
                 }
                 catch (Exception ex)
                 {
@@ -329,61 +354,30 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             }
         }
 
-        private async Task PullImagesForRecord(GenericMerchRecord rec, HttpClient client, CancellationToken cancellationToken)
+        private void UpdateRecord(GenericMerchRecord rec, GenericMerchRecord oldRec)
         {
-            foreach (var image in GetImagesToPull(rec))
-            {
-                try
-                {
-                    var response = await client.GetAsync(image.Url, cancellationToken);
-                    if (!response.IsSuccessStatusCode)
-                        continue;
+            rec.InternalProductId = oldRec.InternalProductId;
+            rec.CreatedOnUTC = oldRec.CreatedOnUTC;
 
-                    var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-                    var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
-                    var filename = Path.GetFileName(new Uri(image.Url).LocalPath);
+            UpdateImage(rec.FeaturedImage, oldRec);
 
-                    var saved = await assetClient.SaveAsset(new CreateAssetRequest
-                    {
-                        Image = new ImageAssetData
-                        {
-                            Public = new ImageAssetPublicData
-                            {
-                                Title = filename,
-                                MimeType = contentType,
-                                Data = ByteString.CopyFrom(bytes),
-                            },
-                            Private = new()
-                        }
-                    });
+            foreach (var image in rec.OtherImages)
+                UpdateImage(image, oldRec);
 
-                    if (saved is not null)
-                        image.ImageAssetID = saved.AssetIDGuid.ToString();
-
-                    await Task.Delay(500, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex.Message);
-                }
-            }
+            foreach (var variant in rec.Variants)
+                UpdateImage(variant.Image, oldRec);
         }
 
-        private IEnumerable<GenericMerchImageRecord> GetImagesToPull(GenericMerchRecord record)
+        private void UpdateImage(GenericMerchImageRecord image, GenericMerchRecord oldRec)
         {
-            if (record.FeaturedImage is not null
-                && !string.IsNullOrEmpty(record.FeaturedImage.Url)
-                && string.IsNullOrEmpty(record.FeaturedImage.ImageAssetID))
-                yield return record.FeaturedImage;
+            if (image is null)
+                return;
 
-            foreach (var img in record.OtherImages)
-                if (!string.IsNullOrEmpty(img.Url)
-                    && string.IsNullOrEmpty(img.ImageAssetID))
-                    yield return img;
+            var found = oldRec.GetImageByUrl(image.Url);
+            if (found is null)
+                return;
 
-            foreach (var variant in record.Variants)
-                if (variant.Image is not null && !string.IsNullOrEmpty(variant.Image.Url) && string.IsNullOrEmpty(variant.Image.ImageAssetID))
-                    yield return variant.Image;
+            image.ImageAssetID = found.ImageAssetID;
         }
     }
 }

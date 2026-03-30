@@ -60,6 +60,11 @@ namespace IT.WebServices.Merch.Generic.Data
             return Task.FromResult((GenericMerchRecord?)null);
         }
 
+        public Task<GenericMerchRecord?> GetByProcessorProductId(string processorProductId)
+        {
+            return Task.FromResult(cache.Values.FirstOrDefault(r => r.ProcessorProductId == processorProductId)?.Clone());
+        }
+
         public async Task Save(GenericMerchRecord record)
         {
             await dataProvider.Save(record);

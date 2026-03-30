@@ -32,5 +32,4 @@ message MerchBulkActionProgress {
 
 enum MerchBulkAction {
     PullFromAll = 0;
-    PullImagesFromAll = 1;
 }

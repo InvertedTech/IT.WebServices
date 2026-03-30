@@ -54,7 +54,7 @@ namespace IT.WebServices.Merch.Combined.Helpers.BulkJobs
 
                 try
                 {
-                    await processor.Run(Progress, cancelToken.Token);
+                    await processor.Run(this);
                 }
                 catch (Exception e)
                 {

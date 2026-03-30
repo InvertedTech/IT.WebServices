@@ -9,6 +9,7 @@ namespace IT.WebServices.Merch.Generic.Data
         IAsyncEnumerable<GenericMerchRecord> GetAll();
         IAsyncEnumerable<GenericMerchRecord> GetAllByStoreId(Guid internalStoreId);
         Task<GenericMerchRecord?> GetById(Guid internalProductId);
+        Task<GenericMerchRecord?> GetByProcessorProductId(string processorProductId);
         Task Save(GenericMerchRecord record);
     }
 }
