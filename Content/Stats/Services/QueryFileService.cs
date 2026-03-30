@@ -63,7 +63,7 @@ namespace IT.WebServices.Content.Stats.Services
             };
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<GetOtherUserStatsResponse> GetOtherUserStats(GetOtherUserStatsRequest request, ServerCallContext context)
         {
             if (!Guid.TryParse(request.UserID, out var userId))

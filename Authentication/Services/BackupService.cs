@@ -61,7 +61,6 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        [AllowAnonymous]
         public override async Task ExportUsers(ExportUsersRequest request, IServerStreamWriter<ExportUsersResponse> responseStream, ServerCallContext context)
         {
             try

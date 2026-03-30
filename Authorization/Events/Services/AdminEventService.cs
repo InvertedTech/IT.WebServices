@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace IT.WebServices.Authorization.Events.Services.Services
 {
-    [Authorize]
+    [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)]
     public class AdminEventService :  AdminEventInterface.AdminEventInterfaceBase
     {
         private readonly ILogger<AdminEventService> _logger;

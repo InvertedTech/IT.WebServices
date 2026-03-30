@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace IT.WebServices.Careers
 {
-    [Authorize]
+    [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
     public class CareersService : CareersInterface.CareersInterfaceBase
     {
         private readonly ILogger<CareersService> logger;

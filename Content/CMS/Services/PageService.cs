@@ -15,7 +15,7 @@ using IT.WebServices.Fragments.Generic;
 // TODO: Add AuditLogHelper
 namespace IT.WebServices.Content.CMS.Services
 {
-    [Authorize]
+    [Authorize(Roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT)]
     public class PageService : PageInterface.PageInterfaceBase
     {
         private readonly ILogger logger;
