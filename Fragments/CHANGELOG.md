@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.4
+
+### Patch Changes
+
+- Add FirstName/LastName to UserSearchRecord
+
 ## 0.12.3
 
 ### Patch Changes

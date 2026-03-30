@@ -582,10 +582,12 @@ message TOTPDeviceLimited {
 
 message UserSearchRecord {
   string UserID = 1;
-  string UserName = 2;                // User name of the user
-  string DisplayName = 3;             // Public display name of the user
-  string Email = 4;                   // Private email used for password resets
-  repeated string Roles = 5;          // Roles for the user
+  string FirstName = 2;
+  string LastName = 3;
+  string UserName = 4;                // User name of the user
+  string DisplayName = 5;             // Public display name of the user
+  string Email = 6;                   // Private email used for password resets
+  repeated string Roles = 7;          // Roles for the user
   google.protobuf.Timestamp CreatedOnUTC = 11;   // UTC timestamp when user was created
   google.protobuf.Timestamp ModifiedOnUTC = 12;  // UTC timestamp when user record was last modified
   google.protobuf.Timestamp DisabledOnUTC = 13;  // UTC timestamp when user was disabled, null = not disabled
