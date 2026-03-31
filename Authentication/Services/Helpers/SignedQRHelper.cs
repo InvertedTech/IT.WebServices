@@ -1,41 +1,40 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using IT.WebServices.Fragments.Authentication;
+﻿using IT.WebServices.Crypto;
 using Microsoft.Extensions.Logging;
 using QRCoder;
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace IT.WebServices.Authentication.Services.Helpers
 {
     public class SignedQRHelper
     {
-        private readonly ECDsa _privateKey;
-        private readonly ECDsa _publicKey;
+        private readonly ECDsa privateKey;
+        private readonly ECDsa publicKey;
         private readonly ILogger log;
+        private readonly JsonSerializerOptions options;
 
         // TODO: Import keys from config
-        public SignedQRHelper(ECDsa privateKey, ECDsa publicKey, ILogger<SignedQRHelper> log)
+        public SignedQRHelper(ILogger<SignedQRHelper> log)
         {
-            _privateKey = privateKey;
-            _publicKey = publicKey;
+            privateKey = JwtExtensions.GetPrivateKey().ToECDsa();
+            publicKey = JwtExtensions.GetPublicKey().ToECDsa();
             this.log = log;
+
+            options = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
         }
 
         public byte[] GenerateSignedQR(UserQRRecord record)
         {
             string json = JsonSerializer.Serialize(record);
             var data = Encoding.UTF8.GetBytes(json);
-            var signature = _privateKey.SignData(data, HashAlgorithmName.SHA256);
+            var signature = privateKey.SignData(data, HashAlgorithmName.SHA256);
 
-            var payload = new
-            {
-                data = json,
-                sig = Convert.ToBase64String(signature)
-            };
-            var qrContent = JsonSerializer.Serialize(payload);
+            var payload = new DataQRRecord(json, Convert.ToBase64String(signature));
+            var qrContent = JsonSerializer.Serialize(payload, options);
+
             using var qrGenerator = new QRCodeGenerator();
             var qrData = qrGenerator.CreateQrCode(qrContent, QRCodeGenerator.ECCLevel.Q);
             using var qrCode = new PngByteQRCode(qrData);
@@ -46,22 +45,21 @@ namespace IT.WebServices.Authentication.Services.Helpers
         {
             try
             {
-                var payload = JsonSerializer.Deserialize<JsonElement>(scannedContent);
-                string data = payload.GetProperty("data").GetString();
-                string sigBase64 = payload.GetProperty("sig").GetString();
+                var payload = JsonSerializer.Deserialize<DataQRRecord>(scannedContent);
 
-                byte[] dataBytes = Encoding.UTF8.GetBytes(data);
-                byte[] signature = Convert.FromBase64String(sigBase64);
+                byte[] dataBytes = Encoding.UTF8.GetBytes(payload.data);
+                byte[] signature = Convert.FromBase64String(payload.sig);
 
-                if (!_publicKey.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256))
+                if (!publicKey.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256))
                     return false;
 
-                var record = JsonSerializer.Deserialize<UserQRRecord>(data);
+                var record = JsonSerializer.Deserialize<UserQRRecord>(payload.data);
                 if (record.ExpiresOnUTC < DateTime.UtcNow)
                     return false;
 
                 return true;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 log.LogError(ex, "Failed to verify QR code");
                 return false;
@@ -69,9 +67,14 @@ namespace IT.WebServices.Authentication.Services.Helpers
         }
     }
 
+    public record DataQRRecord(
+        string data,
+        string sig
+    );
+
     public record UserQRRecord(
         Guid UserId,
-        string UserName, 
+        string UserName,
         string DisplayName,
         uint SubscriptionLevelCents,
         DateTime ExpiresOnUTC

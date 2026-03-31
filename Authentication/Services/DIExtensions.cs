@@ -25,22 +25,14 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<UserServiceInternal>();
             services.AddSingleton<IUserService, UserServiceInternal>();
 
+            services.AddSingleton<AuditLogHelper>();
             services.AddSingleton<ClaimsClient>();
             services.AddSingleton<MySQLHelper>();
             services.AddSingleton<OfflineHelper>();
             services.AddSingleton<TokenHelper>();
             services.AddSingleton<ServiceNameHelper>();
-            services.AddSingleton<AuditLogHelper>();
+            services.AddSingleton<SignedQRHelper>();
 
-            services.AddSingleton(sp =>
-            {
-                var privateKey = Environment.GetEnvironmentVariable(JwtExtensions.JWT_PRIVATE_KEY_ENVIRONMENT_NAME, EnvironmentVariableTarget.Process)
-                    .DecodeJsonWebKeyToECDsa();
-                var publicKey = Environment.GetEnvironmentVariable(JwtExtensions.JWT_PUBLIC_KEY_ENVIRONMENT_NAME, EnvironmentVariableTarget.Process)
-                    .DecodeJsonWebKeyToECDsa();
-                var logger = sp.GetRequiredService<ILogger<SignedQRHelper>>();
-                return new SignedQRHelper(privateKey, publicKey, logger);
-            });
 
             return services;
         }
