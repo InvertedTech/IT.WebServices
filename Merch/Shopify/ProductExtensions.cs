@@ -41,6 +41,8 @@ namespace ShopifySharp
             MapProductImages(rec, images);
             MapProductVariants(rec, variants, options, images);
 
+            rec.PriceCents = rec.Variants.Where(v => v.PriceCents > 0).OrderBy(v => v.PriceCents).Select(v => v.PriceCents).FirstOrDefault();
+
             return rec;
         }
 

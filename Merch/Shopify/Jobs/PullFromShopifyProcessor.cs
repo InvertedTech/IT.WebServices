@@ -289,6 +289,8 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 foreach (var variantEdge in variantsEl.GetProperty("edges").EnumerateArray())
                     rec.Variants.Add(ParseStorefrontVariant(variantEdge.GetProperty("node")));
 
+            rec.PriceCents = rec.Variants.Where(v => v.PriceCents > 0).OrderBy(v => v.PriceCents).Select(v => v.PriceCents).FirstOrDefault();
+
             return rec;
         }
 
