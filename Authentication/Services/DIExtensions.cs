@@ -3,10 +3,13 @@ using IT.WebServices.Authentication.Services;
 using IT.WebServices.Authentication.Services.Data;
 using IT.WebServices.Authentication.Services.Helpers;
 using IT.WebServices.AuditLog;
+using IT.WebServices.Crypto;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using static Google.Rpc.Context.AttributeContext.Types;
 
@@ -28,6 +31,16 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<TokenHelper>();
             services.AddSingleton<ServiceNameHelper>();
             services.AddSingleton<AuditLogHelper>();
+
+            services.AddSingleton(sp =>
+            {
+                var privateKey = Environment.GetEnvironmentVariable(JwtExtensions.JWT_PRIVATE_KEY_ENVIRONMENT_NAME, EnvironmentVariableTarget.Process)
+                    .DecodeJsonWebKeyToECDsa();
+                var publicKey = Environment.GetEnvironmentVariable(JwtExtensions.JWT_PUBLIC_KEY_ENVIRONMENT_NAME, EnvironmentVariableTarget.Process)
+                    .DecodeJsonWebKeyToECDsa();
+                var logger = sp.GetRequiredService<ILogger<SignedQRHelper>>();
+                return new SignedQRHelper(privateKey, publicKey, logger);
+            });
 
             return services;
         }
