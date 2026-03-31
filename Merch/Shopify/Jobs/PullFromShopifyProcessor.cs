@@ -49,6 +49,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                       publishedAt
                       description
                       availableForSale
+                      onlineStoreUrl
                       featuredImage {
                         url
                         altText
@@ -134,12 +135,12 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 try
                 {
                     var page = await service.ListAsync(new ShopifySharp.Filters.ProductListFilter { Limit = 250 });
-                    await ProductItemsToRecords(page.Items, store.InternalStoreID, i, numRuns, imageClient);
+                    await ProductItemsToRecords(page.Items, store, i, numRuns, imageClient);
 
                     while (page.HasNextPage)
                     {
                         page = await service.ListAsync(page.GetNextPageFilter(250));
-                        await ProductItemsToRecords(page.Items, store.InternalStoreID, i, numRuns, imageClient);
+                        await ProductItemsToRecords(page.Items, store, i, numRuns, imageClient);
                     }
                 }
                 catch (ShopifySharp.ShopifyHttpException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -266,6 +267,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 Vendor = node.GetProperty("vendor").GetString() ?? "",
                 ProductType = node.GetProperty("productType").GetString() ?? "",
                 InStock = node.GetProperty("availableForSale").GetBoolean(),
+                Url = node.GetProperty("onlineStoreUrl").GetString() ?? "",
             };
 
             if (node.TryGetProperty("tags", out var tagsEl))
@@ -326,7 +328,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             return variant;
         }
 
-        private async Task ProductItemsToRecords(IEnumerable<ShopifySharp.Product> items, string storeId, int storeIndex, int numStores, HttpClient imageClient)
+        private async Task ProductItemsToRecords(IEnumerable<ShopifySharp.Product> items, ShopifyStoreConfig store, int storeIndex, int numStores, HttpClient imageClient)
         {
             var itemList = items.ToList();
             var itemCount = itemList.Count;
@@ -338,7 +340,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
                 job.Progress.StatusMessage = $"Pulling from Shopify: {item.Title} ({i + 1}/{itemCount})";
                 try
                 {
-                    var rec = item.ProductToRecord(storeId);
+                    var rec = item.ProductToRecord(store);
 
                     var oldRec = await recordProvider.GetByProcessorProductId(rec.ProcessorProductId);
                     if (oldRec is not null)

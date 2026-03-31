@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using IT.WebServices.Fragments.Merch;
+using IT.WebServices.Fragments.Merch.Shopify;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace ShopifySharp
 {
     public static class ProductExtensions
     {
-        public static GenericMerchRecord ProductToRecord(this Product item, string storeId)
+        public static GenericMerchRecord ProductToRecord(this Product item, ShopifyStoreConfig store)
         {
             var options = item.Options?.ToList() ?? new();
             var variants = item.Variants?.ToList() ?? new();
@@ -17,14 +18,14 @@ namespace ShopifySharp
             var rec = new GenericMerchRecord()
             {
                 InternalProductId = Guid.NewGuid().ToString(),
-                InternalStoreId = storeId,
+                InternalStoreId = store.InternalStoreID,
                 Provider = MerchRecordProvider.ShopifyRecordProvider,
                 ProcessorProductId = item.Id.ToString(),
                 Title = item.Title,
                 Description = item.BodyHtml,
                 Vendor = item.Vendor,
                 ProductType = item.ProductType,
-                Url = item.Handle,
+                Url = (new Uri(new Uri(new Uri(store.StorefrontDomain), "products/"), item.Handle)).ToString(),
                 InStock = variants.Any(v => (v.InventoryQuantity ?? 0) > 0),
                 CreatedOnUTC = Timestamp.FromDateTimeOffset(item.CreatedAt ?? new DateTimeOffset()),
                 ModifiedOnUTC = Timestamp.FromDateTimeOffset(item.UpdatedAt ?? new DateTimeOffset()),

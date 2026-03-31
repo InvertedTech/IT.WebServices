@@ -134,6 +134,9 @@ namespace IT.WebServices.Merch.Combined.Services
             if (rec.PublishOnUTC == null || rec.PublishOnUTC > Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow))
                 return false;
 
+            if (string.IsNullOrWhiteSpace(rec.Url))
+                return false;
+
             return true;
         }
 
