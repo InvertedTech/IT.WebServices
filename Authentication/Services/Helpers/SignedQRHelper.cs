@@ -53,8 +53,14 @@ namespace IT.WebServices.Authentication.Services.Helpers
                 byte[] dataBytes = Encoding.UTF8.GetBytes(data);
                 byte[] signature = Convert.FromBase64String(sigBase64);
 
-                bool valid = _publicKey.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256);
-                return valid;
+                if (!_publicKey.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256))
+                    return false;
+
+                var record = JsonSerializer.Deserialize<UserQRRecord>(data);
+                if (record.ExpiresOnUTC < DateTime.UtcNow)
+                    return false;
+
+                return true;
             } catch (Exception ex)
             {
                 log.LogError(ex, "Failed to verify QR code");
@@ -67,6 +73,7 @@ namespace IT.WebServices.Authentication.Services.Helpers
         Guid UserId,
         string UserName, 
         string DisplayName,
-        uint SubscriptionLevelCents
+        uint SubscriptionLevelCents,
+        DateTime ExpiresOnUTC
     );
 }

@@ -56,8 +56,8 @@ namespace ON.Content.SimpleCMS.Service.Controllers
         {
             if (!userHelper.IsLoggedIn)
                 return Unauthorized();
-
-            var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel);
+            var expDate = DateTime.UtcNow.AddDays(14);
+            var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel, expDate);
             var bytes = qrHelper.GenerateSignedQR(record);
             return File(bytes, "image/png");
         }
