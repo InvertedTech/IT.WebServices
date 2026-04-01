@@ -10,7 +10,7 @@ using IT.WebServices.Authentication.Services.Helpers;
 
 namespace ON.Content.SimpleCMS.Service.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     [Route("/api/auth/user")]
     [ApiController]
     public class UserApiController : Controller
@@ -24,6 +24,7 @@ namespace ON.Content.SimpleCMS.Service.Controllers
             this.picProvider = picProvider;
         }
 
+        [AllowAnonymous]
         [HttpGet("{userID}/profileimage")]
         public async Task<IActionResult> GetUserProfileImage(string userID)
         {
@@ -37,6 +38,7 @@ namespace ON.Content.SimpleCMS.Service.Controllers
             return File(bytes, "image/png");
         }
 
+        [AllowAnonymous]
         [HttpGet("/api/auth/profileimage")]
         public async Task<IActionResult> GetMyUserProfileImage([FromServices] ONUserHelper userHelper)
         {
@@ -56,13 +58,14 @@ namespace ON.Content.SimpleCMS.Service.Controllers
         {
             if (!userHelper.IsLoggedIn)
                 return Unauthorized();
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var expDate = DateTime.UtcNow.AddDays(14);
+            var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL", EnvironmentVariableTarget.Process);
+            var expDate = DateTime.UtcNow.AddMinutes(5);
             var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel, expDate);
             var bytes = qrHelper.GenerateSignedQR(record, baseUrl);
             return File(bytes, "image/png");
         }
 
+        [Authorize(Roles = RoleAbilities.ROLE_IS_EVENT_TICKET_MANAGER_OR_HIGHER)]
         [HttpGet("verify-qr")]
         public IActionResult VerifySignedQR([FromServices] SignedQRHelper qrHelper, [FromQuery] string token)
         {
