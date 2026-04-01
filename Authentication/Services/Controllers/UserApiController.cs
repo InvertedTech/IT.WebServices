@@ -56,19 +56,32 @@ namespace ON.Content.SimpleCMS.Service.Controllers
         {
             if (!userHelper.IsLoggedIn)
                 return Unauthorized();
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var expDate = DateTime.UtcNow.AddDays(14);
             var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel, expDate);
-            var bytes = qrHelper.GenerateSignedQR(record);
+            var bytes = qrHelper.GenerateSignedQR(record, baseUrl);
             return File(bytes, "image/png");
         }
 
-        [HttpPost("verify-qr")]
-        public IActionResult VerifySignedQR([FromServices] SignedQRHelper qrHelper, [FromBody] System.Text.Json.JsonElement body)
+        [HttpGet("verify-qr")]
+        public IActionResult VerifySignedQR([FromServices] SignedQRHelper qrHelper, [FromQuery] string token)
         {
-            var valid = qrHelper.VerifySignedQR(body.GetRawText());
-            if (!valid)
-                return Unauthorized();
-            return Ok();
+            // TODO: Possibly Sign First+Last Names to token so that verification can be done on the name front as well
+            var redirectBase = Environment.GetEnvironmentVariable("QR_CODE_ADMIN_REDIRECT", EnvironmentVariableTarget.Process);
+            var res = qrHelper.VerifySignedQR(token);
+            if (res == null)
+            {
+                var reason = "No Response";
+                return Redirect($"{redirectBase}?valid=false&name=null&level=null&reason={reason}");
+            }
+
+            if (res.Record == null)
+                return Redirect($"{redirectBase}?valid=false&name=null&level=null&reason={res.Reason}");
+
+            if (res.IsValid == false)
+                return Redirect($"{redirectBase}?valid=false&name={Uri.EscapeDataString(res.Record.DisplayName)}&level={res.Record.SubscriptionLevelCents}&reason={res.Reason}");
+
+            return Redirect($"{redirectBase}?valid=true&name={Uri.EscapeDataString(res.Record.DisplayName)}&level={res.Record.SubscriptionLevelCents}");
         }
     }
 }

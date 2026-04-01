@@ -3,13 +3,10 @@ using IT.WebServices.Authentication.Services;
 using IT.WebServices.Authentication.Services.Data;
 using IT.WebServices.Authentication.Services.Helpers;
 using IT.WebServices.AuditLog;
-using IT.WebServices.Crypto;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using static Google.Rpc.Context.AttributeContext.Types;
 
