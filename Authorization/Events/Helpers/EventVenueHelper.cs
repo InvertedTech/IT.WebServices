@@ -18,10 +18,10 @@ namespace IT.WebServices.Authorization.Events.Helpers
 
         public EventVenue[] GetAll()
         {
-            return _settingsClient.Private?.Events?.Venues?.ToArray();
+            return _settingsClient.Private?.Events?.Venues?.ToArray() ?? [];
         }
 
-        public EventVenue GetById(string id)
+        public EventVenue? GetById(string id)
         {
             return _settingsClient.Private?.Events?.Venues?.FirstOrDefault(v =>
                 v.VenueId == id

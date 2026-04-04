@@ -25,7 +25,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         public const string PRODUCT_ONETIME_PREFIX = "prod_one_";
         public const string CHECKOUT_SESSION_ID = "{CHECKOUT_SESSION_ID}";
         public const string SUCCESS_URL_APPENDIX = "session_id=" + CHECKOUT_SESSION_ID;
-        public ProductList Products { get; private set; }
+        public ProductList Products { get; private set; } = new ProductList();
 
         private readonly AppSettings settings;
         private readonly IProductRecordProvider recordProvider;

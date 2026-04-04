@@ -21,7 +21,7 @@ namespace IT.WebServices.Merch.Combined.Helpers.BulkJobs
 
         public CancellationToken CancelToken => cancelToken.Token;
         public MerchBulkActionProgress Progress { get; init; } = new() { Action = MerchBulkAction.PullFromAll };
-        public ONUser StartedBy { get; private set; }
+        public ONUser? StartedBy { get; private set; }
 
         public void Cancel(ONUser user)
         {

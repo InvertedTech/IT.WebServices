@@ -7,7 +7,7 @@ namespace IT.WebServices.Merch.Jobs
     {
         public CancellationToken CancelToken { get; }
         public MerchBulkActionProgress Progress { get; }
-        public ONUser StartedBy { get; }
+        public ONUser? StartedBy { get; }
 
         public void Cancel(ONUser user);
         public void Start(ONUser user);

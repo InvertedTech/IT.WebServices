@@ -8,7 +8,7 @@ namespace IT.WebServices.Authentication
 {
     public class ONUserHelper
     {
-        public readonly ONUser MyUser;
+        public readonly ONUser? MyUser;
         public readonly bool IsLoggedIn;
         public readonly Guid MyUserId;
 
@@ -21,22 +21,22 @@ namespace IT.WebServices.Authentication
 
         public CallOptions GetGrpcCallOptions(CancellationToken cancellationToken = default) => MyUser?.GetGrpcCallOptions(cancellationToken) ?? new(new Metadata(), cancellationToken: cancellationToken);
 
-        public static ONUser ParseUser(HttpContext context)
+        public static ONUser? ParseUser(HttpContext? context)
         {
-            var user = ONUser.Parse(context.User.Claims.ToArray());
+            var user = ONUser.Parse(context?.User.Claims.ToArray() ?? []);
             if (user != null)
                 user.JwtToken = GrabToken(context);
 
             return user;
         }
 
-        private static string GrabToken(HttpContext context)
+        private static string GrabToken(HttpContext? context)
         {
-            string cookie = context.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
+            var cookie = context?.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
             if (!string.IsNullOrWhiteSpace(cookie))
                 return cookie;
 
-            string authorization = context.Request.Headers["Authorization"];
+            string? authorization = context?.Request.Headers["Authorization"];
 
             if (string.IsNullOrWhiteSpace(authorization))
                 return "";

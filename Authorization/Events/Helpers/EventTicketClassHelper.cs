@@ -19,10 +19,10 @@ namespace IT.WebServices.Authorization.Events.Helpers
 
         public TicketClassRecord[] GetAll()
         {
-            return _settingsClient.Public?.Events?.TicketClasses?.ToArray();
+            return _settingsClient.Public?.Events?.TicketClasses?.ToArray() ?? [];
         }
 
-        public TicketClassRecord GetById(string id)
+        public TicketClassRecord? GetById(string id)
         {
             return _settingsClient.Public?.Events?.TicketClasses?.FirstOrDefault(tc =>
                 tc.TicketClassId == id

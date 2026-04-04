@@ -252,8 +252,6 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
                 if (triesLeft > 0)
                     return await GetAll(active, amount, triesLeft - 1);
-                else
-                    return null;
             }
 
             if (ret.Count % size == 0 && ret.Count != 0)

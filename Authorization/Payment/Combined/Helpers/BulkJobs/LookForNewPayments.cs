@@ -27,7 +27,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
 
         private Task? task;
         private CancellationTokenSource cancelToken = new();
-        private ONUser user;
+        private ONUser? user;
 
         public LookForNewPayments(ILogger logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericSubscriptionRecordProvider subProvider, IGenericPaymentRecordProvider paymentProvider, GenericPaymentProcessorProvider genericProcessorProvider, ReconcileHelper reconcileHelper)
         {
@@ -121,7 +121,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
                 return;
             }
 
-            await reconcileHelper.EnsurePayment(localSub, payment.ToGenericPaymentRecord(), user);
+            await reconcileHelper.EnsurePayment(localSub, payment.ToGenericPaymentRecord(), user!);
         }
     }
 }

@@ -61,7 +61,7 @@ namespace ON.Content.SimpleCMS.Service.Controllers
 
             var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL", EnvironmentVariableTarget.Process) ?? "http://localhost";
             var expDate = DateTime.UtcNow.AddMinutes(5);
-            var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel, expDate);
+            var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser?.UserName ?? "", userHelper.MyUser?.DisplayName ?? "", userHelper.MyUser?.SubscriptionLevel ?? 0, expDate);
             var bytes = qrHelper.GenerateSignedQR(record, baseUrl);
             return File(bytes, "image/png");
         }

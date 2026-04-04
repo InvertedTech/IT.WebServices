@@ -17,7 +17,7 @@ namespace IT.WebServices.Authentication
         {
             if (!context.Request.Headers.ContainsKey("Authorization"))
             {
-                string token = context.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
+                var token = context.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
 
                 if (token != null)
                     context.Request.Headers.Append("Authorization", "Bearer " + token);

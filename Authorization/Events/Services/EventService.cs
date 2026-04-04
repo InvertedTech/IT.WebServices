@@ -6,6 +6,7 @@ using IT.WebServices.Authorization.Events.Data;
 using IT.WebServices.Authorization.Events.Extensions;
 using IT.WebServices.Authorization.Events.Helpers;
 using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Authorization.Events;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
@@ -64,7 +65,7 @@ namespace IT.WebServices.Authorization.Events.Services
                 };
             }
 
-            return  new GetEventResponse()
+            return new GetEventResponse()
             {
                 Event = rec.GetPublicRecord(),
                 Error = null // Success case - no error
@@ -82,7 +83,7 @@ namespace IT.WebServices.Authorization.Events.Services
             {
                 switch (item.OneOfType)
                 {
-                     case EventRecordOneOfType.EventOneOfSingle:
+                    case EventRecordOneOfType.EventOneOfSingle:
                         res.Events.Add(new EventPublicRecord()
                         {
                             EventId = item.EventId,
@@ -110,19 +111,26 @@ namespace IT.WebServices.Authorization.Events.Services
         {
             var res = new GetOwnTicketResponse();
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
+            if (user is null)
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
             var tickets = await _ticketProvider.GetAllByUser(user.Id).ToList();
             var foundTicket = tickets.FirstOrDefault(t => t.TicketId == request.TicketId);
 
-            res.Record = foundTicket.Public;
+            if (foundTicket?.Public is not null)
+                res.Record = foundTicket.Public;
+
             return res;
         }
 
         public override async Task<GetOwnTicketsResponse> GetOwnTickets(GetOwnTicketsRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
+            if (user is null)
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
+
             var tickets = await _ticketProvider.GetAllByUser(user.Id).ToList();
-            var res  = new GetOwnTicketsResponse();
+            var res = new GetOwnTicketsResponse();
             res.Records.AddRange(tickets.Select(t => t.Public));
             return res;
         }
@@ -130,6 +138,9 @@ namespace IT.WebServices.Authorization.Events.Services
         public override async Task<CancelOwnTicketResponse> CancelOwnTicket(CancelOwnTicketRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
+            if (user is null)
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
+
             var res = new CancelOwnTicketResponse();
 
             var tickets = await _ticketProvider.GetAllByUser(user.Id).ToList();
@@ -142,7 +153,7 @@ namespace IT.WebServices.Authorization.Events.Services
 
             foundTicket = foundTicket.Cancel(user.Id.ToString(), request.Reason);
 
-           var success = await _ticketProvider.Update(foundTicket);
+            var success = await _ticketProvider.Update(foundTicket);
             if (!success)
             {
                 res.Error = GenericErrorExtensions.Create(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred while canceling ticket");
@@ -249,7 +260,7 @@ namespace IT.WebServices.Authorization.Events.Services
             //}
 
             //res.Tickets.AddRange(ticketsToReserve);
-            
+
             res.Error = null; // Success case - no error
             return res;
         }
@@ -257,7 +268,10 @@ namespace IT.WebServices.Authorization.Events.Services
         public override async Task<UseTicketResponse> UseTicket(UseTicketRequest request, ServerCallContext context)
         {
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
-            var res = new UseTicketResponse();  
+            if (user is null)
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
+
+            var res = new UseTicketResponse();
             var tickets = await _ticketProvider.GetAllByUser(user.Id).ToList();
             var foundTicket = tickets.FirstOrDefault(t => t.TicketId == request.TicketId);
 

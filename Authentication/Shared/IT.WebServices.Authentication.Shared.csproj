@@ -3,6 +3,7 @@
   <PropertyGroup>
 	<TargetFramework>net10.0</TargetFramework>
 	<RootNamespace>IT.WebServices.Authentication</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

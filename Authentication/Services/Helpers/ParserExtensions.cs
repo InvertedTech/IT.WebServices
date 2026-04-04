@@ -81,7 +81,7 @@ namespace IT.WebServices.Authentication.Services.Helpers
 
         public static (Guid id, TOTPDevice record) ParseTOTPDevice(this DbDataReader rdr)
         {
-            var id = (rdr["UserID"] as string).ToGuid();
+            var id = (rdr["UserID"] as string)?.ToGuid() ?? Guid.Empty;
 
             var record = new TOTPDevice()
             {

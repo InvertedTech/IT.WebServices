@@ -76,7 +76,7 @@ namespace IT.WebServices.Authorization.Events.Data
             }
         }
 
-        public async Task<EventTicketRecord> GetById(Guid ticketId, Guid eventId)
+        public async Task<EventTicketRecord?> GetById(Guid ticketId, Guid eventId)
         {
             var file = dataDir
                 .EnumerateFiles(eventId.ToString(), SearchOption.AllDirectories)

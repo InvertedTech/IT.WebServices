@@ -96,7 +96,7 @@ namespace IT.WebServices.Merch.Shopify.Jobs
             this.imagePullHelper = imagePullHelper;
         }
 
-        private IBulkJob job;
+        private IBulkJob? job;
         private List<string> internalIdsLoaded = new();
 
         public async Task Run(IBulkJob job)
@@ -163,6 +163,9 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
         private async Task FetchFromStorefrontAsync(ShopifyStoreConfig store, int storeIndex, int numStores, HttpClient imageClient)
         {
+            if (job is null)
+                return;
+
             var client = CreateStorefrontClient(store);
             var apiUrl = $"https://{store.StorefrontDomain}/api/2024-10/graphql.json";
             var collectionIds = store.CollectionIds.ToList();
@@ -221,6 +224,9 @@ namespace IT.WebServices.Merch.Shopify.Jobs
         private async Task<(List<JsonElement>? Items, bool HasNextPage, string? EndCursor)> FetchStorefrontPageAsync(
             HttpClient client, string apiUrl, string gid, string? cursor, string storeName)
         {
+            if (job is null)
+                return (null, false, null);
+
             var body = new { query = StorefrontQuery, variables = new { id = gid, cursor } };
             var response = await client.PostAsJsonAsync(apiUrl, body, job.CancelToken);
 
@@ -324,6 +330,9 @@ namespace IT.WebServices.Merch.Shopify.Jobs
 
         private async Task ProductItemsToRecords(IEnumerable<ShopifySharp.Product> items, ShopifyStoreConfig store, int storeIndex, int numStores, HttpClient imageClient)
         {
+            if (job is null)
+                return;
+
             var itemList = items.ToList();
             var itemCount = itemList.Count;
 

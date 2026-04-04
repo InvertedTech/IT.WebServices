@@ -11,7 +11,7 @@ namespace IT.WebServices.Authorization.Events.Data
     {
         Task<bool> Create(EventTicketRecord record);
         Task<bool> Create(List<EventTicketRecord> records);
-        Task<EventTicketRecord> GetById(Guid ticketId, Guid eventId);
+        Task<EventTicketRecord?> GetById(Guid ticketId, Guid eventId);
         IAsyncEnumerable<EventTicketRecord> GetAllByEvent(Guid eventId);
         IAsyncEnumerable<EventTicketRecord> GetAllByUser(Guid userId);
         IAsyncEnumerable<EventTicketRecord> GetAllByUserAndEvent(Guid userId, Guid eventId);

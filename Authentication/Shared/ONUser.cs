@@ -21,7 +21,7 @@ namespace IT.WebServices.Authentication
         public uint SubscriptionLevel { get; set; } = 0;
         public const string SubscriptionLevelType = "SubscriptionLevel";
 
-        public string SubscriptionProvider { get; set; }
+        public string SubscriptionProvider { get; set; } = "";
         public const string SubscriptionProviderType = "SubscriptionProvider";
 
         public List<string> Idents { get; private set; } = new List<string>();
@@ -82,7 +82,7 @@ namespace IT.WebServices.Authentication
                 yield return c;
         }
 
-        public static ONUser Parse(Claim[] claims)
+        public static ONUser? Parse(Claim[] claims)
         {
             if (claims == null || claims.Length == 0)
                 return null;

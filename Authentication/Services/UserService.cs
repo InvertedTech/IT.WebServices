@@ -1,30 +1,27 @@
+using CryptSharp.Core;
 using Google.Authenticator;
 using Google.Protobuf;
 using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
+using IT.WebServices.AuditLog;
 using IT.WebServices.Authentication.Services.Data;
 using IT.WebServices.Authentication.Services.Helpers;
+using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Fragments.Authentication;
-using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using IT.WebServices.Helpers;
-using IT.WebServices.AuditLog;
-using IT.WebServices.Fragments.AuditLog;
-using SkiaSharp;
-using IT.WebServices.Fragments;
 
 namespace IT.WebServices.Authentication.Services
 {
@@ -63,17 +60,10 @@ namespace IT.WebServices.Authentication.Services
 
         // TODO: Use ProtoValidate
         [AllowAnonymous]
-        public override async Task<AuthenticateUserResponse> AuthenticateUser(
-            AuthenticateUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<AuthenticateUserResponse> AuthenticateUser(AuthenticateUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new AuthenticateUserResponse
-                {
-                    Ok = false,
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Ok = false, Error = GenericErrorExtensions.CreateOfflineError() };
 
             var validationIssues = new List<ValidationIssue>();
 
@@ -101,11 +91,7 @@ namespace IT.WebServices.Authentication.Services
             {
                 var error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Invlalid Request Body");
                 error.Validation.AddRange(validationIssues);
-                return new AuthenticateUserResponse
-                {
-                    Ok = false,
-                    Error = error,
-                };
+                return new() { Ok = false, Error = error, };
             }
 
             var user = await dataProvider.GetByLogin(request.UserName);
@@ -113,41 +99,20 @@ namespace IT.WebServices.Authentication.Services
             {
                 user = await dataProvider.GetByEmail(request.UserName);
                 if (user == null)
-                    return new AuthenticateUserResponse
-                    {
-                        Ok = false,
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonInvalidContent,
-                            "Check Credentials and try Again"
-                        )
-                    };
+                    return new() { Ok = false, Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Check Credentials and try Again") };
             }
 
             bool isCorrect = await IsPasswordCorrect(request.Password, user);
 
             if (!isCorrect)
-                return new AuthenticateUserResponse
-                {
-                    Ok = false,
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonInvalidContent,
-                        "Check Credentials and try Again"
-                    )
-                };
+                return new() { Ok = false, Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Check Credentials and try Again") };
 
             if (!ValidateTotp(user.Server?.TOTPDevices ?? [], request.MFACode))
-                return new AuthenticateUserResponse
-                {
-                    Ok = false,
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonInvalidCode,
-                        "MFACode Invalid"
-                    )
-                };
+                return new() { Ok = false, Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "MFACode Invalid") };
 
             var otherClaims = await claimsClient.GetOtherClaims(user.UserIDGuid);
 
-            return new AuthenticateUserResponse()
+            return new()
             {
                 Ok = true,
                 BearerToken = tokenHelper.GenerateToken(user.Normal, otherClaims),
@@ -157,41 +122,25 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<ChangeOtherPasswordResponse> ChangeOtherPassword(
-            ChangeOtherPasswordRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ChangeOtherPasswordResponse> ChangeOtherPassword(ChangeOtherPasswordRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new ChangeOtherPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.CanManageMembers)
-                    return new ChangeOtherPasswordResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthorized,
-                            "Insufficient Permissions"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Insufficient Permissions") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
-                    return new ChangeOtherPasswordResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
 
                 var otherDbRoles = await GetRolesFromDB(userId);
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
@@ -200,13 +149,10 @@ namespace IT.WebServices.Authentication.Services
                 var passwordBeforeHash = Convert.ToBase64String(record.Server.PasswordHash?.ToByteArray() ?? Array.Empty<byte>());
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 record.Server.PasswordSalt = ByteString.CopyFrom(salt);
-                record.Server.PasswordHash = ByteString.CopyFrom(
-                    ComputeSaltedHash(request.NewPassword, salt)
-                );
+                record.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(request.NewPassword, salt));
                 var passwordAfterHash = Convert.ToBase64String(record.Server.PasswordHash?.ToByteArray() ?? Array.Empty<byte>());
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -239,72 +185,41 @@ namespace IT.WebServices.Authentication.Services
                          }
                     );
 
-                return new ChangeOtherPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {
-                return new ChangeOtherPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<ChangeOtherProfileImageResponse> ChangeOtherProfileImage(
-            ChangeOtherProfileImageRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ChangeOtherProfileImageResponse> ChangeOtherProfileImage(ChangeOtherProfileImageRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new ChangeOtherProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.CanManageMembers)
-                    return new ChangeOtherProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthorized,
-                            "Insufficient Permissions"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Insufficient Permissions") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
-                    return new ChangeOtherProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
 
                 var otherDbRoles = await GetRolesFromDB(userId);
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
                 if (request?.ProfileImage == null || request.ProfileImage.IsEmpty)
-                    return new ChangeOtherProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonInvalidContent,
-                            "Profile image data is required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Profile image data is required") };
 
                 using var ms = new MemoryStream();
                 ms.Write(request.ProfileImage.ToArray());
@@ -312,18 +227,12 @@ namespace IT.WebServices.Authentication.Services
                 using var image = SKBitmap.Decode(ms);
 
                 if (image == null)
-                    return new ChangeOtherProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonInvalidContent,
-                            "Invalid image format"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Invalid image format") };
 
                 var newInfo = image.Info;
                 newInfo.Width = 200;
                 newInfo.Height = 200;
-                using var newImage = image.Resize(newInfo, SKFilterQuality.Medium);
+                using var newImage = image.Resize(newInfo, new SKSamplingOptions(SKCubicResampler.Mitchell));
 
                 using MemoryStream memStream = new MemoryStream();
                 using SKManagedWStream wstream = new SKManagedWStream(memStream);
@@ -332,144 +241,74 @@ namespace IT.WebServices.Authentication.Services
 
                 await picProvider.Save(request.UserID.ToGuid(), memStream.ToArray());
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
                 // TODO: Log Audit Entry
 
-                return new ChangeOtherProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {
-                return new ChangeOtherProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while processing the image"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while processing the image") };
             }
         }
 
-        public override async Task<ChangeOwnPasswordResponse> ChangeOwnPassword(
-            ChangeOwnPasswordRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ChangeOwnPasswordResponse> ChangeOwnPassword(ChangeOwnPasswordRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new ChangeOwnPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new ChangeOwnPasswordResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthenticated,
-                            "User authentication required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "User authentication required") };
 
                 var record = await dataProvider.GetById(userToken.Id);
                 if (record == null)
-                    return new ChangeOwnPasswordResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User record not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User record not found") };
 
                 var hash = ComputeSaltedHash(request.OldPassword, record.Server.PasswordSalt.Span);
                 if (!CryptographicOperations.FixedTimeEquals(record.Server.PasswordHash.Span, hash))
-                    return new ChangeOwnPasswordResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthenticated,
-                            "Check Credentials And Try Again"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Check Credentials And Try Again") };
 
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 record.Server.PasswordSalt = ByteString.CopyFrom(salt);
-                record.Server.PasswordHash = ByteString.CopyFrom(
-                    ComputeSaltedHash(request.NewPassword, salt)
-                );
+                record.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(request.NewPassword, salt));
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
-                return new ChangeOwnPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch
             {
-                return new ChangeOwnPasswordResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while changing password"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while changing password") };
             }
         }
 
-        public override async Task<ChangeOwnProfileImageResponse> ChangeOwnProfileImage(
-            ChangeOwnProfileImageRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ChangeOwnProfileImageResponse> ChangeOwnProfileImage(ChangeOwnProfileImageRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new ChangeOwnProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new ChangeOwnProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthenticated,
-                            "User authentication required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "User authentication required") };
 
                 var record = await dataProvider.GetById(userToken.Id);
                 if (record == null)
-                    return new ChangeOwnProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User record not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User record not found") };
 
                 if (request?.ProfileImage == null || request.ProfileImage.IsEmpty)
-                    return new ChangeOwnProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonInvalidContent,
-                            "Profile image data is required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Profile image data is required") };
 
                 using var ms = new MemoryStream();
                 ms.Write(request.ProfileImage.ToArray());
@@ -477,18 +316,12 @@ namespace IT.WebServices.Authentication.Services
                 using var image = SKBitmap.Decode(ms);
 
                 if (image == null)
-                    return new ChangeOwnProfileImageResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonInvalidContent,
-                            "Invalid image format"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Invalid image format") };
 
                 var newInfo = image.Info;
                 newInfo.Width = 200;
                 newInfo.Height = 200;
-                using var newImage = image.Resize(newInfo, SKFilterQuality.Medium);
+                using var newImage = image.Resize(newInfo, new SKSamplingOptions(SKCubicResampler.Mitchell));
 
                 using MemoryStream memStream = new MemoryStream();
                 using SKManagedWStream wstream = new SKManagedWStream(memStream);
@@ -497,50 +330,28 @@ namespace IT.WebServices.Authentication.Services
 
                 await picProvider.Save(userToken.Id, memStream.ToArray());
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
-                return new ChangeOwnProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in ChangeOwnProfileImage");
-                return new ChangeOwnProfileImageResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while processing the image"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while processing the image") };
             }
         }
 
         [AllowAnonymous]
-        public override async Task<CreateUserResponse> CreateUser(
-            CreateUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<CreateUserResponse> CreateUser(CreateUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new CreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             if (request is null)
-                return new CreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonInvalidContent,
-                        "Request was null"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request was null") };
 
             var validator = new ProtoValidate.Validator();
 
@@ -549,13 +360,9 @@ namespace IT.WebServices.Authentication.Services
             if (validationResult.Violations.Count > 0)
             {
                 // Use the enhanced extension method to convert ProtoValidate results
-                var validationError = GenericErrorExtensions.FromProtoValidateResult(
-                    validationResult,
-                    APIErrorReason.ErrorReasonValidationFailed,
-                    "Validation failed"
-                );
+                var validationError = GenericErrorExtensions.FromProtoValidateResult(validationResult, APIErrorReason.ErrorReasonValidationFailed, "Validation failed");
 
-                return new CreateUserResponse { Error = validationError };
+                return new() { Error = validationError };
             }
 
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -595,67 +402,35 @@ namespace IT.WebServices.Authentication.Services
             };
 
             byte[] salt = RandomNumberGenerator.GetBytes(16);
-            user.Server.PasswordSalt = Google.Protobuf.ByteString.CopyFrom(salt);
-            user.Server.PasswordHash = Google.Protobuf.ByteString.CopyFrom(
-                ComputeSaltedHash(request.Password ?? string.Empty, salt)
-            );
+            user.Server.PasswordSalt = ByteString.CopyFrom(salt);
+            user.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(request.Password ?? string.Empty, salt));
 
             var uname = user.Normal.Public.Data.UserName;
             if (await dataProvider.LoginExists(uname))
-                return new CreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonAlreadyExists,
-                        "Username is already taken"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Username is already taken") };
 
             var email = user.Normal.Private.Data.Email;
             if (await dataProvider.EmailExists(email))
-                return new CreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonAlreadyExists,
-                        "Email is already taken"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email is already taken") };
 
             var ok = await dataProvider.Create(user);
             if (!ok)
-                return new CreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonProviderError,
-                        "Data provider failed to create user"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderError, "Data provider failed to create user") };
 
-            return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, []), Error = GenericErrorExtensions.CreateNoError() };
+            return new() { BearerToken = tokenHelper.GenerateToken(user.Normal, []), Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<AdminCreateUserResponse> AdminCreateUser(
-                AdminCreateUserRequest request,
-                ServerCallContext context
-            )
+        public override async Task<AdminCreateUserResponse> AdminCreateUser(AdminCreateUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new AdminCreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.CanManageMembers)
-                    return new()
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthorized,
-                            "Admin access required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin access required") };
 
                 var validator = new ProtoValidate.Validator();
 
@@ -664,13 +439,9 @@ namespace IT.WebServices.Authentication.Services
                 if (validationResult.Violations.Count > 0)
                 {
                     // Use the enhanced extension method to convert ProtoValidate results
-                    var validationError = GenericErrorExtensions.FromProtoValidateResult(
-                        validationResult,
-                        APIErrorReason.ErrorReasonValidationFailed,
-                        "Validation failed"
-                    );
+                    var validationError = GenericErrorExtensions.FromProtoValidateResult(validationResult, APIErrorReason.ErrorReasonValidationFailed, "Validation failed");
 
-                    return new AdminCreateUserResponse { Error = validationError };
+                    return new() { Error = validationError };
                 }
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
@@ -710,42 +481,22 @@ namespace IT.WebServices.Authentication.Services
                 };
 
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
-                user.Server.PasswordSalt = Google.Protobuf.ByteString.CopyFrom(salt);
-                user.Server.PasswordHash = Google.Protobuf.ByteString.CopyFrom(
-                    ComputeSaltedHash(request.Password ?? string.Empty, salt)
-                );
+                user.Server.PasswordSalt = ByteString.CopyFrom(salt);
+                user.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(request.Password ?? string.Empty, salt));
 
                 user.Normal.Private.Roles.AddRange(request.Roles);
 
                 var uname = user.Normal.Public.Data.UserName;
                 if (await dataProvider.LoginExists(uname))
-                    return new AdminCreateUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonAlreadyExists,
-                            "Username is already taken"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Username is already taken") };
 
                 var email = user.Normal.Private.Data.Email;
                 if (await dataProvider.EmailExists(email))
-                    return new AdminCreateUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonAlreadyExists,
-                            "Email is already taken"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email is already taken") };
 
                 var ok = await dataProvider.Create(user);
                 if (!ok)
-                    return new AdminCreateUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonProviderError,
-                            "Data provider failed to create user"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderError, "Data provider failed to create user") };
 
                 await auditLogHelper.TryLogEvent(
                          new AuditLogEntry
@@ -775,7 +526,7 @@ namespace IT.WebServices.Authentication.Services
                          }
                     );
 
-                return new AdminCreateUserResponse
+                return new()
                 {
                     UserId = user.UserIDGuid.ToString(),
                     Error = GenericErrorExtensions.CreateNoError()
@@ -784,52 +535,30 @@ namespace IT.WebServices.Authentication.Services
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in Admin Create User");
-                return new AdminCreateUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while disabling user"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while disabling user") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(
-            DisableEnableOtherUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<DisableEnableOtherUserResponse> DisableOtherUser(DisableEnableOtherUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.CanManageMembers)
-                    return new DisableEnableOtherUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthorized,
-                            "Admin access required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin access required") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
-                    return new DisableEnableOtherUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
 
                 var otherDbRoles = await GetRolesFromDB(userId);
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
@@ -867,35 +596,20 @@ namespace IT.WebServices.Authentication.Services
                             }
                         );
 
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in DisableOtherUser");
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while disabling user"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while disabling user") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<DisableOtherTotpResponse> DisableOtherTotp(
-            DisableOtherTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<DisableOtherTotpResponse> DisableOtherTotp(DisableOtherTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new()
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -916,48 +630,31 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "User outranks you") };
 
-                var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
-                    r.TotpID == request.TotpID
-                );
+                var totp = record.Server.TOTPDevices.FirstOrDefault(r => r.TotpID == request.TotpID);
                 if (totp == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Device not found") };
 
-                totp.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
-                    DateTime.UtcNow
-                );
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                totp.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
                 // TODO: Log Audit Entry With Before/After
 
-                return new DisableOtherTotpResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in DisableOtherTotp");
-                return new DisableOtherTotpResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Error Disabling Other User TOTP Device")
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Error Disabling Other User TOTP Device") };
             }
         }
 
-        public override async Task<DisableOwnTotpResponse> DisableOwnTotp(
-            DisableOwnTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<DisableOwnTotpResponse> DisableOwnTotp(DisableOwnTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new()
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -969,72 +666,45 @@ namespace IT.WebServices.Authentication.Services
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not logged in") };
 
-                var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
-                    r.TotpID == request.TotpID
-                );
+                var totp = record.Server.TOTPDevices.FirstOrDefault(r => r.TotpID == request.TotpID);
                 if (totp == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Device not found") };
 
-                totp.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
-                    DateTime.UtcNow
-                );
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                totp.DisabledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
-                return new()
-                {
-                    Error = GenericErrorExtensions.CreateNoError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in DisableOwnTotp");
-                return new DisableOwnTotpResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Error While Disabling Own TOTP Device")
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Error While Disabling Own TOTP Device") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<DisableEnableOtherUserResponse> EnableOtherUser(
-            DisableEnableOtherUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<DisableEnableOtherUserResponse> EnableOtherUser(DisableEnableOtherUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.CanManageMembers)
-                    return new DisableEnableOtherUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthorized,
-                            "Admin access required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Admin access required") };
 
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
                 if (record == null)
-                    return new DisableEnableOtherUserResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonNotFound,
-                            "User not found"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User not found") };
 
                 var otherDbRoles = await GetRolesFromDB(userId);
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
@@ -1057,45 +727,33 @@ namespace IT.WebServices.Authentication.Services
                         ContextName = "Authentication.EnableOtherUser",
                         Actor = userToken.ToAuditActor(),
                         Targets =
-                                {
-                                    new AuditTarget
-                                    {
-                                        Type = TargetType.TargetUser,
-                                        TargetID = record.Normal.Public.UserID,
-                                        DisplayName = record.Normal.Public.Data.DisplayName
-                                    }
-                                },
+                        {
+                            new AuditTarget
+                            {
+                                Type = TargetType.TargetUser,
+                                TargetID = record.Normal.Public.UserID,
+                                DisplayName = record.Normal.Public.Data.DisplayName
+                            }
+                        },
                         Changes =
-                                {
-                                    new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
-                                    new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
-                                }
+                        {
+                            new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
+                            new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
+                        }
                     }
                 );
 
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateNoError() // Success case - no error
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in EnableOtherUser");
-                return new DisableEnableOtherUserResponse
-                {
-                    Error = GenericErrorExtensions.CreateError(
-                        APIErrorReason.ErrorReasonUnknown,
-                        "An unexpected error occurred while enabling user"
-                    )
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while enabling user") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<GenerateOtherTotpResponse> GenerateOtherTotp(
-            GenerateOtherTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GenerateOtherTotpResponse> GenerateOtherTotp(GenerateOtherTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new() { Error = GenericErrorExtensions.CreateOfflineError() };
@@ -1146,8 +804,7 @@ namespace IT.WebServices.Authentication.Services
 
                 record.Server.TOTPDevices.Add(totp);
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -1155,11 +812,7 @@ namespace IT.WebServices.Authentication.Services
                 var settingsData = await settingsService.GetAdminDataInternal();
 
                 TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
-                SetupCode setupInfo = tfa.GenerateSetupCode(
-                    settingsData.Public.Personalization.Title,
-                    record.Normal.Public.Data.UserName,
-                    key
-                );
+                SetupCode setupInfo = tfa.GenerateSetupCode(settingsData.Public.Personalization.Title, record.Normal.Public.Data.UserName, key);
 
                 await auditLogHelper.TryLogEvent(
                          new AuditLogEntry
@@ -1211,10 +864,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<GenerateOwnTotpResponse> GenerateOwnTotp(
-            GenerateOwnTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GenerateOwnTotpResponse> GenerateOwnTotp(GenerateOwnTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new() { Error = GenericErrorExtensions.CreateOfflineError() };
@@ -1249,15 +899,12 @@ namespace IT.WebServices.Authentication.Services
                     TotpID = Guid.NewGuid().ToString(),
                     DeviceName = deviceName,
                     Key = ByteString.CopyFrom(key),
-                    CreatedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
-                        DateTime.UtcNow
-                    ),
+                    CreatedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
                 };
 
                 record.Server.TOTPDevices.Add(totp);
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -1265,11 +912,7 @@ namespace IT.WebServices.Authentication.Services
                 var settingsData = await settingsService.GetAdminDataInternal();
 
                 TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
-                SetupCode setupInfo = tfa.GenerateSetupCode(
-                    settingsData.Public.Personalization.Title,
-                    record.Normal.Public.Data.UserName,
-                    key
-                );
+                SetupCode setupInfo = tfa.GenerateSetupCode(settingsData.Public.Personalization.Title, record.Normal.Public.Data.UserName, key);
 
                 return new()
                 {
@@ -1287,10 +930,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<GetAllUsersResponse> GetAllUsers(
-            GetAllUsersRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetAllUsersResponse> GetAllUsers(GetAllUsersRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1330,11 +970,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task GetListOfOldUserIDs(
-            GetListOfOldUserIDsRequest request,
-            IServerStreamWriter<GetListOfOldUserIDsResponse> responseStream,
-            ServerCallContext context
-        )
+        public override async Task GetListOfOldUserIDs(GetListOfOldUserIDsRequest request, IServerStreamWriter<GetListOfOldUserIDsResponse> responseStream, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return;
@@ -1362,10 +998,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<GetOtherUserResponse> GetOtherUser(
-            GetOtherUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetOtherUserResponse> GetOtherUser(GetOtherUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1382,10 +1015,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override Task<GetOtherPublicUserResponse> GetOtherPublicUser(
-            GetOtherPublicUserRequest request,
-            ServerCallContext context
-        )
+        public override Task<GetOtherPublicUserResponse> GetOtherPublicUser(GetOtherPublicUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return Task.FromResult(new GetOtherPublicUserResponse());
@@ -1394,10 +1024,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<GetOtherPublicUserByUserNameResponse> GetOtherPublicUserByUserName(
-            GetOtherPublicUserByUserNameRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetOtherPublicUserByUserNameResponse> GetOtherPublicUserByUserName(GetOtherPublicUserByUserNameRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1412,10 +1039,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<GetOtherTotpListResponse> GetOtherTotpList(
-            GetOtherTotpListRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetOtherTotpListResponse> GetOtherTotpList(GetOtherTotpListRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1436,9 +1060,7 @@ namespace IT.WebServices.Authentication.Services
                     return new();
 
                 var ret = new GetOtherTotpListResponse();
-                ret.Devices.AddRange(
-                    record.Server.TOTPDevices.Where(r => r.IsValid).Select(r => r.ToLimited())
-                );
+                ret.Devices.AddRange(record.Server.TOTPDevices.Where(r => r.IsValid).Select(r => r.ToLimited()));
 
                 return ret;
             }
@@ -1449,10 +1071,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<GetOwnTotpListResponse> GetOwnTotpList(
-            GetOwnTotpListRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetOwnTotpListResponse> GetOwnTotpList(GetOwnTotpListRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1481,10 +1100,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<GetOwnUserResponse> GetOwnUser(
-            GetOwnUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<GetOwnUserResponse> GetOwnUser(GetOwnUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1503,19 +1119,13 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override Task<GetUserIdListResponse> GetUserIdList(
-            GetUserIdListRequest request,
-            ServerCallContext context
-        )
+        public override Task<GetUserIdListResponse> GetUserIdList(GetUserIdListRequest request, ServerCallContext context)
         {
             return userServiceInternal.GetUserIdListInternal();
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<ModifyOtherUserResponse> ModifyOtherUser(
-            ModifyOtherUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ModifyOtherUserResponse> ModifyOtherUser(ModifyOtherUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new() { Error = GenericErrorExtensions.CreateOfflineError() };
@@ -1526,6 +1136,8 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageMembers)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthorized, "Not an admin") };
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var userId = request.UserID.ToGuid();
                 var record = await dataProvider.GetById(userId);
@@ -1546,14 +1158,8 @@ namespace IT.WebServices.Authentication.Services
 
                 if (record.Normal.Public.Data.UserName != request.UserName)
                 {
-                    if (
-                        !await dataProvider.ChangeLoginIndex(
-                            record.Normal.Public.Data.UserName,
-                            request.UserName,
-                            userId
-                        )
-                    )
-                        return new ModifyOtherUserResponse() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "User Name taken") };
+                    if (!await dataProvider.ChangeLoginIndex(record.Normal.Public.Data.UserName, request.UserName, userId))
+                        return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "User Name taken") };
 
                     record.Normal.Public.Data.UserName = request.UserName;
                 }
@@ -1564,7 +1170,7 @@ namespace IT.WebServices.Authentication.Services
                         return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
 
                     if (!await dataProvider.ChangeEmailIndex(request.Email, userId))
-                        return new ModifyOtherUserResponse() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
+                        return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonAlreadyExists, "Email address taken") };
 
                     record.Normal.Private.Data.Email = request.Email;
                 }
@@ -1573,8 +1179,7 @@ namespace IT.WebServices.Authentication.Services
                 record.Normal.Private.Data.LastName = request.LastName;
                 record.Normal.Private.Data.PostalCode = request.PostalCode;
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Public.Data.DisplayName = request.DisplayName;
                 record.Normal.Public.Data.Bio = request.Bio;
 
@@ -1598,22 +1203,13 @@ namespace IT.WebServices.Authentication.Services
         public override async Task<ModifyOtherUserAuthProvidersResponse> ModifyOtherUserAuthProviders(ModifyOtherUserAuthProvidersRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new ModifyOtherUserAuthProvidersResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
                 if (userToken == null)
-                    return new ModifyOtherUserAuthProvidersResponse
-                    {
-                        Error = GenericErrorExtensions.CreateError(
-                            APIErrorReason.ErrorReasonUnauthenticated,
-                            "User authentication required"
-                        )
-                    };
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "User authentication required") };
 
                 // TODO: Add AmIReallyAdminCheck Here
 
@@ -1628,22 +1224,12 @@ namespace IT.WebServices.Authentication.Services
                     };
                     error.AddValidationIssue("UserID", "UserID must be a GUID");
 
-                    return new ModifyOtherUserAuthProvidersResponse
-                    {
-                        Error = error
-                    };
+                    return new() { Error = error };
                 }
 
                 var record = await dataProvider.GetById(userToModifyId);
                 if (record == null)
-                    return new ModifyOtherUserAuthProvidersResponse
-                    {
-                        Error = new APIError
-                        {
-                            Message = "User Not Found",
-                            Reason = APIErrorReason.ErrorReasonNotFound
-                        }
-                    };
+                    return new() { Error = new APIError { Message = "User Not Found", Reason = APIErrorReason.ErrorReasonNotFound } };
 
                 record.Server.AuthProviders = request.AuthProviders;
                 await dataProvider.Save(record);
@@ -1653,18 +1239,12 @@ namespace IT.WebServices.Authentication.Services
             catch (Exception ex)
             {
                 logger.LogError(ex.Message, ex);
-                return new()
-                {
-                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message ?? "Unknown Error Occurred")
-                };
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message ?? "Unknown Error Occurred") };
             }
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
-        public override async Task<ModifyOtherUserRolesResponse> ModifyOtherUserRoles(
-            ModifyOtherUserRolesRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ModifyOtherUserRolesResponse> ModifyOtherUserRoles(ModifyOtherUserRolesRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new() { Error = GenericErrorExtensions.CreateOfflineError() };
@@ -1672,6 +1252,8 @@ namespace IT.WebServices.Authentication.Services
             try
             {
                 var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken is null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not authenticated") };
 
                 var myDbRoles = await GetRolesFromDB(context);
                 if (!myDbRoles.IsAdminOrHigher)
@@ -1732,10 +1314,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<ModifyOwnUserResponse> ModifyOwnUser(
-            ModifyOwnUserRequest request,
-            ServerCallContext context
-        )
+        public override async Task<ModifyOwnUserResponse> ModifyOwnUser(ModifyOwnUserRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new() { Error = GenericErrorExtensions.CreateOfflineError() };
@@ -1771,8 +1350,7 @@ namespace IT.WebServices.Authentication.Services
                 record.Normal.Private.Data.LastName = request.LastName;
                 record.Normal.Private.Data.PostalCode = request.PostalCode;
 
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -1786,10 +1364,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<RenewTokenResponse> RenewToken(
-            RenewTokenRequest request,
-            ServerCallContext context
-        )
+        public override async Task<RenewTokenResponse> RenewToken(RenewTokenRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
                 return new();
@@ -1815,10 +1390,7 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<SearchUsersAdminResponse> SearchUsersAdmin(
-            SearchUsersAdminRequest request,
-            ServerCallContext context
-        )
+        public override async Task<SearchUsersAdminResponse> SearchUsersAdmin(SearchUsersAdminRequest request, ServerCallContext context)
         {
             var minDateValue = new DateTime(2000, 1, 1);
 
@@ -1847,9 +1419,7 @@ namespace IT.WebServices.Authentication.Services
 
                 if (possibleRoles != null)
 
-                    if (!possibleRoles.Any(possibleRole =>
-                        rec.Normal.Private.Roles.Any(role => string.Equals(possibleRole, role, StringComparison.InvariantCultureIgnoreCase))
-                    ))
+                    if (!possibleRoles.Any(possibleRole => rec.Normal.Private.Roles.Any(role => string.Equals(possibleRole, role, StringComparison.InvariantCultureIgnoreCase))))
                         continue;
 
                 if (searchCreatedBefore != null)
@@ -1866,18 +1436,9 @@ namespace IT.WebServices.Authentication.Services
 
                 if (searchSearchString != null)
                     if (
-                        !rec.Normal.Public.Data.UserName.Contains(
-                            searchSearchString,
-                            StringComparison.InvariantCultureIgnoreCase
-                        )
-                        && !rec.Normal.Public.Data.DisplayName.Contains(
-                            searchSearchString,
-                            StringComparison.InvariantCultureIgnoreCase
-                        )
-                        && !rec.Normal.Private.Data.Email.Contains(
-                            searchSearchString,
-                            StringComparison.InvariantCultureIgnoreCase
-                        )
+                        !rec.Normal.Public.Data.UserName.Contains(searchSearchString, StringComparison.InvariantCultureIgnoreCase)
+                        && !rec.Normal.Public.Data.DisplayName.Contains(searchSearchString, StringComparison.InvariantCultureIgnoreCase)
+                        && !rec.Normal.Private.Data.Email.Contains(searchSearchString, StringComparison.InvariantCultureIgnoreCase)
                     )
                         continue;
 
@@ -1907,16 +1468,10 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
-        public override async Task<VerifyOtherTotpResponse> VerifyOtherTotp(
-            VerifyOtherTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<VerifyOtherTotpResponse> VerifyOtherTotp(VerifyOtherTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new VerifyOtherTotpResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -1940,9 +1495,7 @@ namespace IT.WebServices.Authentication.Services
                 if (!myDbRoles.CanManageOtherUser(otherDbRoles))
                     return new();
 
-                var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
-                    r.TotpID == request.TotpID
-                );
+                var totp = record.Server.TOTPDevices.FirstOrDefault(r => r.TotpID == request.TotpID);
                 if (totp == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Device not found") };
 
@@ -1950,19 +1503,13 @@ namespace IT.WebServices.Authentication.Services
                 if (!tfa.ValidateTwoFactorPIN(totp.Key.ToByteArray(), request.Code.Trim()))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "Code is not valid") };
 
-                totp.VerifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
-                    DateTime.UtcNow
-                );
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                totp.VerifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
 
-                return new()
-                {
-                    Error = GenericErrorExtensions.CreateNoError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
             }
             catch (Exception ex)
             {
@@ -1971,16 +1518,10 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
-        public override async Task<VerifyOwnTotpResponse> VerifyOwnTotp(
-            VerifyOwnTotpRequest request,
-            ServerCallContext context
-        )
+        public override async Task<VerifyOwnTotpResponse> VerifyOwnTotp(VerifyOwnTotpRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
-                return new VerifyOwnTotpResponse
-                {
-                    Error = GenericErrorExtensions.CreateOfflineError()
-                };
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
 
             try
             {
@@ -1995,9 +1536,7 @@ namespace IT.WebServices.Authentication.Services
                 if (record == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnauthenticated, "Not logged in") };
 
-                var totp = record.Server.TOTPDevices.FirstOrDefault(r =>
-                    r.TotpID == request.TotpID
-                );
+                var totp = record.Server.TOTPDevices.FirstOrDefault(r => r.TotpID == request.TotpID);
                 if (totp == null)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "Device not found") };
 
@@ -2005,11 +1544,8 @@ namespace IT.WebServices.Authentication.Services
                 if (!tfa.ValidateTwoFactorPIN(totp.Key.ToByteArray(), request.Code.Trim()))
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Code is not valid") };
 
-                totp.VerifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
-                    DateTime.UtcNow
-                );
-                record.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                totp.VerifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 record.Normal.Private.ModifiedBy = userToken.Id.ToString();
 
                 await dataProvider.Save(record);
@@ -2030,7 +1566,7 @@ namespace IT.WebServices.Authentication.Services
         {
             var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
             if (userToken == null)
-                return new RoleAbilities();
+                return new();
 
             return await GetRolesFromDB(userToken.Id);
         }
@@ -2039,10 +1575,10 @@ namespace IT.WebServices.Authentication.Services
         {
             var record = await dataProvider.GetById(userId);
             if (record == null)
-                return new RoleAbilities();
+                return new();
 
             var roles = record.Normal.Private.Roles;
-            return new RoleAbilities(roles.ToArray());
+            return new(roles.ToArray());
         }
 
         private async Task<bool> IsPasswordCorrect(string password, UserRecord user)
@@ -2051,23 +1587,19 @@ namespace IT.WebServices.Authentication.Services
             if (CryptographicOperations.FixedTimeEquals(user.Server.PasswordHash.Span, hash))
                 return true;
 
-            if (
-                string.IsNullOrEmpty(user.Server.OldPasswordAlgorithm)
-                || string.IsNullOrEmpty(user.Server.OldPassword)
-            )
+            if (string.IsNullOrEmpty(user.Server.OldPasswordAlgorithm) || string.IsNullOrEmpty(user.Server.OldPassword))
                 return false;
 
             if (user.Server.OldPasswordAlgorithm == "Wordpress")
             {
-                if (!CryptSharp.Core.PhpassCrypter.CheckPassword(password, user.Server.OldPassword))
+                if (!Crypter.CheckPassword(password, user.Server.OldPassword))
                     return false;
 
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 user.Server.PasswordSalt = ByteString.CopyFrom(salt);
                 user.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(password, salt));
 
-                user.Normal.Public.ModifiedOnUTC =
-                    Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                user.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
                 user.Normal.Private.ModifiedBy = user.Normal.Public.UserID;
 
                 await dataProvider.Save(user);
