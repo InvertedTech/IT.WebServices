@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authenticati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authentication.Services", "Authentication\Services\IT.WebServices.Authentication.Services.csproj", "{344ADD92-414E-4CB1-B1C0-A0D104FF4FCC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Settings.Shared", "Settings\Shared\IT.WebServices.Settings.Shared.csproj", "{192910A9-2259-4A8C-A638-BA4439FC2790}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Settings.Services", "Settings\Services\IT.WebServices.Settings.Services.csproj", "{2518B920-3C95-4EC1-9D6B-D940D21B5F87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Content.CMS.Services", "Content\CMS\Services\IT.WebServices.Content.CMS.Services.csproj", "{2FFBFB3A-8E8E-4B31-BB5C-0FC205795815}"
@@ -44,9 +42,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Payment.Combined", "Authorization\Payment\Combined\IT.WebServices.Authorization.Payment.Combined.csproj", "{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events", "Authorization\Events\IT.WebServices.Authorization.Events.csproj", "{8BCBE890-85AD-C2B8-5127-5459C75469FF}"
-	ProjectSection(ProjectDependencies) = postProject
-		{192910A9-2259-4A8C-A638-BA4439FC2790} = {192910A9-2259-4A8C-A638-BA4439FC2790}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Authorization.Payment.Base", "Authorization\Payment\Base\IT.WebServices.Authorization.Payment.Base\IT.WebServices.Authorization.Payment.Base.csproj", "{50630621-6BB9-4198-AD40-B7D4366F5544}"
 EndProject
@@ -55,8 +50,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Crypto.Extra", "Crypto\IT.WebServices.Crypto.Extra\IT.WebServices.Crypto.Extra.csproj", "{EBBAD69C-2901-7461-C1D9-93B78755F379}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.AuditLog.Services", "AuditLog\services\IT.WebServices.AuditLog.Services.csproj", "{48BBA66E-F858-7904-F14C-28D956641885}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.AuditLog.Shared", "AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj", "{3DCB4ECA-2308-84E5-07BF-A3F55080243B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Dashboard.Services", "Dashboard\services\IT.WebServices.Dashboard.Services.csproj", "{F77091E9-EAFB-D20B-A367-8088036E8E73}"
 EndProject
@@ -94,10 +87,6 @@ Global
 		{344ADD92-414E-4CB1-B1C0-A0D104FF4FCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{344ADD92-414E-4CB1-B1C0-A0D104FF4FCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{344ADD92-414E-4CB1-B1C0-A0D104FF4FCC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{192910A9-2259-4A8C-A638-BA4439FC2790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{192910A9-2259-4A8C-A638-BA4439FC2790}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{192910A9-2259-4A8C-A638-BA4439FC2790}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{192910A9-2259-4A8C-A638-BA4439FC2790}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2518B920-3C95-4EC1-9D6B-D940D21B5F87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2518B920-3C95-4EC1-9D6B-D940D21B5F87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2518B920-3C95-4EC1-9D6B-D940D21B5F87}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -174,10 +163,6 @@ Global
 		{48BBA66E-F858-7904-F14C-28D956641885}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48BBA66E-F858-7904-F14C-28D956641885}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48BBA66E-F858-7904-F14C-28D956641885}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DCB4ECA-2308-84E5-07BF-A3F55080243B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F77091E9-EAFB-D20B-A367-8088036E8E73}.Release|Any CPU.ActiveCfg = Release|Any CPU

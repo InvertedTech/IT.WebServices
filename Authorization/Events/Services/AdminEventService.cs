@@ -29,9 +29,9 @@ namespace IT.WebServices.Authorization.Events.Services.Services
         private readonly ITicketDataProvider _ticketDataProvider;
         private readonly ONUserHelper _userHelper;
         private readonly EventTicketClassHelper _ticketClassHelper;
-        private readonly AuditLogHelper auditLogHelper;
+        private readonly IAuditLogService auditLogHelper;
 
-        public AdminEventService(ILogger<AdminEventService> logger, ITicketDataProvider ticketDataProvider,IEventDataProvider eventProvider, ONUserHelper userHelper, EventTicketClassHelper eventTicketClassHelper, AuditLogHelper auditLogHelper)
+        public AdminEventService(ILogger<AdminEventService> logger, ITicketDataProvider ticketDataProvider,IEventDataProvider eventProvider, ONUserHelper userHelper, EventTicketClassHelper eventTicketClassHelper, IAuditLogService auditLogHelper)
         {
             _logger = logger;
             _eventProvider = eventProvider;

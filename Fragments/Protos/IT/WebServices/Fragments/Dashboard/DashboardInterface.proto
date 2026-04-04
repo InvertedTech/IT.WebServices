@@ -4,8 +4,6 @@ package IT.WebServices.Fragments.Dashboard;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "buf/validate/validate.proto";
-import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Dashboard/DashboardMetrics.proto";
 
 service DashboardInterface {

@@ -41,7 +41,7 @@ namespace IT.WebServices.Fragments.Authorization.Events
             };
         }
 
-        public EventPublicRecord GetPublicRecord()
+        public EventPublicRecord? GetPublicRecord()
         {
             switch (EventPublicRecordOneOfCase)
             {

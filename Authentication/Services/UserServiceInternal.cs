@@ -22,9 +22,6 @@ namespace IT.WebServices.Authentication.Services
 
         public async Task AddInProfilePic(UserRecord record)
         {
-            if (record == null)
-                return;
-
             var pic = await picProvider.GetById(record.UserIDGuid);
             if (pic != null)
                 record.Normal.Public.Data.ProfileImagePNG = ByteString.CopyFrom(pic);
@@ -53,6 +50,9 @@ namespace IT.WebServices.Authentication.Services
         public async Task<GetOtherPublicUserResponse> GetOtherPublicUserInternal(Guid userId)
         {
             var record = await dataProvider.GetById(userId);
+            if (record is null)
+                return new();
+
             await AddInProfilePic(record);
 
             return new() { Record = record?.Normal.Public };

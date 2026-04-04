@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package IT.WebServices.Fragments.Authorization.Payment.Crypto;
-import "buf/validate/validate.proto";
 
 message CryptoPublicSettings {
   bool Enabled = 1;

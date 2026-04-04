@@ -7,28 +7,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IT.WebServices.Settings
+namespace IT.WebServices.Clients.Settings
 {
     public class SubscriptionTierHelper
     {
-        private readonly SettingsClient settingsClient;
+        private readonly PublicSettingsClient settingsClient;
 
-        public SubscriptionTierHelper(SettingsClient settingsClient)
+        public SubscriptionTierHelper(PublicSettingsClient settingsClient)
         {
             this.settingsClient = settingsClient;
         }
 
         public bool AllowOther()
         {
-            return settingsClient.PublicData?.Subscription?.AllowOther ?? false;
+            return settingsClient.PublicData.Result.Subscription?.AllowOther ?? false;
         }
 
         public SubscriptionTier[] GetAll()
         {
-            return settingsClient.PublicData?.Subscription?.Tiers?.OrderBy(t => t.AmountCents)?.ToArray() ?? new SubscriptionTier[0];
+            return settingsClient.PublicData.Result.Subscription?.Tiers?.OrderBy(t => t.AmountCents)?.ToArray() ?? [];
         }
 
-        public SubscriptionTier GetForAmount(uint amountCents, bool strict = false)
+        public SubscriptionTier? GetForAmount(uint amountCents, bool strict = false)
         {
             if (amountCents < 1)
                 return null;
@@ -51,7 +51,7 @@ namespace IT.WebServices.Settings
             };
         }
 
-        public SubscriptionTier GetForUser(ONUser user)
+        public SubscriptionTier? GetForUser(ONUser user)
         {
             if (user == null || user.SubscriptionLevel < 1)
                 return null;

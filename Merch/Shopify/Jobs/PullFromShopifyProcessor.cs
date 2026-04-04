@@ -1,7 +1,4 @@
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using IT.WebServices.Clients.CMS;
-using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Fragments.Merch;
 using IT.WebServices.Fragments.Merch.Shopify;
@@ -10,13 +7,10 @@ using IT.WebServices.Merch.Generic.Data;
 using IT.WebServices.Merch.Helpers;
 using IT.WebServices.Merch.Jobs;
 using Microsoft.Extensions.Logging;
-using Mysqlx.Crud;
 using ShopifySharp;
 using ShopifySharp.Credentials;
 using ShopifySharp.Factories;
-using ShopifySharp.GraphQL;
 using System.Net.Http.Json;
-using System.Security.Policy;
 using System.Text.Json;
 
 namespace IT.WebServices.Merch.Shopify.Jobs

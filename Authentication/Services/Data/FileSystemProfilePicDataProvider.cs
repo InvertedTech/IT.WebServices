@@ -39,7 +39,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return Task.FromResult(true);
         }
 
-        public async Task<byte[]> GetById(Guid userId)
+        public async Task<byte[]?> GetById(Guid userId)
         {
             var fd = GetDataFilePath(userId);
             if (!fd.Exists)

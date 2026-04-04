@@ -22,14 +22,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<UserServiceInternal>();
             services.AddSingleton<IUserService, UserServiceInternal>();
 
-            services.AddSingleton<AuditLogHelper>();
             services.AddSingleton<ClaimsClient>();
             services.AddSingleton<MySQLHelper>();
             services.AddSingleton<OfflineHelper>();
             services.AddSingleton<TokenHelper>();
-            services.AddSingleton<ServiceNameHelper>();
             services.AddSingleton<SignedQRHelper>();
-
 
             return services;
         }

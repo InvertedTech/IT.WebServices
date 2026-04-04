@@ -42,7 +42,7 @@ namespace IT.WebServices.Fragments.Content
             }
         }
 
-        public AssetListRecord ToAssetListRecord()
+        public AssetListRecord? ToAssetListRecord()
         {
             switch (AssetRecordOneofCase)
             {

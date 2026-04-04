@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Clients\IT.WebServices.Clients.csproj" />
     <ProjectReference Include="..\..\Content\CMS\Services\IT.WebServices.Content.CMS.Services.csproj" />
     <ProjectReference Include="..\Base\IT.WebServices.Merch.Base\IT.WebServices.Merch.Base.csproj" />
   </ItemGroup>

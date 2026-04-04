@@ -58,7 +58,8 @@ namespace ON.Content.SimpleCMS.Service.Controllers
         {
             if (!userHelper.IsLoggedIn)
                 return Unauthorized();
-            var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL", EnvironmentVariableTarget.Process);
+
+            var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL", EnvironmentVariableTarget.Process) ?? "http://localhost";
             var expDate = DateTime.UtcNow.AddMinutes(5);
             var record = new UserQRRecord(userHelper.MyUserId, userHelper.MyUser.UserName, userHelper.MyUser.DisplayName, userHelper.MyUser.SubscriptionLevel, expDate);
             var bytes = qrHelper.GenerateSignedQR(record, baseUrl);

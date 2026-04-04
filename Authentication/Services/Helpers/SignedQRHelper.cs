@@ -16,6 +16,8 @@ namespace IT.WebServices.Authentication.Services.Helpers
         private readonly ILogger log;
         private readonly JsonSerializerOptions options;
 
+        private readonly int minimumSubLevel;
+
         public SignedQRHelper(ILogger<SignedQRHelper> log)
         {
             privateKey = JwtExtensions.GetPrivateKey().ToECDsa();
@@ -23,6 +25,9 @@ namespace IT.WebServices.Authentication.Services.Helpers
             this.log = log;
 
             options = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+            
+            var str = Environment.GetEnvironmentVariable("QR_CODE_MINIMUM_SUB_LEVEL", EnvironmentVariableTarget.Process) ?? string.Empty;
+            int.TryParse(str, out minimumSubLevel);
         }
 
         public byte[] GenerateSignedQR(UserQRRecord record, string baseUrl)
@@ -48,6 +53,9 @@ namespace IT.WebServices.Authentication.Services.Helpers
                 var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(token));
                 var payload = JsonSerializer.Deserialize<DataQRRecord>(payloadJson);
 
+                if (payload is null)
+                    return new QRVerificationResult(false, "Invalid QR", null);
+
                 byte[] dataBytes = Encoding.UTF8.GetBytes(payload.data);
                 byte[] signature = Convert.FromBase64String(payload.sig);
 
@@ -55,10 +63,12 @@ namespace IT.WebServices.Authentication.Services.Helpers
                     return new QRVerificationResult(false, "Invalid Signature", null);
 
                 var record = JsonSerializer.Deserialize<UserQRRecord>(payload.data);
+                if (record is null)
+                    return new QRVerificationResult(false, "Invalid QR", null);
                 if (record.ExpiresOnUTC < DateTime.UtcNow)
                     return new QRVerificationResult(false, "Expired QR", record);
 
-                var minimumSub = int.Parse(Environment.GetEnvironmentVariable("QR_CODE_MINIMUM_SUB_LEVEL", EnvironmentVariableTarget.Process));
+                var minimumSub = minimumSubLevel;
                 if (record.SubscriptionLevelCents < minimumSub)
                     return new QRVerificationResult(false, $"Subscription Level Below Minimum Of {minimumSub}", record);
 
@@ -67,7 +77,7 @@ namespace IT.WebServices.Authentication.Services.Helpers
             catch (Exception ex)
             {
                 log.LogError(ex, "Failed to verify QR code");
-                return null;
+                return new QRVerificationResult(false, "Unknown error", null);
             }
         }
 

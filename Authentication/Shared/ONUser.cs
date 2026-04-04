@@ -1,10 +1,9 @@
-﻿using IT.WebServices.Fragments.AuditLog;
+﻿using Grpc.Core;
+using IT.WebServices.Fragments.AuditLog;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace IT.WebServices.Authentication
 {
@@ -49,6 +48,18 @@ namespace IT.WebServices.Authentication
         public string JwtToken { get; set; } = "";
 
         public bool IsLoggedIn => Id != Guid.Empty;
+
+        public CallOptions GetGrpcCallOptions(CancellationToken cancellationToken = default) => new CallOptions(GetGrpcMetadata(), cancellationToken: cancellationToken);
+
+        private Metadata GetGrpcMetadata()
+        {
+            var data = new Metadata();
+
+            if (!string.IsNullOrWhiteSpace(JwtToken))
+                data.Add("Authorization", "Bearer " + JwtToken);
+
+            return data;
+        }
 
         public IEnumerable<Claim> ToClaims()
         {

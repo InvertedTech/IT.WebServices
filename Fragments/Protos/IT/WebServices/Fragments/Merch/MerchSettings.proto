@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package IT.WebServices.Fragments.Merch;
 
-import "google/protobuf/timestamp.proto";
 import "Protos/IT/WebServices/Fragments/Merch/Shopify/ShopifySettings.proto";
 
 message MerchPublicSettings {

@@ -8,7 +8,6 @@ import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
 import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Events/EventTicketRecord.proto";
 
 // Service for Settings service fragment interface
 service SettingsInterface {

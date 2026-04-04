@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj" />
     <ProjectReference Include="..\..\..\Base\IT.WebServices.Base.csproj" />
   </ItemGroup>
 

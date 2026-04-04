@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package IT.WebServices.Fragments.Merch.Shopify;
 
-import "google/protobuf/timestamp.proto";
-
 message ShopifyPublicSettings {
 	bool IsEnabled = 1;
 }

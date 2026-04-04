@@ -5,7 +5,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj" />
 		<ProjectReference Include="..\..\Authentication\Shared\IT.WebServices.Authentication.Shared.csproj" />
 		<ProjectReference Include="..\..\Base\IT.WebServices.Base.csproj" />
 	</ItemGroup>

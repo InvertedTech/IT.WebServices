@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Grpc.Core;
+﻿using Grpc.Core;
 using IT.WebServices.AuditLog.Services.Data;
 using IT.WebServices.Authentication;
 using IT.WebServices.Fragments;
@@ -11,11 +6,16 @@ using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace IT.WebServices.AuditLog.Services
 {
     [Authorize]
-    public class AuditLogService : AuditLogInterface.AuditLogInterfaceBase
+    public class AuditLogService : AuditLogInterface.AuditLogInterfaceBase, IAuditLogService
     {
         private readonly ILogger<AuditLogService> _logger;
         private readonly IAuditLogDataProvider _db;
@@ -44,11 +44,7 @@ namespace IT.WebServices.AuditLog.Services
 
             try
             {
-                var entry = await _db.Save(request.Entry);
-                return new LogEntryResponse
-                {
-                    EntryId = entry.EntryID
-                };
+                return await LogEvent(request.Entry);
             }
             catch (Exception ex)
             {
@@ -117,5 +113,38 @@ namespace IT.WebServices.AuditLog.Services
                 };
             }
         }
+
+        #region Internal Calls
+        public async Task<LogEntryResponse> LogEvent(AuditLogEntry entry)
+        {
+            var res = await _db.Save(entry);
+
+            return new() { EntryId = res.EntryID };
+        }
+
+        public async Task TryLogEvent(AuditLogEntry entry)
+        {
+            try
+            {
+                await LogEvent(entry);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log audit event");
+            }
+        }
+
+        public async Task TryLogEvent(Func<AuditLogEntry> entryFactory)
+        {
+            try
+            {
+                await LogEvent(entryFactory());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log audit event");
+            }
+        }
+        #endregion
     }
 }

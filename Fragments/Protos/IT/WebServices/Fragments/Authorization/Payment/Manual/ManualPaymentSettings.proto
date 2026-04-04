@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package IT.WebServices.Fragments.Authorization.Payment.Manual;
-import "buf/validate/validate.proto";
 
 message ManualPaymentPublicSettings {
   bool Enabled = 1;

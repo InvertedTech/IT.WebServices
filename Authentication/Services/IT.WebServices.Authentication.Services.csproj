@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CryptSharp.Core" Version="5.0.0" />
@@ -10,7 +11,6 @@
 	<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AuditLog\shared\IT.WebServices.AuditLog.Shared.csproj" />
     <ProjectReference Include="..\..\Base\IT.WebServices.Base.csproj" />
   </ItemGroup>
 </Project>

@@ -23,9 +23,9 @@ namespace IT.WebServices.Content.CMS.Services
         private readonly ILogger logger;
         private readonly IContentDataProvider dataProvider;
         private readonly StatsClient statsClient;
-        private readonly AuditLogHelper auditLogHelper;
+        private readonly IAuditLogService auditLogHelper;
 
-        public ContentService(ILogger<ContentService> logger, IContentDataProvider dataProvider, StatsClient statsClient, AuditLogHelper auditLogHelper)
+        public ContentService(ILogger<ContentService> logger, IContentDataProvider dataProvider, StatsClient statsClient, IAuditLogService auditLogHelper)
         {
             this.logger = logger;
             this.dataProvider = dataProvider;
@@ -99,10 +99,7 @@ namespace IT.WebServices.Content.CMS.Services
 
             await dataProvider.Save(record);
 
-            await auditLogHelper.TryLogEvent(
-                auditEntry,
-                logger   
-             );
+            await auditLogHelper.TryLogEvent(auditEntry);
 
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -153,8 +150,7 @@ namespace IT.WebServices.Content.CMS.Services
                     Actor = user.ToAuditActor(),
                     Targets = { new AuditTarget { TargetID = record.Public.ContentID, Type = TargetType.TargetContent } },
                     Changes = { BuildTextChange("Data", "null", createdSnapshot) },
-                },
-                logger    
+                }
             );
 
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
@@ -193,8 +189,7 @@ namespace IT.WebServices.Content.CMS.Services
                         new AuditFieldChange { FieldName = "DeletedOnUTC", BeforeValue = "null", AfterValue = deletedOnAfter },
                         new AuditFieldChange { FieldName = "DeletedBy", BeforeValue = "null", AfterValue = deletedByAfter }
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -573,7 +568,7 @@ namespace IT.WebServices.Content.CMS.Services
                     Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonValidationFailed, "Invalid Body")
                 };
             }
-            
+
 
             var user = ONUserHelper.ParseUser(context.GetHttpContext());
 
@@ -609,8 +604,7 @@ namespace IT.WebServices.Content.CMS.Services
                             $"Public:{Environment.NewLine}{afterPublicData}{Environment.NewLine}Private:{Environment.NewLine}{afterPrivateData}"
                         )
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -657,8 +651,7 @@ namespace IT.WebServices.Content.CMS.Services
                         new AuditFieldChange { FieldName = "PublishOnUTC", BeforeValue = publishOnBefore, AfterValue = publishOnAfter },
                         new AuditFieldChange { FieldName = "PublishedBy", BeforeValue = publishedByBefore, AfterValue = publishedByAfter }
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -783,8 +776,7 @@ namespace IT.WebServices.Content.CMS.Services
                         new AuditFieldChange { FieldName = "AnnounceOnUTC", BeforeValue = announceOnBefore, AfterValue = announceOnAfter },
                         new AuditFieldChange { FieldName = "AnnouncedBy", BeforeValue = announcedByBefore, AfterValue = announcedByAfter }
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -824,8 +816,7 @@ namespace IT.WebServices.Content.CMS.Services
                         new AuditFieldChange { FieldName = "DeletedOnUTC", BeforeValue = deletedOnBefore, AfterValue = deletedOnAfter },
                         new AuditFieldChange { FieldName = "DeletedBy", BeforeValue = deletedByBefore, AfterValue = deletedByAfter }
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }
@@ -865,8 +856,7 @@ namespace IT.WebServices.Content.CMS.Services
                         new AuditFieldChange { FieldName = "PublishOnUTC", BeforeValue = publishOnBefore, AfterValue = publishOnAfter },
                         new AuditFieldChange { FieldName = "PublishedBy", BeforeValue = publishedByBefore, AfterValue = publishedByAfter }
                     },
-                },
-                logger    
+                }
             );
             return new() { Record = record, Error = GenericErrorExtensions.CreateNoError() };
         }

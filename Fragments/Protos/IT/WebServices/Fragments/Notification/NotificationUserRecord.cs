@@ -13,7 +13,7 @@ namespace IT.WebServices.Fragments.Notification
     public sealed partial class NotificationUserRecord : pb::IMessage<NotificationUserRecord>
     {
         private static MD5 hasher = MD5.Create();
-        public string TokenHash
+        public string? TokenHash
         {
             get => GenerateHash(TokenID);
         }
@@ -24,7 +24,7 @@ namespace IT.WebServices.Fragments.Notification
             set => UserID = value.ToString();
         }
 
-        public static string GenerateHash(string str)
+        public static string? GenerateHash(string str)
         {
             if (str == null)
                 return null;

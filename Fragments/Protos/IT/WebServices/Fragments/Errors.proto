@@ -2,9 +2,6 @@
 
 package IT.WebServices.Fragments;
 
-import "google/protobuf/timestamp.proto";
-import "buf/validate/validate.proto";
-
 enum APIErrorReason {
   ERROR_REASON_NO_ERROR = 0;
   ERROR_REASON_UNKNOWN = 1;

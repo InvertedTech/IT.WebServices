@@ -39,11 +39,11 @@ namespace IT.WebServices.Authentication.Services
         private readonly ISettingsService settingsService;
         private readonly TokenHelper tokenHelper;
         private readonly UserServiceInternal userServiceInternal;
-        private readonly AuditLogHelper auditLogHelper;
+        private readonly IAuditLogService auditLogHelper;
         private static readonly HashAlgorithm hasher = SHA256.Create();
         private static readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
 
-        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, AuditLogHelper auditLogHelper)
+        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, IAuditLogService auditLogHelper)
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
@@ -135,7 +135,7 @@ namespace IT.WebServices.Authentication.Services
                     )
                 };
 
-            if (!ValidateTotp(user.Server?.TOTPDevices, request.MFACode))
+            if (!ValidateTotp(user.Server?.TOTPDevices ?? [], request.MFACode))
                 return new AuthenticateUserResponse
                 {
                     Ok = false,
@@ -236,8 +236,7 @@ namespace IT.WebServices.Authentication.Services
                                      AfterValue = passwordAfterHash,
                                  }
                              }
-                         },
-                         logger
+                         }
                     );
 
                 return new ChangeOtherPasswordResponse
@@ -631,7 +630,7 @@ namespace IT.WebServices.Authentication.Services
                     )
                 };
 
-            return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, null), Error = GenericErrorExtensions.CreateNoError() };
+            return new CreateUserResponse { BearerToken = tokenHelper.GenerateToken(user.Normal, []), Error = GenericErrorExtensions.CreateNoError() };
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
@@ -754,7 +753,7 @@ namespace IT.WebServices.Authentication.Services
                              Action = ActionType.ActionUserCreated,
                              Summary = "Admin created user",
                              ContextName = "Authentication.AdminCreateUser",
-                             Actor = userToken.ToAuditActor(),
+                             Actor = userToken?.ToAuditActor(),
                              Targets =
                             {
                                 new AuditTarget
@@ -773,8 +772,7 @@ namespace IT.WebServices.Authentication.Services
                                      AfterValue = user.Normal.ToString(),
                                  }
                              }
-                         },
-                         logger
+                         }
                     );
 
                 return new AdminCreateUserResponse
@@ -866,8 +864,7 @@ namespace IT.WebServices.Authentication.Services
                                     new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
                                     new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
                                 }
-                            },
-                            logger
+                            }
                         );
 
                 return new DisableEnableOtherUserResponse
@@ -1073,9 +1070,8 @@ namespace IT.WebServices.Authentication.Services
                                     new AuditFieldChange { FieldName = "DisabledOnUTC", BeforeValue = disabledOnBefore, AfterValue = disabledOnAfter },
                                     new AuditFieldChange { FieldName = "DisabledBy", BeforeValue = disabledByBefore, AfterValue = disabledByAfter }
                                 }
-                    },
-                            logger
-                        );
+                    }
+                );
 
                 return new DisableEnableOtherUserResponse
                 {
@@ -1197,8 +1193,7 @@ namespace IT.WebServices.Authentication.Services
                                      AfterValue = totp.ToString(),
                                  }
                              }
-                         },
-                         logger
+                         }
                     );
 
                 return new()
@@ -1378,9 +1373,12 @@ namespace IT.WebServices.Authentication.Services
             var id = request.UserID.ToGuid();
 
             var record = await dataProvider.GetById(id);
+            if (record is null)
+                return new();
+
             await userServiceInternal.AddInProfilePic(record);
 
-            return new() { Record = record?.Normal };
+            return new() { Record = record.Normal };
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)]
@@ -1405,6 +1403,9 @@ namespace IT.WebServices.Authentication.Services
                 return new();
 
             var record = await dataProvider.GetByLogin(request.UserName);
+            if (record is null)
+                return new();
+
             await userServiceInternal.AddInProfilePic(record);
 
             return new() { Record = record?.Normal.Public };
@@ -1493,6 +1494,9 @@ namespace IT.WebServices.Authentication.Services
                 return new();
 
             var record = await dataProvider.GetById(userToken.Id);
+            if (record is null)
+                return new();
+
             await userServiceInternal.AddInProfilePic(record);
 
             return new() { Record = record?.Normal };
@@ -1717,8 +1721,7 @@ namespace IT.WebServices.Authentication.Services
                                         AfterValue = rolesAfter,
                                     }
                                 }
-                            },
-                            logger
+                            }
                             );
 
                 return new() { Error = GenericErrorExtensions.CreateNoError() };
@@ -2134,7 +2137,7 @@ namespace IT.WebServices.Authentication.Services
 
         private bool ValidateTotp(IEnumerable<TOTPDevice> devices, string code)
         {
-            var validDevices = devices?.Where(d => d.IsValid) ?? Enumerable.Empty<TOTPDevice>();
+            var validDevices = devices.Where(d => d.IsValid).ToArray();
 
             // If there are no TOTP Devices then don't require one
             if (!validDevices.Any())

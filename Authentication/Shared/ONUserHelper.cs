@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Grpc.Core;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace IT.WebServices.Authentication
 {
@@ -17,6 +19,8 @@ namespace IT.WebServices.Authentication
             MyUserId = MyUser?.Id ?? Guid.Empty;
         }
 
+        public CallOptions GetGrpcCallOptions(CancellationToken cancellationToken = default) => MyUser?.GetGrpcCallOptions(cancellationToken) ?? new(new Metadata(), cancellationToken: cancellationToken);
+
         public static ONUser ParseUser(HttpContext context)
         {
             var user = ONUser.Parse(context.User.Claims.ToArray());
@@ -28,6 +32,10 @@ namespace IT.WebServices.Authentication
 
         private static string GrabToken(HttpContext context)
         {
+            string cookie = context.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
+            if (!string.IsNullOrWhiteSpace(cookie))
+                return cookie;
+
             string authorization = context.Request.Headers["Authorization"];
 
             if (string.IsNullOrWhiteSpace(authorization))

@@ -4,8 +4,6 @@ package IT.WebServices.Fragments.Authorization.Payment.Stripe;
 
 import "google/api/annotations.proto";
 import "Protos/IT/WebServices/Fragments/Authorization/Payment/DataRecords.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Payment/SharedTypes.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Payment/Stripe/ProductRecord.proto";
 
 service StripeInterface {
   rpc StripeFinishOwnSubscription (StripeFinishOwnSubscriptionRequest) returns (StripeFinishOwnSubscriptionResponse)

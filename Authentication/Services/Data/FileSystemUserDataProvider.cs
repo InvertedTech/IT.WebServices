@@ -125,7 +125,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return Task.FromResult(GetAllDataFiles().Select(f => Guid.Parse(f.Name)).ToArray());
         }
 
-        public async Task<UserRecord> GetById(Guid userId)
+        public async Task<UserRecord?> GetById(Guid userId)
         {
             var fd = GetDataFilePath(userId);
             if (!fd.Exists)
@@ -134,7 +134,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return UserRecord.Parser.ParseFrom(await File.ReadAllBytesAsync(fd.FullName));
         }
 
-        public async Task<UserRecord> GetByEmail(string email)
+        public async Task<UserRecord?> GetByEmail(string email)
         {
             if (emailIndex.TryGetValue(email.ToLower(), out var id))
                 return await GetById(id);
@@ -142,7 +142,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return null;
         }
 
-        public async Task<UserRecord> GetByLogin(string loginName)
+        public async Task<UserRecord?> GetByLogin(string loginName)
         {
             if (loginIndex.TryGetValue(loginName.ToLower(), out var id))
                 return await GetById(id);
@@ -150,7 +150,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return null;
         }
 
-        public async Task<UserRecord> GetByOldUserID(string oldUserId)
+        public async Task<UserRecord?> GetByOldUserID(string oldUserId)
         {
             await foreach(var record in GetAll())
                 if (record.Normal.Private.Data.OldUserID == oldUserId)

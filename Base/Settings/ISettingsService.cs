@@ -5,6 +5,7 @@ namespace IT.WebServices.Settings
 {
     public interface ISettingsService
     {
+        Task<GetPublicDataResponse> GetPublicDataInternal();
         Task<GetAdminDataResponse> GetAdminDataInternal();
         Task<GetOwnerDataResponse> GetOwnerDataInternal();
     }

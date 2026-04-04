@@ -1,3 +1,4 @@
+using IT.WebServices.AuditLog;
 using IT.WebServices.AuditLog.Services;
 using IT.WebServices.AuditLog.Services.Data;
 using IT.WebServices.Helpers;
@@ -13,6 +14,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<MySQLHelper>();
             services.AddSingleton<OfflineHelper>();
             services.AddSingleton<IAuditLogDataProvider, FileSystemAuditLogDataProvider>();
+
+            services.AddSingleton<IAuditLogService, AuditLogService>();
+
             return services;
         }
 

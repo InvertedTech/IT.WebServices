@@ -35,7 +35,7 @@ namespace IT.WebServices.Settings.Services
         private readonly OfflineHelper offlineHelper;
         private readonly ILogger<SettingsService> logger;
         private readonly ISettingsDataProvider dataProvider;
-        private readonly AuditLogHelper auditLogHelper;
+        private readonly IAuditLogService auditLogHelper;
         private static bool hasEnsuredStockSettings = false;
         private static SemaphoreSlim stockSettingsSemaphore = new SemaphoreSlim(1, 1);
 
@@ -43,7 +43,7 @@ namespace IT.WebServices.Settings.Services
             OfflineHelper offlineHelper,
             ILogger<SettingsService> logger,
             ISettingsDataProvider dataProvider,
-            AuditLogHelper auditLogHelper
+            IAuditLogService auditLogHelper
         )
         {
             this.offlineHelper = offlineHelper;
@@ -161,6 +161,18 @@ namespace IT.WebServices.Settings.Services
             return new() { Public = record?.Public };
         }
 
+        public async Task<GetPublicDataResponse> GetPublicDataInternal()
+        {
+            var record = await dataProvider.Get();
+            if (record == null)
+                return new() { };
+
+            return new()
+            {
+                Public = record?.Public,
+            };
+        }
+
         [Authorize(Roles = RoleAbilities.ROLE_OWNER)]
         public override async Task<ModifyCMSOwnerDataResponse> ModifyCMSOwnerData(
             ModifyCMSOwnerDataRequest request,
@@ -194,7 +206,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -236,7 +248,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -278,7 +290,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -320,7 +332,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -362,7 +374,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -404,7 +416,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -446,7 +458,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -488,7 +500,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -530,7 +542,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -572,7 +584,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -614,7 +626,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -656,7 +668,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -698,7 +710,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -740,7 +752,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -782,7 +794,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -969,7 +981,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -1007,7 +1019,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -1045,7 +1057,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
                 return new() { Error = null };
             }
             catch
@@ -1081,7 +1093,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
 
                 return new ModifyMerchPublicSettingsResponse
                 {
@@ -1127,7 +1139,7 @@ namespace IT.WebServices.Settings.Services
                         {
                             { "ModifiedData", request.Data.ToString() },
                         },
-                    }, logger);
+                    });
 
                 return new ModifyMerchOwnerSettingsResponse
                 {

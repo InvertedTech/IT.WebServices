@@ -180,7 +180,7 @@ namespace IT.WebServices.Authentication.Services.Data
             return ids.ToArray();
         }
 
-        public async Task<UserRecord> GetByEmail(string email)
+        public async Task<UserRecord?> GetByEmail(string email)
         {
             try
             {
@@ -228,7 +228,7 @@ namespace IT.WebServices.Authentication.Services.Data
             }
         }
 
-        public async Task<UserRecord> GetById(Guid userId)
+        public async Task<UserRecord?> GetById(Guid userId)
         {
             try
             {
@@ -274,7 +274,7 @@ namespace IT.WebServices.Authentication.Services.Data
             }
         }
 
-        public async Task<UserRecord> GetByLogin(string loginName)
+        public async Task<UserRecord?> GetByLogin(string loginName)
         {
             try
             {
@@ -321,7 +321,7 @@ namespace IT.WebServices.Authentication.Services.Data
             }
         }
 
-        public async Task<UserRecord> GetByOldUserID(string oldUserId)
+        public async Task<UserRecord?> GetByOldUserID(string oldUserId)
         {
             try
             {
