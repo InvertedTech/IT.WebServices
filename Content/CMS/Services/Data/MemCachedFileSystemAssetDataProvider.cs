@@ -64,10 +64,9 @@ namespace IT.WebServices.Content.CMS.Services.Data
             return dataProvider.Save(asset);
         }
 
-        public async Task<List<AssetListRecord>> GetByAssetTypeAsync(AssetType assetType)
+        public Task<List<AssetListRecord>> GetByAssetTypeAsync(AssetType assetType)
         {
-            var found = await dataProvider.GetByAssetTypeAsync(assetType);
-            return found;
+            return Task.FromResult(cache.Values.Where(r => r.AssetType == assetType).ToList());
         }
     }
 }
