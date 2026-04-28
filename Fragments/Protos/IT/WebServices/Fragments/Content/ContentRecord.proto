@@ -58,8 +58,7 @@ message ContentPublicData {
     (buf.validate.field).repeated.items.string.uuid = true
   ];
   repeated string ChannelIds = 9 [
-    (buf.validate.field).repeated.items.string.uuid = true,
-    (buf.validate.field).repeated.min_items = 1
+    (buf.validate.field).repeated.items.string.uuid = true
   ];
   repeated string Tags = 10 [
     (buf.validate.field).repeated.max_items = 25,

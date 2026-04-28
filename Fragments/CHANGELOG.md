@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.5
+
+### Patch Changes
+
+- Change ChannelID validation on CreateContentRequest
+
 ## 0.12.4
 
 ### Patch Changes
