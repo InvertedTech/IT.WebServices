@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.6
+
+### Patch Changes
+
+- Change Written HtmlBody validation on CreateContentRequest
+
 ## 0.12.5
 
 ### Patch Changes

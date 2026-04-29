@@ -1,6 +1,6 @@
 {
 	"name": "@inverted-tech/fragments",
-	"version": "0.12.5",
+	"version": "0.12.6",
 	"description": "Types and JS runtime for Inverted protocol buffers (Fragments)",
 	"types": "dist/protos/index.d.ts",
 	"module": "dist/esm/index.js",
