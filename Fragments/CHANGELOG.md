@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.7
+
+### Patch Changes
+
+- Rebuild
+
 ## 0.12.6
 
 ### Patch Changes
