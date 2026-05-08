@@ -364,5 +364,86 @@ namespace IT.WebServices.Authorization.Payment.Stripe
                 return new() { Error = "Unknown error" };
             }
         }
+
+        public override async Task<StripeFinishUpdateOwnCardResponse> StripeFinishUpdateOwnCard(StripeFinishUpdateOwnCardRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var utcNow = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                if (request == null)
+                    return new() { Error = "Request not valid" };
+
+                if (string.IsNullOrWhiteSpace(request.InternalSubscriptionID))
+                    return new() { Error = "InternalSubscriptionID not valid" };
+                if (request.ProcessorSessionID == null)
+                    return new() { Error = "ProcessorSessionID not valid" };
+
+                var session = await client.GetCheckoutSessionById(request.ProcessorSessionID);
+                if (session == null)
+                    return new() { Error = "ProcessorSessionID not valid" };
+
+                var dbSubRecord = await subscriptionProvider.GetById(userToken.Id, request.InternalSubscriptionID.ToGuid());
+                if (dbSubRecord == null)
+                    return new() { Error = "Could not find subscription" };
+
+                var providerSubRecord = await client.GetSubscription(dbSubRecord.ProcessorSubscriptionID);
+                if (providerSubRecord == null)
+                    return new() { Error = "SessionId not valid" };
+
+                await client.UpdateSubscriptionWithTokenizedCard(userToken, dbSubRecord, request.ProcessorSessionID);
+
+                dbSubRecord.ModifiedBy = userToken.Id.ToString();
+
+                await subscriptionProvider.Save(dbSubRecord);
+
+                return new()
+                {
+                    Record = providerSubRecord
+                };
+            }
+            catch
+            {
+                return new() { Error = "Unknown error" };
+            }
+        }
+
+        public override async Task<StripeStartUpdateOwnCardResponse> StripeStartUpdateOwnCard(StripeStartUpdateOwnCardRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                if (request == null)
+                    return new() { Error = "Request not valid" };
+
+                if (string.IsNullOrWhiteSpace(request.InternalSubscriptionID))
+                    return new() { Error = "InternalSubscriptionID not valid" };
+                if (string.IsNullOrWhiteSpace(request.SuccessUrl))
+                    return new() { Error = "SuccessUrl not valid" };
+                if (string.IsNullOrWhiteSpace(request.CancelUrl))
+                    return new() { Error = "CancelUrl not valid" };
+
+                var sub = await subscriptionProvider.GetById(userToken.Id, request.InternalSubscriptionID.ToGuid());
+                if (sub == null)
+                    return new() { Error = "Could not find subscription" };
+
+                var paymentLink = await client.CreateTokenizeNewCardSession(userToken, sub, request.SuccessUrl, request.CancelUrl);
+
+                return new()
+                {
+                    PaymentLink = paymentLink,
+                };
+            }
+            catch
+            {
+                return new() { Error = "Unknown error" };
+            }
+        }
     }
 }

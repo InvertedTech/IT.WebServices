@@ -33,7 +33,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private readonly SettingsHelper settingsClient;
         private readonly TaxServiceInternal taxService;
 
-        private global::Stripe.Checkout.SessionService checkoutService = new();
+        private SessionService checkoutService = new();
         private CustomerService customerService = new();
         private PaymentIntentService paymentService = new();
         private ProductService productService = new();
@@ -335,7 +335,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 var customer = await EnsureCustomerByUserId(userToken.Id);
                 if (customer == null)
                     return null;
-                var chekoutOpts = new global::Stripe.Checkout.SessionCreateOptions
+                var chekoutOpts = new SessionCreateOptions
                 {
                     ClientReferenceId = userToken.Id.ToString(),
                     SuccessUrl = successUrl,
@@ -380,7 +380,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
                 successUrl += $"&processor={PaymentConstants.PROCESSOR_NAME_STRIPE}";
 
-                var chekoutOpts = new global::Stripe.Checkout.SessionCreateOptions
+                var chekoutOpts = new SessionCreateOptions
                 {
                     ClientReferenceId = userToken.Id.ToString(),
                     SuccessUrl = successUrl,
@@ -397,6 +397,47 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     },
                     Customer = customer.Id,
 
+                };
+
+                var session = await checkoutService.CreateAsync(chekoutOpts);
+
+                return session.Url;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<string?> CreateTokenizeNewCardSession(ONUser userToken, GenericSubscriptionRecord subDbRecord, string successUrl, string cancelUrl)
+        {
+            if (!IsEnabled)
+                return null;
+
+            try
+            {
+                var customerId = subDbRecord.ProcessorCustomerID;
+                if (string.IsNullOrWhiteSpace(customerId))
+                    return null;
+
+                if (!successUrl.Contains(CHECKOUT_SESSION_ID))
+                {
+                    if (successUrl.Contains("?"))
+                        successUrl += "&" + SUCCESS_URL_APPENDIX;
+                    else
+                        successUrl += "?" + SUCCESS_URL_APPENDIX;
+                }
+
+                successUrl += $"&processor={PaymentConstants.PROCESSOR_NAME_STRIPE}";
+
+                var chekoutOpts = new SessionCreateOptions
+                {
+                    ClientReferenceId = userToken.Id.ToString(),
+                    Customer = customerId,
+                    Currency = "usd",
+                    Mode = "setup",
+                    SuccessUrl = successUrl,
+                    CancelUrl = cancelUrl,
                 };
 
                 var session = await checkoutService.CreateAsync(chekoutOpts);
@@ -604,6 +645,26 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             {
                 Console.WriteLine(ex.Message);
                 return null;
+            }
+        }
+
+
+        public async Task UpdateSubscriptionWithTokenizedCard(ONUser userToken, GenericSubscriptionRecord subDbRecord, string sessionId)
+        {
+            if (!IsEnabled)
+                return;
+
+            try
+            {
+                var session = await GetCheckoutSessionById(sessionId);
+                if (session == null)
+                    return;
+
+                //PaymentMethodService paymentMethodService = new();
+                //paymentMethodService.GetAsync(session.pa);
+            }
+            catch
+            {
             }
         }
 

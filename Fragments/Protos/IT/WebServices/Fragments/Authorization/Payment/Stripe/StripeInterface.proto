@@ -13,6 +13,22 @@ service StripeInterface {
       body: "*"
     };
   }
+
+  rpc StripeFinishUpdateOwnCard (StripeFinishUpdateOwnCardRequest) returns (StripeFinishUpdateOwnCardResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/stripe/subscription/updatecard/finish"
+      body: "*"
+    };
+  }
+
+  rpc StripeStartUpdateOwnCard (StripeStartUpdateOwnCardRequest) returns (StripeStartUpdateOwnCardResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/stripe/subscription/updatecard"
+      body: "*"
+    };
+  }
 }
 
 message StripeEnsureOneTimeProductRequest {
@@ -32,5 +48,26 @@ message StripeFinishOwnSubscriptionRequest {
 
 message StripeFinishOwnSubscriptionResponse {
   GenericSubscriptionRecord Record = 1;
+  string Error = 2;
+}
+
+message StripeFinishUpdateOwnCardRequest {
+  string InternalSubscriptionID = 1;
+  string ProcessorSessionID = 2;
+}
+
+message StripeFinishUpdateOwnCardResponse {
+  GenericSubscriptionRecord Record = 1;
+  string Error = 2;
+}
+
+message StripeStartUpdateOwnCardRequest {
+  string InternalSubscriptionID = 1;
+  string SuccessUrl = 11;
+  string CancelUrl = 12;
+}
+
+message StripeStartUpdateOwnCardResponse {
+  string PaymentLink = 1;
   string Error = 2;
 }
