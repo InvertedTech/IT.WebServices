@@ -43,6 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddGrpcClient<NotificationInterface.NotificationInterfaceClient>();
             services.AddGrpcClient<PageInterface.PageInterfaceClient>();
             services.AddGrpcClient<PaymentInterface.PaymentInterfaceClient>();
+            services.AddGrpcClient<AdminPaymentInterface.AdminPaymentInterfaceClient>();
             services.AddGrpcClient<PaypalInterface.PaypalInterfaceClient>();
             services.AddGrpcClient<SettingsInterface.SettingsInterfaceClient>();
             services.AddGrpcClient<StatsLikeInterface.StatsLikeInterfaceClient>();
