@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.8
+
+### Patch Changes
+
+- Add Update Card To Stripe
+
 ## 0.12.7
 
 ### Patch Changes
