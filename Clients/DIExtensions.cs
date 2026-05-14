@@ -1,4 +1,6 @@
 ﻿using IT.WebServices.Clients;
+using IT.WebServices.Clients.CMS;
+using IT.WebServices.Clients.Payment;
 using IT.WebServices.Clients.Settings;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Authorization.Payment;
@@ -54,6 +56,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddGrpcClient<StatsViewInterface.StatsViewInterfaceClient>();
             services.AddGrpcClient<StripeInterface.StripeInterfaceClient>();
             services.AddGrpcClient<UserInterface.UserInterfaceClient>();
+
+            services.AddScoped<PaymentClient>();
+            services.AddScoped<AssetClient>();
+            services.AddScoped<ContentClient>();
 
             return services;
         }

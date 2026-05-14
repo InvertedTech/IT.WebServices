@@ -69,5 +69,75 @@ namespace IT.WebServices.Clients.CMS
                 return new();
             }
         }
+
+        public async Task<CreateContentResponse> CreateContent(CreateContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.CreateContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in CreateContent");
+                return new();
+            }
+        }
+
+        public async Task<ModifyContentResponse> ModifyContent(ModifyContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.ModifyContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in ModifyContent");
+                return new();
+            }
+        }
+
+        public async Task<PublishContentResponse> PublishContent(PublishContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.PublishContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in PublishContent");
+                return new();
+            }
+        }
+
+        public async Task<GetAllContentAdminResponse> GetAllContentAdmin(GetAllContentAdminRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.GetAllContentAdminAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            } catch (Exception ex)
+            {
+                log.LogError(ex, "Error in GetAllContentAdmin");
+                return new();
+            }
+        }
+
+        public async Task<GetContentAdminResponse> GetContentAdmin(GetContentAdminRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.GetContentAdminAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+
+                log.LogError(ex, "Error in GetContentAdmin");
+                return new();
+            }
+        }
     }
 }
