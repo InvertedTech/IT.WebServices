@@ -12,6 +12,7 @@ using IT.WebServices.Fragments.Authorization.Payment.Tax;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
@@ -637,7 +638,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
             try
             {
-                var session = await checkoutService.GetAsync(checkoutSessionId);
+                var session = await checkoutService.GetAsync(checkoutSessionId, new SessionGetOptions { Expand = ["setup_intent"] });
 
                 return session;
             }
@@ -660,8 +661,17 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 if (session == null)
                     return;
 
-                //PaymentMethodService paymentMethodService = new();
-                //paymentMethodService.GetAsync(session.pa);
+                var newPaymentId = session.SetupIntent.PaymentMethodId;
+                if (string.IsNullOrWhiteSpace(newPaymentId))
+                    return;
+
+                var providerSubRecord = await subService.GetAsync(subDbRecord.ProcessorSubscriptionID, new());
+                if (providerSubRecord == null)
+                    return;
+
+                var oldPaymentId = providerSubRecord.DefaultPaymentMethodId;
+
+                var updatedProviderSubRecord = await subService.UpdateAsync(subDbRecord.ProcessorSubscriptionID, new SubscriptionUpdateOptions { DefaultPaymentMethod = newPaymentId });
             }
             catch
             {
