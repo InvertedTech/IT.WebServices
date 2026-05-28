@@ -64,6 +64,9 @@ message SubscriptionKpis {
   CentsComparison NewSubscriptionRevenue = 4;
   CentsComparison TotalSubscriptionRevenue = 5;
   repeated TopPlanByRevenue TopPlansByRevenue = 6;
+  repeated CountSeriesPoint NewSubscriptionsSeries = 7;
+  repeated CountSeriesPoint CanceledSubscriptionsSeries = 8;
+  repeated CentsSeriesPoint TotalRevenueSeries = 9;
 }
 
 message UserKpis {

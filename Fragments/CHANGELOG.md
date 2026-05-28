@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.12.9
+
+### Patch Changes
+
+- Add Series KPIs to subs
+
 ## 0.12.8
 
 ### Patch Changes
