@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using IT.WebServices.Authentication;
 using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.Careers;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Settings;
 using Microsoft.Extensions.Logging;
@@ -112,6 +113,20 @@ namespace IT.WebServices.Clients.CMS
             }
         }
 
+        public async Task<UnpublishContentResponse> UnpublishContent(UnpublishContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.UnpublishContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in UnPublishContent");
+                return new();
+            }
+        }
+
         public async Task<GetAllContentAdminResponse> GetAllContentAdmin(GetAllContentAdminRequest req, CancellationToken cancellationToken = default)
         {
             try
@@ -136,6 +151,36 @@ namespace IT.WebServices.Clients.CMS
             {
 
                 log.LogError(ex, "Error in GetContentAdmin");
+                return new();
+            }
+        }
+
+        public async Task<DeleteContentResponse> DeleteContent(DeleteContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.DeleteContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+
+                log.LogError(ex, "Error in DeleteContent");
+                return new();
+            }
+        }
+
+        public async Task<UndeleteContentResponse> UnDeleteContent(UndeleteContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.UndeleteContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+
+                log.LogError(ex, "Error in DeleteContent");
                 return new();
             }
         }
