@@ -68,7 +68,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     return new() { Error = "Record not found" };
 
                 var provider = genericProcessorProvider.GetProcessor(record);
-                return await provider.CancelSubscription(record, userToken);
+                return await provider.CancelSubscription(record, userToken, context.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -98,8 +98,8 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
 
                 return new()
                 {
-                    Fortis = await fortisClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl),
-                    Stripe = await stripeClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl),
+                    Fortis = await fortisClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl, context.CancellationToken),
+                    Stripe = await stripeClient.GetNewDetails(level, request.PostalCode, userToken, request!.SuccessUrl, request!.CancelUrl, context.CancellationToken),
                 };
             }
             catch (Exception ex)
@@ -129,7 +129,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     return new();
                 }
 
-                var details = await stripeClient.GetNewOneTimeDetails(request.InternalID, userToken, request.SuccessUrl, request.CancelUrl, request.DifferentPresetPriceCents);
+                var details = await stripeClient.GetNewOneTimeDetails(request.InternalID, userToken, request.SuccessUrl, request.CancelUrl, request.DifferentPresetPriceCents, context.CancellationToken);
 
                 return new() { Stripe = details };
             }
@@ -269,7 +269,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     return new() { Error = "Record not found" };
 
                 var provider = genericProcessorProvider.GetProcessor(record);
-                return await reconcileHelper.ReconcileSubscription(record, userToken);
+                return await reconcileHelper.ReconcileSubscription(record, userToken, context.CancellationToken);
             }
             catch (Exception ex)
             {

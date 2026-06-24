@@ -24,37 +24,47 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             this.settingsHelper = settingsHelper;
         }
 
-        public async Task<GenericSubscriptionRecord?> Create(string tokenId, int amountCents, DateTime startDate)
+        public async Task<GenericSubscriptionRecord?> Create(string tokenId, int amountCents, DateTime startDate, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 var res = await client.Client.RecurringController.CreateANewRecurringRecordAsync(new V1RecurringsRequest()
-                {
-                    Active = ActiveEnum.Enum1,
-                    AccountVaultId = tokenId,
-                    Interval = 1,
-                    IntervalType = IntervalTypeEnum.M,
-                    LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
-                    StartDate = startDate.ToString("yyyy-MM-dd"),
-                    TransactionAmount = amountCents,
-                    PaymentMethod = PaymentMethodEnum.Cc,
-                });
+                        {
+                            Active = ActiveEnum.Enum1,
+                            AccountVaultId = tokenId,
+                            Interval = 1,
+                            IntervalType = IntervalTypeEnum.M,
+                            LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
+                            StartDate = startDate.ToString("yyyy-MM-dd"),
+                            TransactionAmount = amountCents,
+                            PaymentMethod = PaymentMethodEnum.Cc,
+                        },
+                        cancellationToken
+                    );
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return res?.ToSubscriptionRecord();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 
             return null;
         }
 
-        public async Task<GenericSubscriptionRecord?> CreateFromTransaction(string tranId, UserModel user, uint monthsForFirst)
+        public async Task<GenericSubscriptionRecord?> CreateFromTransaction(string tranId, UserModel user, uint monthsForFirst, CancellationToken cancellationToken)
         {
             try
             {
-                var trans = await tranHelper.Get(tranId);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var trans = await tranHelper.Get(tranId, cancellationToken);
                 if (trans == null)
                 {
                     Console.WriteLine($"Error in CreateSubscriptionFromTransaction tranId={tranId}. GetTransaction returned null.");
@@ -75,72 +85,93 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     while (recStartDate.AddDays(-1) < DateTime.UtcNow)
                         recStartDate = recStartDate.AddDays(1);
 
-                    var contact = await contactHelper.Create(user);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var contact = await contactHelper.Create(user, cancellationToken);
                     if (contact == null)
                         return null;
 
                     var dbSubId = Guid.NewGuid();
 
-                    var token = await tokenHelper.GetNewPreviousTransactionToken(tranId, "s" + dbSubId.ToString().Replace("-", ""), contact);
+                    var token = await tokenHelper.GetNewPreviousTransactionToken(tranId, "s" + dbSubId.ToString().Replace("-", ""), contact, cancellationToken);
                     if (token == null)
                     {
                         Console.WriteLine($"Error in CreateSubscriptionFromTransaction tranId={tranId}. Token is null. Failed to create a token.");
                         return null;
                     }
 
-                    var dbSub = await Create(token, (int)trans.TotalCents, recStartDate);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var dbSub = await Create(token, (int)trans.TotalCents, recStartDate, cancellationToken);
                     dbSub?.InternalSubscriptionID = dbSubId.ToString();
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     return dbSub;
                 }
                 catch (Exception ex)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
                 }
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 
             return null;
         }
 
-        public async Task Cancel(string subscriptionId)
+        public async Task Cancel(string subscriptionId, CancellationToken cancellationToken)
         {
             try
             {
-                var res = await client.Client.RecurringController.DeleteRecurringRecordAsync(subscriptionId);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var res = await client.Client.RecurringController.DeleteRecurringRecordAsync(subscriptionId, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
         }
 
-        public async Task<GenericSubscriptionRecord?> ChangeAmount(GenericSubscriptionRecord sub, int newAmount)
+        public async Task<GenericSubscriptionRecord?> ChangeAmount(GenericSubscriptionRecord sub, int newAmount, CancellationToken cancellationToken)
         {
             try
             {
-                var res = await client.Client.RecurringController.UpdateRecurringPaymentAsync(sub.ProcessorSubscriptionID, new V1RecurringsRequest1()
-                {
-                    TransactionAmount = newAmount,
-                });
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var res = await client.Client.RecurringController.UpdateRecurringPaymentAsync(sub.ProcessorSubscriptionID, new V1RecurringsRequest1() { TransactionAmount = newAmount }, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return res?.ToSubscriptionRecord();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 
             return null;
         }
 
-        public async Task<GenericSubscriptionRecord?> Get(string subscriptionId, bool? active = null, int triesLeft = 5)
+        public async Task<GenericSubscriptionRecord?> Get(string subscriptionId, CancellationToken cancellationToken, bool? active = null, int triesLeft = 5)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var list = await client.Client.RecurringController.ListAllRecurringRecordAsync(
                         new Page() { Number = 1, Size = 1 },
                         null,
@@ -151,17 +182,22 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                             ProductTransactionId = settingsHelper.Owner.Subscription.Fortis.ProductID,
                             Id = subscriptionId,
                         },
-                        new List<string>()
+                        new List<string>(),
+                        cancellationToken
                     );
 
                 var sub = list?.List?.FirstOrDefault();
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return sub?.ToSubscriptionRecord();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (triesLeft > 0)
-                    return await Get(subscriptionId, active, triesLeft - 1);
+                    return await Get(subscriptionId, cancellationToken, active, triesLeft - 1);
                 else
                     Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
@@ -169,10 +205,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return null;
         }
 
-        public async Task<GenericSubscriptionFullRecord?> GetWithTransactions(string subscriptionId, int triesLeft = 10)
+        public async Task<GenericSubscriptionFullRecord?> GetWithTransactions(string subscriptionId, CancellationToken cancellationToken, int triesLeft = 10)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var expand = new List<string>();
                 expand.Add("transactions");
 
@@ -185,17 +223,22 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                             ProductTransactionId = settingsHelper.Owner.Subscription.Fortis.ProductID,
                             Id = subscriptionId,
                         },
-                        expand
+                        expand,
+                        cancellationToken
                     );
 
                 var sub = list?.List?.FirstOrDefault();
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return sub?.ToSubscriptionFullRecord();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (triesLeft > 0)
-                    return await GetWithTransactions(subscriptionId, triesLeft - 1);
+                    return await GetWithTransactions(subscriptionId, cancellationToken, triesLeft - 1);
                 else
                     Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
@@ -203,7 +246,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return null;
         }
 
-        public async Task<List<GenericSubscriptionRecord>> GetAll(bool? active = null, int? amount = null, int triesLeft = 100)
+        public async Task<List<GenericSubscriptionRecord>> GetAll(CancellationToken cancellationToken, bool? active = null, int? amount = null, int triesLeft = 100)
         {
             int errors = 0;
             int page = 1;
@@ -215,6 +258,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             {
                 while (errors < 100)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var list = await client.Client.RecurringController.ListAllRecurringRecordAsync(
                             new Page() { Number = page, Size = size },
                             null,
@@ -224,7 +269,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                                 TransactionAmount = amount,
                                 LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
                                 ProductTransactionId = settingsHelper.Owner.Subscription.Fortis.ProductID,
-                            }
+                            },
+                            null,
+                            cancellationToken
                         );
 
                     if (list?.List == null)
@@ -242,16 +289,20 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
                     Console.WriteLine($"Loading Subscriptions: {ret.Count}");
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (list.List.Count < size)
                         break;
                 }
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
 
                 if (triesLeft > 0)
-                    return await GetAll(active, amount, triesLeft - 1);
+                    return await GetAll(cancellationToken, active, amount, triesLeft - 1);
             }
 
             if (ret.Count % size == 0 && ret.Count != 0)
@@ -260,23 +311,31 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return ret.Select(r => r.ToSubscriptionRecord()).ToList();
         }
 
-        public async Task<List<GenericSubscriptionRecord>> GetByContactId(string contactId)
+        public async Task<List<GenericSubscriptionRecord>> GetByContactId(string contactId, CancellationToken cancellationToken)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var res = await client.Client.RecurringController.ListAllRecurringRecordAsync(
                         new Page() { Number = 1, Size = 5000 },
                         null,
                         new Filter6()
                         {
                             AccountVaultId = contactId
-                        }
+                        },
+                        null,
+                        cancellationToken
                     );
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return res.ToSubscriptionRecords();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 

@@ -6,11 +6,6 @@ using IT.WebServices.Authorization.Payment.Helpers.Models;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Authorization.Payment;
 using IT.WebServices.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IT.WebServices.Authorization.Payment.Fortis
 {
@@ -43,20 +38,20 @@ namespace IT.WebServices.Authorization.Payment.Fortis
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Fortis.Enabled;
 
-        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken)
+        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
-            var res = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID);
+            var res = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, cancellationToken);
             if (res == null)
             {
-                res = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, false);
+                res = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, cancellationToken, false);
                 if (res == null)
                     return new() { Error = "SubscriptionId not valid" };
             }
 
             if (res.Status == SubscriptionStatus.SubscriptionActive)
             {
-                await fortisSubscriptionHelper.Cancel(record.ProcessorSubscriptionID);
-                var cancelRes = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, false);
+                await fortisSubscriptionHelper.Cancel(record.ProcessorSubscriptionID, cancellationToken);
+                var cancelRes = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, cancellationToken, false);
                 if (cancelRes?.Status != SubscriptionStatus.SubscriptionStopped)
                     return new() { Error = "Unable to cancel subscription" };
             }
@@ -73,19 +68,19 @@ namespace IT.WebServices.Authorization.Payment.Fortis
             };
         }
 
-        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => fortisTransactionHelper.GetAllForRange(range);
+        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range, CancellationToken cancellationToken) => fortisTransactionHelper.GetAllForRange(range, cancellationToken);
 
-        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID)
+        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID, CancellationToken cancellationToken)
         {
-            var res = await fortisSubscriptionHelper.GetWithTransactions(processorSubscriptionID);
+            var res = await fortisSubscriptionHelper.GetWithTransactions(processorSubscriptionID, cancellationToken);
             return res?.Payments.ToList() ?? new();
         }
 
-        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions() => fortisSubscriptionHelper.GetAll();
+        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions(CancellationToken cancellationToken) => fortisSubscriptionHelper.GetAll(cancellationToken);
 
-        public async Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord subToFind)
+        public async Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord subToFind, CancellationToken cancellationToken)
         {
-            var fortisSub = await fortisSubscriptionHelper.Get(subToFind.ProcessorSubscriptionID);
+            var fortisSub = await fortisSubscriptionHelper.Get(subToFind.ProcessorSubscriptionID, cancellationToken);
             if (fortisSub == null)
                 return Guid.Empty;
 
@@ -132,8 +127,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis
             return await userService.GetUserByOldUserID(id);
         }
 
-        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID) => fortisSubscriptionHelper.Get(processorSubscriptionID);
+        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => fortisSubscriptionHelper.Get(processorSubscriptionID, cancellationToken);
 
-        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID) => fortisSubscriptionHelper.GetWithTransactions(processorSubscriptionID);
+        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => fortisSubscriptionHelper.GetWithTransactions(processorSubscriptionID, cancellationToken);
     }
 }

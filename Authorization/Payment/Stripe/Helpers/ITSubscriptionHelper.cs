@@ -34,6 +34,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Helpers
                 TaxCents = taxAmountCents,
                 TaxRateThousandPercents = taxThousands,
                 TotalCents = totalCents,
+                CardExpYear = (uint)(pRec.DefaultPaymentMethod?.Card?.ExpYear ?? 0),
+                CardExpMonth = (uint)(pRec.DefaultPaymentMethod?.Card?.ExpMonth ?? 0),
+                CardLast4 = pRec.DefaultPaymentMethod?.Card?.Last4 ?? "",
             };
         }
 

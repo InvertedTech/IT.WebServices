@@ -202,11 +202,11 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                             (InternalSubscriptionID,  UserID,  ProcessorName,  ProcessorCustomerID,  ProcessorSubscriptionID,
                              Status,  AmountCents,  TaxCents,  TaxRateThousandPercents,  TotalCents,
                              CreatedOnUTC,  CreatedBy,  ModifiedOnUTC,  ModifiedBy,  CanceledOnUTC,  CanceledBy,
-                             OldSubscriptionID)
+                             CardExpYear,  CardExpMonth,  CardLast4,  OldSubscriptionID)
                     VALUES (@InternalSubscriptionID, @UserID, @ProcessorName, @ProcessorCustomerID, @ProcessorSubscriptionID,
                             @Status, @AmountCents, @TaxCents, @TaxRateThousandPercents, @TotalCents,
                             @CreatedOnUTC, @CreatedBy, @ModifiedOnUTC, @ModifiedBy, @CanceledOnUTC, @CanceledBy,
-                            @OldSubscriptionID)
+                            @CardExpYear, @CardExpMonth, @CardLast4, @OldSubscriptionID)
                     ON DUPLICATE KEY UPDATE
                             UserID = @UserID,
                             ProcessorName = @ProcessorName,
@@ -221,6 +221,9 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                             ModifiedBy = @ModifiedBy,
                             CanceledOnUTC = @CanceledOnUTC,
                             CanceledBy = @CanceledBy,
+                            CardExpYear = @CardExpYear,
+                            CardExpMonth = @CardExpMonth,
+                            CardLast4 = @CardLast4,
                             OldSubscriptionID = @OldSubscriptionID
                 ";
 
@@ -242,6 +245,9 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                     new MySqlParameter("ModifiedBy", record.ModifiedBy.Length == 36 ? record.ModifiedBy : null),
                     new MySqlParameter("CanceledOnUTC", record.CanceledOnUTC?.ToDateTime()),
                     new MySqlParameter("CanceledBy", record.CanceledBy.Length == 36 ? record.CanceledBy : null),
+                    new MySqlParameter("CardExpYear", record.CardExpYear),
+                    new MySqlParameter("CardExpMonth", record.CardExpMonth),
+                    new MySqlParameter("CardLast4", record.CardLast4),
                     new MySqlParameter("OldSubscriptionID", record.OldSubscriptionID),
                 };
 

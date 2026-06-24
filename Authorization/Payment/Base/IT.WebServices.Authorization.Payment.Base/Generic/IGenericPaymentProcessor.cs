@@ -14,20 +14,20 @@ namespace IT.WebServices.Authorization.Payment.Generic
         string ProcessorName { get; }
         bool IsEnabled { get; }
 
-        Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken);
+        Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken);
 
-        Task<List<GenericSubscriptionRecord>> GetAllSubscriptions();
+        Task<List<GenericSubscriptionRecord>> GetAllSubscriptions(CancellationToken cancellationToken);
         bool GetAllSubscriptionsSupported { get; }
 
-        IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range);
+        IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range, CancellationToken cancellationToken);
         bool GetAllPaymentsBetweenDatesSupported { get; }
 
-        Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID);
+        Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID, CancellationToken cancellationToken);
 
-        Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription);
+        Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription, CancellationToken cancellationToken);
         bool GetMissingUserIdForSubscriptionSupported { get; }
 
-        Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID);
-        Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID);
+        Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken);
+        Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken);
     }
 }

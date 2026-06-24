@@ -45,6 +45,9 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             try
             {
                 await ReconcileNew(user, progress, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await ReconcileExisting(user, progress, cancellationToken);
 
                 progress.StatusMessage = "Completed Successfully";
@@ -76,7 +79,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                 var fullLocalSub = await fullProvider.GetBySubscription(localSub);
                 if (fullLocalSub != null)
                 {
-                    await ReconcileSubscription(fullLocalSub, user);
+                    await ReconcileSubscription(fullLocalSub, user, cancellationToken);
                 }
 
                 progress.Progress = PROGRESS_PERCENT_EXISTING_INCREASE * i / numSubs + PROGRESS_PERCENT_EXISTING_START;
@@ -88,7 +91,9 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             progress.Progress = PROGRESS_PERCENT_NEW_START;
 
             var localSubs = await subProvider.GetAll().ToList();
-            var processorSubs = await GetAllSubscriptionsFromAllProcessors();
+            var processorSubs = await GetAllSubscriptionsFromAllProcessors(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var existingProcessorSubIds = localSubs.Select(s => s.ProcessorSubscriptionID);
             var missingSubs = processorSubs.Where(s => !existingProcessorSubIds.Contains(s.ProcessorSubscriptionID)).ToList();
@@ -103,13 +108,13 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                 i++;
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await CreateMissingSubscription(missingSub, user);
+                await CreateMissingSubscription(missingSub, user, cancellationToken);
 
                 progress.Progress = PROGRESS_PERCENT_NEW_INCREASE * i / numSubs + PROGRESS_PERCENT_TO_GRAB_ALL_SUBS;
             }
         }
 
-        public async Task<ReconcileSubscriptionResponse> ReconcileSubscription(GenericSubscriptionFullRecord localSub, ONUser user)
+        public async Task<ReconcileSubscriptionResponse> ReconcileSubscription(GenericSubscriptionFullRecord localSub, ONUser user, CancellationToken cancellationToken)
         {
             try
             {
@@ -117,9 +122,11 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                 if (processor == null)
                     return new() { Error = $"Processor ({localSub.ProcessorName}) not found" };
 
-                var processorSub = await processor.GetSubscriptionFull(localSub.SubscriptionRecord.ProcessorSubscriptionID);
+                var processorSub = await processor.GetSubscriptionFull(localSub.SubscriptionRecord.ProcessorSubscriptionID, cancellationToken);
                 if (processorSub == null)
                     return new() { Error = "SubscriptionId not valid" };
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 await EnsureSubscription(localSub.SubscriptionRecord, processorSub.SubscriptionRecord, user);
                 foreach (var processorPayment in processorSub.Payments)
@@ -153,6 +160,24 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                 localSub.TotalCents = processorSub.TotalCents;
                 localSub.AmountCents = processorSub.TotalCents;
                 localSub.TaxCents = 0;
+                changed = true;
+            }
+
+            if (localSub.CardExpYear != processorSub.CardExpYear)
+            {
+                localSub.CardExpYear = processorSub.CardExpYear;
+                changed = true;
+            }
+
+            if (localSub.CardExpMonth != processorSub.CardExpMonth)
+            {
+                localSub.CardExpMonth = processorSub.CardExpMonth;
+                changed = true;
+            }
+
+            if (localSub.CardLast4 != processorSub.CardLast4)
+            {
+                localSub.CardLast4 = processorSub.CardLast4;
                 changed = true;
             }
 
@@ -242,14 +267,16 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             await paymentProvider.Save(processorPayment);
         }
 
-        private async Task CreateMissingSubscription(GenericSubscriptionRecord processorSubscription, ONUser user)
+        private async Task CreateMissingSubscription(GenericSubscriptionRecord processorSubscription, ONUser user, CancellationToken cancellationToken)
         {
             if (processorSubscription.TotalCents == 0)
                 return;
 
-            var subUserId = await GetMissingUserIdForSubscription(processorSubscription);
+            var subUserId = await GetMissingUserIdForSubscription(processorSubscription, cancellationToken);
             if (subUserId == Guid.Empty)
                 return;
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             processorSubscription.UserID = subUserId.ToString();
             processorSubscription.InternalSubscriptionID = Guid.NewGuid().ToString();
@@ -260,15 +287,17 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             await subProvider.Save(processorSubscription);
         }
 
-        private async Task<List<GenericSubscriptionRecord>> GetAllSubscriptionsFromAllProcessors()
+        private async Task<List<GenericSubscriptionRecord>> GetAllSubscriptionsFromAllProcessors(CancellationToken cancellationToken)
         {
             var list = new List<GenericSubscriptionRecord>();
 
             foreach (var processor in genericProcessorProvider.AllEnabledProviders)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (processor.GetAllSubscriptionsSupported)
                 {
-                    list.AddRange(await processor.GetAllSubscriptions());
+                    list.AddRange(await processor.GetAllSubscriptions(cancellationToken));
                     continue;
                 }
 
@@ -276,12 +305,14 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
                 {
                     var now = DateTimeOffset.UtcNow;
                     var range = new DateTimeOffsetRange(now.AddYears(-1), now);
-                    var payments = processor.GetAllPaymentsForDateRange(range);
+                    var payments = processor.GetAllPaymentsForDateRange(range, cancellationToken);
 
                     var innerHashSetOfProcessorSubIds = new HashSet<string>();
 
                     await foreach (var payment in payments)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         if (!innerHashSetOfProcessorSubIds.Contains(payment.ProcessorSubscriptionID))
                         {
                             innerHashSetOfProcessorSubIds.Add(payment.ProcessorSubscriptionID);
@@ -300,13 +331,13 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             return list;
         }
 
-        private Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription)
+        private Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription, CancellationToken cancellationToken)
         {
             var provider = genericProcessorProvider.GetProcessor(processorSubscription);
             if (!provider.GetMissingUserIdForSubscriptionSupported)
                 return Task.FromResult(Guid.Empty);
 
-            return provider.GetMissingUserIdForSubscription(processorSubscription);
+            return provider.GetMissingUserIdForSubscription(processorSubscription, cancellationToken);
         }
 
         private GenericSubscriptionRecord? HallucinateSubscriptionFromPayment(ProcessorPaymentRecord payment)

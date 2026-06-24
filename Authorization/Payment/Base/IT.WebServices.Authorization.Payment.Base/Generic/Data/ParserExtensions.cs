@@ -22,6 +22,9 @@ namespace IT.WebServices.Authorization.Payment.Generic.Data
                 CreatedBy = rdr["CreatedBy"] as string ?? "",
                 ModifiedBy = rdr["ModifiedBy"] as string ?? "",
                 CanceledBy = rdr["CanceledBy"] as string ?? "",
+                CardExpYear = (uint)rdr["CardExpYear"],
+                CardExpMonth = (uint)rdr["CardExpMonth"],
+                CardLast4 = rdr["CardLast4"] as string ?? "",
                 OldSubscriptionID = rdr["OldSubscriptionID"] as string ?? "",
             };
 

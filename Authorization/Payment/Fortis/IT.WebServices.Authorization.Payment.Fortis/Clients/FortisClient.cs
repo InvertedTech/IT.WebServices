@@ -46,7 +46,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             return client;
         }
 
-        public async Task<FortisNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<FortisNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
@@ -68,7 +68,10 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
 
             try
             {
-                ResponseTransactionIntention result = await elementsController.TransactionIntentionAsync(body);
+                ResponseTransactionIntention result = await elementsController.TransactionIntentionAsync(body, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return new() { ClientToken = result.Data.ClientToken };
             }
             catch (ApiException ex)

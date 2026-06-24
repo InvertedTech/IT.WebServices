@@ -12,11 +12,11 @@ using IT.WebServices.Fragments.Authorization.Payment.Tax;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Helpers;
 using IT.WebServices.Models;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
+using System.Runtime.CompilerServices;
 
 namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 {
@@ -37,6 +37,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private SessionService checkoutService = new();
         private CustomerService customerService = new();
         private PaymentIntentService paymentService = new();
+        private PaymentMethodService paymentMethodService = new();
         private ProductService productService = new();
         private PriceService priceService = new();
         private SubscriptionService subService = new();
@@ -72,31 +73,33 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
         private bool IsSettingsValid => settingsClient.Owner?.Subscription?.Stripe?.IsValid() ?? false;
 
 
-        public async Task<Product?> EnsureOneTimeProduct(StripeEnsureOneTimeProductRequest request)
+        public async Task<Product?> EnsureOneTimeProduct(StripeEnsureOneTimeProductRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                var product = await GetProduct(request);
+                var product = await GetProduct(request, cancellationToken);
                 if (product == null)
-                    return await CreateOneTimeProduct(request);
+                    return await CreateOneTimeProduct(request, cancellationToken);
 
                 if (product.Active != true)
-                    return await ModifyOneTimeProduct(request, product);
+                    return await ModifyOneTimeProduct(request, product, cancellationToken);
 
                 if (product.Name != request.Name)
-                    return await ModifyOneTimeProduct(request, product);
+                    return await ModifyOneTimeProduct(request, product, cancellationToken);
 
                 return product;
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.ToString());
             }
 
             return null;
         }
 
-        public async Task<StripeEnsureOneTimeProductResponse> EnsureOneTimeProductDefaultPrice(Product product, Price price)
+        public async Task<StripeEnsureOneTimeProductResponse> EnsureOneTimeProductDefaultPrice(Product product, Price price, CancellationToken cancellationToken)
         {
             try
             {
@@ -104,31 +107,35 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     return new();
 
                 var modifyProductOpts = new ProductUpdateOptions { DefaultPrice = price.Id };
-                var updated = await productService.UpdateAsync(product.Id, modifyProductOpts);
+                var updated = await productService.UpdateAsync(product.Id, modifyProductOpts, null, cancellationToken);
 
                 return new();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderError, ex.Message).Message };
             }
         }
 
-        private Task<Product?> GetProduct(StripeEnsureOneTimeProductRequest request) => GetProduct(request.InternalID);
+        private Task<Product?> GetProduct(StripeEnsureOneTimeProductRequest request, CancellationToken cancellationToken) => GetProduct(request.InternalID, cancellationToken);
 
-        private async Task<Product?> GetProduct(string internalId)
+        private async Task<Product?> GetProduct(string internalId, CancellationToken cancellationToken)
         {
             try
             {
-                return await productService.GetAsync(PRODUCT_ONETIME_PREFIX + internalId);
+                return await productService.GetAsync(PRODUCT_ONETIME_PREFIX + internalId, null, null, cancellationToken);
             }
             catch
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return null;
             }
         }
 
-        private async Task<Product?> CreateOneTimeProduct(StripeEnsureOneTimeProductRequest request)
+        private async Task<Product?> CreateOneTimeProduct(StripeEnsureOneTimeProductRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -140,55 +147,59 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     Description = request.Name,
                 };
 
-                return await productService.CreateAsync(newProductOpts);
+                return await productService.CreateAsync(newProductOpts, null, cancellationToken);
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message);
             }
 
             return null;
         }
 
-        private async Task<Product?> ModifyOneTimeProduct(StripeEnsureOneTimeProductRequest request, Product product)
+        private async Task<Product?> ModifyOneTimeProduct(StripeEnsureOneTimeProductRequest request, Product product, CancellationToken cancellationToken)
         {
             try
             {
                 var modifyProductOpts = new ProductUpdateOptions { Name = request.Name, Active = true };
 
-                return await productService.UpdateAsync(product.Id, modifyProductOpts);
+                return await productService.UpdateAsync(product.Id, modifyProductOpts, null, cancellationToken);
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message);
             }
 
             return null;
         }
 
-        public async Task<Price?> EnsureOneTimePrice(StripeEnsureOneTimeProductRequest request, Product product)
+        public async Task<Price?> EnsureOneTimePrice(StripeEnsureOneTimeProductRequest request, Product product, CancellationToken cancellationToken)
         {
             try
             {
                 var price = await priceService.GetAsync(product.DefaultPriceId);
 
                 if (price == null)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 if (price.Active != true)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 if (price.CustomUnitAmount == null)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 if (price.CustomUnitAmount.Minimum != request.MinimumPrice)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 if (price.CustomUnitAmount.Preset != null)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 if (price.CustomUnitAmount.Maximum != request.MaximumPrice)
-                    return await CreateOneTimePrice(request);
+                    return await CreateOneTimePrice(request, cancellationToken);
 
                 return price;
             }
@@ -200,7 +211,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return null;
         }
 
-        private async Task<Price?> CreateOneTimePrice(StripeEnsureOneTimeProductRequest request)
+        private async Task<Price?> CreateOneTimePrice(StripeEnsureOneTimeProductRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -223,7 +234,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     }
                 };
 
-                return await priceService.CreateAsync(newPriceOpts);
+                return await priceService.CreateAsync(newPriceOpts, null, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -233,7 +244,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return null;
         }
 
-        private async Task<Price?> CreateOneTimePriceInternal(string internalId, string name, uint minimum, uint preset, uint maximum)
+        private async Task<Price?> CreateOneTimePriceInternal(string internalId, string name, uint minimum, uint preset, uint maximum, CancellationToken cancellationToken)
         {
             var newPriceOpts = new PriceCreateOptions()
             {
@@ -254,14 +265,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 }
             };
 
-            var createdPrice = await priceService.CreateAsync(newPriceOpts);
+            var createdPrice = await priceService.CreateAsync(newPriceOpts, null, cancellationToken);
             if (createdPrice == null)
                 throw new Exception("Failed To Create Price");
 
             return createdPrice;
         }
 
-        public async Task<StripeNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<StripeNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
@@ -272,7 +283,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             if (product == null)
                 return null;
 
-            var url = await CreateCheckoutSession(product, taxRecord, userToken, successUrl, cancelUrl);
+            var url = await CreateCheckoutSession(product, taxRecord, userToken, successUrl, cancelUrl, cancellationToken);
             if (url == null)
                 return null;
 
@@ -281,14 +292,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return details;
         }
 
-        public async Task<StripeNewOneTimeDetails?> GetNewOneTimeDetails(string internalId, ONUser userToken, string successUrl, string cancelUrl, uint differentPresetPriceCents)
+        public async Task<StripeNewOneTimeDetails?> GetNewOneTimeDetails(string internalId, ONUser userToken, string successUrl, string cancelUrl, uint differentPresetPriceCents, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var product = await GetProduct(internalId);
+                var product = await GetProduct(internalId, cancellationToken);
                 if (product == null)
                     return null;
 
@@ -303,7 +314,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                         uint maximum = (uint)(price.CustomUnitAmount.Maximum ?? 0);
                         if (differentPresetPriceCents > minimum && differentPresetPriceCents <= maximum)
                         {
-                            var newPrice = await CreateOneTimePriceInternal(internalId, "custom", minimum, differentPresetPriceCents, maximum);
+                            var newPrice = await CreateOneTimePriceInternal(internalId, "custom", minimum, differentPresetPriceCents, maximum, cancellationToken);
                             if (newPrice != null)
                                 priceId = newPrice.Id;
                         }
@@ -311,7 +322,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     catch { }
                 }
 
-                var url = await CreateOneTimeCheckoutSession(priceId, internalId, userToken, successUrl, cancelUrl);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var url = await CreateOneTimeCheckoutSession(priceId, internalId, userToken, successUrl, cancelUrl, cancellationToken);
                 if (string.IsNullOrEmpty(url))
                     return null;
 
@@ -321,19 +334,21 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 logger.LogError($"Stripe Client: {ex.Message}", ex);
                 return null;
             }
         }
 
-        public async Task<string?> CreateOneTimeCheckoutSession(string priceId, string contentId, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<string?> CreateOneTimeCheckoutSession(string priceId, string contentId, ONUser userToken, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var customer = await EnsureCustomerByUserId(userToken.Id);
+                var customer = await EnsureCustomerByUserId(userToken.Id, cancellationToken);
                 if (customer == null)
                     return null;
                 var chekoutOpts = new SessionCreateOptions
@@ -349,25 +364,27 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     Customer = customer.Id
                 };
 
-                var session = await checkoutService.CreateAsync(chekoutOpts);
+                var session = await checkoutService.CreateAsync(chekoutOpts, null, cancellationToken);
 
                 return session.Url;
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message);
                 return null;
             }
         }
 
-        public async Task<string?> CreateCheckoutSession(ProductRecord product, SalesTaxByPostalCodeRecord? taxRecord, ONUser userToken, string successUrl, string cancelUrl)
+        public async Task<string?> CreateCheckoutSession(ProductRecord product, SalesTaxByPostalCodeRecord? taxRecord, ONUser userToken, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var customer = await EnsureCustomerByUserId(userToken.Id);
+                var customer = await EnsureCustomerByUserId(userToken.Id, cancellationToken);
                 if (customer == null)
                     return null;
 
@@ -400,17 +417,19 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
                 };
 
-                var session = await checkoutService.CreateAsync(chekoutOpts);
+                var session = await checkoutService.CreateAsync(chekoutOpts, null, cancellationToken);
 
                 return session.Url;
             }
             catch
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return null;
             }
         }
 
-        public async Task<string?> CreateTokenizeNewCardSession(ONUser userToken, GenericSubscriptionRecord subDbRecord, string successUrl, string cancelUrl)
+        public async Task<string?> CreateTokenizeNewCardSession(ONUser userToken, GenericSubscriptionRecord subDbRecord, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
@@ -441,38 +460,40 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     CancelUrl = cancelUrl,
                 };
 
-                var session = await checkoutService.CreateAsync(chekoutOpts);
+                var session = await checkoutService.CreateAsync(chekoutOpts, null, cancellationToken);
 
                 return session.Url;
             }
             catch
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return null;
             }
         }
 
-        public async Task<Customer?> EnsureCustomerByUserId(Guid userId)
+        public async Task<Customer?> EnsureCustomerByUserId(Guid userId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var customer = await GetCustomerByUserId(userId);
+                var customer = await GetCustomerByUserId(userId, cancellationToken);
                 if (customer != null)
                     return customer;
 
                 var dict = new Dictionary<string, string>();
                 dict["id"] = userId.ToString();
 
-                return await customerService.CreateAsync(new() { Metadata = dict });
+                return await customerService.CreateAsync(new() { Metadata = dict }, null, cancellationToken);
             }
             catch { }
 
             return null;
         }
 
-        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForCustomer(string processorCustomerId)
+        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForCustomer(string processorCustomerId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new();
@@ -486,10 +507,12 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     Customer = processorCustomerId,
                 };
 
-                var res = chargeService.ListAutoPagingAsync(options);
+                var res = chargeService.ListAutoPagingAsync(options, null, cancellationToken);
                 await foreach (var transaction in res)
                 {
                     if (transaction == null) continue;
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     list.Add(transaction.ToGenericPaymentRecord());
                 }
@@ -500,7 +523,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return list;
         }
 
-        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range)
+        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 yield break;
@@ -512,16 +535,18 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                 Limit = 100,
             };
 
-            var res = chargeService.SearchAutoPagingAsync(options);
+            var res = chargeService.SearchAutoPagingAsync(options, null, cancellationToken);
             await foreach (var transaction in res)
             {
                 if (transaction == null) continue;
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 yield return transaction.ToProcessorPaymentRecord();
             }
         }
 
-        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionId)
+        public async Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new();
@@ -535,7 +560,10 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     Subscription = processorSubscriptionId,
                 };
 
-                var res = chargeService.ListAutoPagingAsync(options);
+                var res = chargeService.ListAutoPagingAsync(options, null, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await foreach (var transaction in res)
                 {
                     if (transaction == null) continue;
@@ -549,7 +577,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return list;
         }
 
-        public async Task<List<GenericSubscriptionRecord>> GetAllSubscriptions()
+        public async Task<List<GenericSubscriptionRecord>> GetAllSubscriptions(CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new();
@@ -557,13 +585,17 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             List<GenericSubscriptionRecord> list = new();
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var options = new SubscriptionListOptions()
                 {
-
+                    Expand = new() { "data.default_payment_method" }
                 };
 
-                var service = new SubscriptionService();
-                var res = service.ListAutoPagingAsync(options);
+                var res = subService.ListAutoPagingAsync(options, null, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await foreach (var sub in res)
                 {
                     if (sub == null) continue;
@@ -577,7 +609,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return list;
         }
 
-        public async Task<Customer?> GetCustomerByUserId(Guid userId)
+        public async Task<Customer?> GetCustomerByUserId(Guid userId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
@@ -585,7 +617,9 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             try
             {
                 var res = await customerService.SearchAsync(
-                    new() { Query = $"metadata['id']:'{userId.ToString()}'" }
+                    new() { Query = $"metadata['id']:'{userId.ToString()}'" },
+                    null,
+                    cancellationToken
                 );
                 return res.FirstOrDefault();
             }
@@ -594,14 +628,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return null;
         }
 
-        public async Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord subscription)
+        public async Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord subscription, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return Guid.Empty;
 
             try
             {
-                var customer = await customerService.GetAsync(subscription.ProcessorCustomerID);
+                var customer = await customerService.GetAsync(subscription.ProcessorCustomerID, null, null, cancellationToken);
 
                 if (customer.Metadata.ContainsKey("id"))
                 {
@@ -631,47 +665,71 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return link.Url.ToString();
         }
 
-        public async Task<Session?> GetCheckoutSessionById(string checkoutSessionId)
+        public async Task<Session?> GetCheckoutSessionById(string checkoutSessionId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var session = await checkoutService.GetAsync(checkoutSessionId, new SessionGetOptions { Expand = ["setup_intent"] });
+                var session = await checkoutService.GetAsync(checkoutSessionId, new SessionGetOptions { Expand = ["setup_intent"] }, null, cancellationToken);
 
                 return session;
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message);
                 return null;
             }
         }
 
 
-        public async Task UpdateSubscriptionWithTokenizedCard(ONUser userToken, GenericSubscriptionRecord subDbRecord, string sessionId)
+        public async Task UpdateSubscriptionWithTokenizedCard(ONUser userToken, GenericSubscriptionRecord subDbRecord, string sessionId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return;
 
             try
             {
-                var session = await GetCheckoutSessionById(sessionId);
+                var session = await GetCheckoutSessionById(sessionId, cancellationToken);
                 if (session == null)
                     return;
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var newPaymentId = session.SetupIntent.PaymentMethodId;
                 if (string.IsNullOrWhiteSpace(newPaymentId))
                     return;
 
-                var providerSubRecord = await subService.GetAsync(subDbRecord.ProcessorSubscriptionID, new());
+                var stripePayRecord = await paymentMethodService.GetAsync(newPaymentId, null, null, cancellationToken);
+                if (stripePayRecord == null)
+                    return;
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var providerSubRecord = await subService.GetAsync(subDbRecord.ProcessorSubscriptionID, new(), null, cancellationToken);
                 if (providerSubRecord == null)
                     return;
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var oldPaymentId = providerSubRecord.DefaultPaymentMethodId;
 
-                var updatedProviderSubRecord = await subService.UpdateAsync(subDbRecord.ProcessorSubscriptionID, new SubscriptionUpdateOptions { DefaultPaymentMethod = newPaymentId });
+                var updatedProviderSubRecord = await subService.UpdateAsync(subDbRecord.ProcessorSubscriptionID, new SubscriptionUpdateOptions { DefaultPaymentMethod = newPaymentId }, null, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (updatedProviderSubRecord != null)
+                {
+                    if (stripePayRecord.Card != null)
+                    {
+                        subDbRecord.CardExpYear = (uint)stripePayRecord.Card.ExpYear;
+                        subDbRecord.CardExpMonth = (uint)stripePayRecord.Card.ExpMonth;
+                        subDbRecord.CardLast4 = stripePayRecord.Card.Last4 ?? "";
+                    }
+                }
             }
             catch
             {
@@ -700,11 +758,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             recordProvider.SaveAll(Products).Wait();
         }
 
-        private ProductRecord EnsureProduct(
-            SubscriptionTier t,
-            List<Product> stripeProducts,
-            List<Price> stripePrices
-        )
+        private ProductRecord EnsureProduct(SubscriptionTier t, List<Product> stripeProducts, List<Price> stripePrices)
         {
             var savedProduct = Products.Records.FirstOrDefault(r => r.Price == t.AmountCents);
             if (savedProduct != null)
@@ -763,12 +817,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             };
         }
 
-        private bool IsSavedRecordIsCorrect(
-            SubscriptionTier t,
-            ProductRecord savedProduct,
-            List<Product> stripeProducts,
-            List<Price> stripePrices
-        )
+        private bool IsSavedRecordIsCorrect(SubscriptionTier t, ProductRecord savedProduct, List<Product> stripeProducts, List<Price> stripePrices)
         {
             if (savedProduct == null)
                 return false;
@@ -819,11 +868,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return true;
         }
 
-        private Price EnsurePrice(
-            SubscriptionTier t,
-            Product product,
-            List<Price> stripePrices
-        )
+        private Price EnsurePrice(SubscriptionTier t, Product product, List<Price> stripePrices)
         {
             foreach (Price price in stripePrices.Where(p => p.Active))
             {
@@ -846,14 +891,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return newPrice;
         }
 
-        public async Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID)
+        public async Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var sub = await subService.GetAsync(processorSubscriptionID, new());
+                var sub = await subService.GetAsync(processorSubscriptionID, new() { Expand = new() { "default_payment_method" } }, null, cancellationToken);
                 return sub.ToSubscriptionRecord();
             }
             catch { }
@@ -861,14 +906,14 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return null;
         }
 
-        public async Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID)
+        public async Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var sub = await GetSubscription(processorSubscriptionID);
+                var sub = await GetSubscription(processorSubscriptionID, cancellationToken);
                 if (sub == null)
                     return null;
 
@@ -877,7 +922,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                     SubscriptionRecord = sub,
                 };
 
-                record.Payments.AddRange(await GetAllPaymentsForSubscription(processorSubscriptionID));
+                record.Payments.AddRange(await GetAllPaymentsForSubscription(processorSubscriptionID, cancellationToken));
 
                 var lastPayment = record.Payments.OrderByDescending(p => p.PaidOnUTC).FirstOrDefault();
                 if (lastPayment is not null)
@@ -898,7 +943,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return null;
         }
 
-        public async Task<List<GenericSubscriptionRecord>> GetSubscriptionsByCustomerId(string id)
+        public async Task<List<GenericSubscriptionRecord>> GetSubscriptionsByCustomerId(string id, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new();
@@ -906,9 +951,12 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             try
             {
                 var customer = await customerService.GetAsync(
-                    id,
-                    new() { Expand = new() { "subscriptions" } }
-                );
+                        id,
+                        new() { Expand = new() { "subscriptions", "subscriptions.data.default_payment_method" } },
+                        null,
+                        cancellationToken
+                    );
+
                 return customer.Subscriptions.Select(s => s.ToSubscriptionRecord()).ToList();
             }
             catch { }
@@ -916,7 +964,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return new();
         }
 
-        public async Task<List<PaymentIntent>> GetOneTimePaymentsByCustomerId(string id)
+        public async Task<List<PaymentIntent>> GetOneTimePaymentsByCustomerId(string id, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new();
@@ -924,8 +972,10 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             try
             {
                 var payments = await paymentService.ListAsync(
-                    new() { Customer = id }
-                );
+                        new() { Customer = id },
+                        null,
+                        cancellationToken
+                    );
 
                 return payments.ToList();
             }
@@ -934,7 +984,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             return new();
         }
 
-        internal async Task<bool> CancelSubscription(string id, string reason)
+        internal async Task<bool> CancelSubscription(string id, string reason, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return false;
@@ -943,23 +993,30 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             {
                 var sub = await subService.CancelAsync(
                     id,
-                    new() { CancellationDetails = new() { Comment = reason } }
+                    new() { CancellationDetails = new() { Comment = reason } },
+                    null,
+                    cancellationToken
                 );
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return true;
             }
             catch { }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             return false;
         }
 
-        internal async Task<Session?> GetCheckoutSessionByPaymentIntentId(string paymentIntentId)
+        internal async Task<Session?> GetCheckoutSessionByPaymentIntentId(string paymentIntentId, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return null;
 
             try
             {
-                var sessions = await checkoutService.ListAsync(new() { PaymentIntent = paymentIntentId, Expand = new() { "data.line_items" } });
+                var sessions = await checkoutService.ListAsync(new() { PaymentIntent = paymentIntentId, Expand = new() { "data.line_items" } }, null, cancellationToken);
                 return sessions.FirstOrDefault();
             }
             catch { }
@@ -972,7 +1029,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
             try
             {
                 progress.StatusMessage = $"Pulling data from stripe";
-                var stripeTaxRecords = await GetStripeTaxRates();
+                var stripeTaxRecords = await GetStripeTaxRates(cancelToken);
                 progress.StatusMessage = $"Pulling data from database";
                 var taxRecords = (await taxService.GetAll()).ToArray();
 
@@ -987,13 +1044,15 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
                     if (string.IsNullOrWhiteSpace(taxRecord.StripeTaxRateId))
                     {
-                        var rateId = await CreateTaxRateRecord(taxRecord);
+                        var rateId = await CreateTaxRateRecord(taxRecord, cancelToken);
                         taxRecord.StripeTaxRateId = rateId;
                         await taxService.Save(taxRecord);
                         continue;
                     }
 
-                    var updatedRateId = await EnsureTaxRecord(taxRecord, stripeTaxRecords);
+                    var updatedRateId = await EnsureTaxRecord(taxRecord, stripeTaxRecords, cancelToken);
+
+                    cancelToken.ThrowIfCancellationRequested();
 
                     if (taxRecord.StripeTaxRateId != updatedRateId)
                     {
@@ -1016,21 +1075,21 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
 
         }
 
-        private async Task<string> EnsureTaxRecord(SalesTaxByPostalCodeRecord taxRecord, List<TaxRate> stripeTaxRecords)
+        private async Task<string> EnsureTaxRecord(SalesTaxByPostalCodeRecord taxRecord, List<TaxRate> stripeTaxRecords, CancellationToken cancellationToken)
         {
             var stripeTaxRecord = stripeTaxRecords.FirstOrDefault(r => r.Id == taxRecord.StripeTaxRateId);
             if (stripeTaxRecord == null)
-                return await CreateTaxRateRecord(taxRecord);
+                return await CreateTaxRateRecord(taxRecord, cancellationToken);
 
             var percentage = taxRecord.TaxRateThousandPercents / 1000M;
 
             if (stripeTaxRecord.Percentage == percentage)
                 return taxRecord.StripeTaxRateId;
 
-            return await CreateTaxRateRecord(taxRecord);
+            return await CreateTaxRateRecord(taxRecord, cancellationToken);
         }
 
-        private async Task<string> CreateTaxRateRecord(SalesTaxByPostalCodeRecord taxRecord)
+        private async Task<string> CreateTaxRateRecord(SalesTaxByPostalCodeRecord taxRecord, CancellationToken cancellationToken)
         {
             try
             {
@@ -1045,21 +1104,25 @@ namespace IT.WebServices.Authorization.Payment.Stripe.Clients
                             Percentage = taxRecord.TaxRateThousandPercents / 1000M,
                             State = taxRecord.SubdivisionCode,
                             TaxType = "sales_tax",
-                        }
+                        },
+                        null,
+                        cancellationToken
                     );
 
                 return rate?.Id ?? "";
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 logger.LogError(ex, "Error in CreateTaxRateRecord");
                 return "";
             }
         }
 
-        private async Task<List<TaxRate>> GetStripeTaxRates()
+        private async Task<List<TaxRate>> GetStripeTaxRates(CancellationToken cancellationToken)
         {
-            return await stripeTaxService.ListAutoPagingAsync().ToListAsync();
+            return await stripeTaxService.ListAutoPagingAsync(null, null, cancellationToken).ToListAsync();
         }
     }
 }

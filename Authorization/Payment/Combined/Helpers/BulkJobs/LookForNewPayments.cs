@@ -79,7 +79,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers.BulkJobs
                     var processor = processors[i];
 
                     Progress.StatusMessage = $"Loading {processor.ProcessorName}";
-                    var payments = processor.GetAllPaymentsForDateRange(range);
+                    var payments = processor.GetAllPaymentsForDateRange(range, cancelToken.Token);
 
                     var j = 0;
                     await foreach (var payment in payments)

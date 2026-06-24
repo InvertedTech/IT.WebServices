@@ -49,7 +49,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis
                 if (string.IsNullOrWhiteSpace(request.TransactionID))
                     return new() { Error = "TransactionID not valid" };
 
-                var transaction = await fortisTransactionHelper.Get(request.TransactionID);
+                var transaction = await fortisTransactionHelper.Get(request.TransactionID, context.CancellationToken);
                 if (transaction == null)
                     return new() { Error = "TransactionID not valid" };
                 if (transaction.Status != PaymentStatus.PaymentComplete)
@@ -62,7 +62,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis
                         Record = await subscriptionProvider.GetById(userToken.Id, curPayRecord.InternalSubscriptionID.ToGuid())
                     };
 
-                var newSubRecord = await fortisSubscriptionHelper.CreateFromTransaction(request.TransactionID, UserModel.FromUserToken(userToken), 1);
+                var newSubRecord = await fortisSubscriptionHelper.CreateFromTransaction(request.TransactionID, UserModel.FromUserToken(userToken), 1, context.CancellationToken);
                 if (newSubRecord == null)
                     return new() { Error = "Session not created" };
 

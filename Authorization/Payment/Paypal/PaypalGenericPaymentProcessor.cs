@@ -34,7 +34,7 @@ namespace IT.WebServices.Authorization.Payment.Paypal
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Paypal.Enabled;
 
-        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken)
+        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
             var res = await genericSubProvider.GetById(record.UserID.ToGuid(), record.InternalSubscriptionID.ToGuid());
             if (res == null)
@@ -59,16 +59,16 @@ namespace IT.WebServices.Authorization.Payment.Paypal
             };
         }
 
-        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => paypalClient.GetTransactionsByDateSegmented(range);
+        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range, CancellationToken cancellationToken) => paypalClient.GetTransactionsByDateSegmented(range, cancellationToken);
 
-        public Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID) => Task.FromResult(new List<GenericPaymentRecord>()); // paypalClient.GetAllPaymentsForSubscription(processorSubscriptionID);
+        public Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => Task.FromResult(new List<GenericPaymentRecord>()); // paypalClient.GetAllPaymentsForSubscription(processorSubscriptionID);
 
-        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions() => Task.FromResult(new List<GenericSubscriptionRecord>()); // paypalClient.GetAllSubscriptions();
+        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions(CancellationToken cancellationToken) => Task.FromResult(new List<GenericSubscriptionRecord>()); // paypalClient.GetAllSubscriptions();
 
-        public Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription) => Task.FromResult(Guid.Empty); // paypalClient.GetMissingUserIdForSubscription(processorSubscription);
+        public Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription, CancellationToken cancellationToken) => Task.FromResult(Guid.Empty); // paypalClient.GetMissingUserIdForSubscription(processorSubscription);
 
-        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID) => Task.FromResult<GenericSubscriptionRecord?>(null); // paypalClient.GetSubscription(processorSubscriptionID);
+        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => Task.FromResult<GenericSubscriptionRecord?>(null); // paypalClient.GetSubscription(processorSubscriptionID);
 
-        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID) => Task.FromResult<GenericSubscriptionFullRecord?>(null); // paypalClient.GetSubscriptionFull(processorSubscriptionID);
+        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => Task.FromResult<GenericSubscriptionFullRecord?>(null); // paypalClient.GetSubscriptionFull(processorSubscriptionID);
     }
 }

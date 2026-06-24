@@ -16,7 +16,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             this.settingsHelper = settingsHelper;
         }
 
-        public async Task<ResponseContact?> Create(UserModel user)
+        public async Task<ResponseContact?> Create(UserModel user, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -40,10 +40,14 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                 else
                     req.LastName = "None";
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return client.Client.ContactsController.CreateANewContact(req, new());
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 

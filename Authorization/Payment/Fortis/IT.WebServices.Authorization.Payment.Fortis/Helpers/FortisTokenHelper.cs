@@ -15,10 +15,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             this.settingsHelper = settingsHelper;
         }
 
-        public async Task<string?> GetExistingTransactionToken(string dbSubId)
+        public async Task<string?> GetExistingTransactionToken(string dbSubId, CancellationToken cancellationToken)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var res = await client.Client.TokensController.ListAllTokensRelatedAsync(
                     new Page()
                     {
@@ -29,8 +31,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                     new Filter10()
                     {
                         AccountVaultApiId = dbSubId,
-                    }
+                    },
+                    null,
+                    cancellationToken
                 );
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (res?.List == null || res.List.Count == 0)
                     return null;
@@ -39,41 +45,53 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 
             return null;
         }
 
-        public async Task<string?> GetNewPreviousTransactionToken(string tranId, string dbSubId, ResponseContact contact)
+        public async Task<string?> GetNewPreviousTransactionToken(string tranId, string dbSubId, ResponseContact contact, CancellationToken cancellationToken)
         {
             try
             {
-                var token = await GetExistingTransactionToken(dbSubId);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var token = await GetExistingTransactionToken(dbSubId, cancellationToken);
                 if (token != null)
                     return token;
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
                     var res = await client.Client.TokensController.CreateANewPreviousTransactionTokenAsync(new V1TokensPreviousTransactionRequest()
-                    {
-                        LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
-                        PreviousTransactionId = tranId,
-                        ContactId = contact.Data.Id,
-                        AccountVaultApiId = dbSubId,
-                    });
+                            {
+                                LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
+                                PreviousTransactionId = tranId,
+                                ContactId = contact.Data.Id,
+                                AccountVaultApiId = dbSubId,
+                            },
+                            cancellationToken
+                        );
 
                     if (res?.Data?.Id != null)
                         return res.Data.Id;
                 }
                 catch { }
 
-                token = await GetExistingTransactionToken(dbSubId);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                token = await GetExistingTransactionToken(dbSubId, cancellationToken);
                 if (token != null)
                     return token;
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 

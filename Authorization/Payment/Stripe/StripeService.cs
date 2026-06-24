@@ -310,11 +310,13 @@ namespace IT.WebServices.Authorization.Payment.Stripe
                 if (request.ProcessorSessionID == null)
                     return new() { Error = "ProcessorSessionID not valid" };
 
-                var session = await client.GetCheckoutSessionById(request.ProcessorSessionID);
+                var session = await client.GetCheckoutSessionById(request.ProcessorSessionID, context.CancellationToken);
                 if (session == null)
                     return new() { Error = "ProcessorSessionID not valid" };
 
-                var newSubRecord = await client.GetSubscription(session.SubscriptionId);
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                var newSubRecord = await client.GetSubscription(session.SubscriptionId, context.CancellationToken);
                 if (newSubRecord == null)
                     return new() { Error = "SessionId not valid" };
 
@@ -338,7 +340,12 @@ namespace IT.WebServices.Authorization.Payment.Stripe
                     SubscriptionRecord = newSubRecord,
                 };
 
-                var payments = await client.GetAllPaymentsForSubscription(newSubRecord.ProcessorSubscriptionID);
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                var payments = await client.GetAllPaymentsForSubscription(newSubRecord.ProcessorSubscriptionID, context.CancellationToken);
+
+                context.CancellationToken.ThrowIfCancellationRequested();
+
                 var newPaymentRecord = payments.FirstOrDefault();
 
                 if (newPaymentRecord != null)
@@ -351,6 +358,8 @@ namespace IT.WebServices.Authorization.Payment.Stripe
 
                     fullRecord.Payments.Add(newPaymentRecord);
                 }
+
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 await fullProvider.Save(fullRecord);
 
@@ -382,19 +391,25 @@ namespace IT.WebServices.Authorization.Payment.Stripe
                 if (request.ProcessorSessionID == null)
                     return new() { Error = "ProcessorSessionID not valid" };
 
-                var session = await client.GetCheckoutSessionById(request.ProcessorSessionID);
+                var session = await client.GetCheckoutSessionById(request.ProcessorSessionID, context.CancellationToken);
                 if (session == null)
                     return new() { Error = "ProcessorSessionID not valid" };
+
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 var dbSubRecord = await subscriptionProvider.GetById(userToken.Id, request.InternalSubscriptionID.ToGuid());
                 if (dbSubRecord == null)
                     return new() { Error = "Could not find subscription" };
 
-                var providerSubRecord = await client.GetSubscription(dbSubRecord.ProcessorSubscriptionID);
+                var providerSubRecord = await client.GetSubscription(dbSubRecord.ProcessorSubscriptionID, context.CancellationToken);
                 if (providerSubRecord == null)
                     return new() { Error = "SessionId not valid" };
 
-                await client.UpdateSubscriptionWithTokenizedCard(userToken, dbSubRecord, request.ProcessorSessionID);
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                await client.UpdateSubscriptionWithTokenizedCard(userToken, dbSubRecord, request.ProcessorSessionID, context.CancellationToken);
+
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 dbSubRecord.ModifiedBy = userToken.Id.ToString();
 
@@ -433,7 +448,11 @@ namespace IT.WebServices.Authorization.Payment.Stripe
                 if (sub == null)
                     return new() { Error = "Could not find subscription" };
 
-                var paymentLink = await client.CreateTokenizeNewCardSession(userToken, sub, request.SuccessUrl, request.CancelUrl);
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                var paymentLink = await client.CreateTokenizeNewCardSession(userToken, sub, request.SuccessUrl, request.CancelUrl, context.CancellationToken);
+
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 return new()
                 {

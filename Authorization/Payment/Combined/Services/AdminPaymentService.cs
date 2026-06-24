@@ -124,7 +124,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     return new() { Error = "Record not found" };
 
                 var provider = genericProcessorProvider.GetProcessor(record);
-                return await provider.CancelSubscription(record, userToken);
+                return await provider.CancelSubscription(record, userToken, context.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -287,7 +287,7 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                     return new() { Error = "Record not found" };
 
                 var provider = genericProcessorProvider.GetProcessor(record);
-                return await reconcileHelper.ReconcileSubscription(record, userToken);
+                return await reconcileHelper.ReconcileSubscription(record, userToken, context.CancellationToken);
             }
             catch (Exception ex)
             {

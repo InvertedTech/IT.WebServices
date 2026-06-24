@@ -72,5 +72,9 @@ message GenericSubscriptionRecord {
   string ModifiedBy = 32;
   string CanceledBy = 33;
 
+  uint32 CardExpYear = 51;
+  uint32 CardExpMonth = 52;
+  string CardLast4 = 53;
+
   string OldSubscriptionID = 101; // Id for the Subscription in a previous system
 }

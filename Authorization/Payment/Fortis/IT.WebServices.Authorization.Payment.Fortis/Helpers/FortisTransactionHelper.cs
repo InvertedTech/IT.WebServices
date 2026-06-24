@@ -6,13 +6,8 @@ using IT.WebServices.Authorization.Payment.Generic;
 using IT.WebServices.Authorization.Payment.Generic.Data;
 using IT.WebServices.Authorization.Payment.Helpers.Models;
 using IT.WebServices.Fragments.Authorization.Payment;
-using IT.WebServices.Fragments.Authorization.Payment.Fortis;
 using IT.WebServices.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 {
@@ -50,21 +45,23 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return null;
         }
 
-        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllForRange(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
+        public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllForRange(DateTimeOffsetRange range, [EnumeratorCancellation] CancellationToken cancellationToken, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
             var ranges = range.BreakIntoHours();
             foreach (var r in ranges)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.Write(r.Begin.ToString() + "-" + r.End.ToString() + ": ");
 
-                var payments = await GetAll(r, amount, contactId, triesLeft, state);
+                var payments = await GetAll(r, cancellationToken, amount, contactId, triesLeft, state);
 
                 foreach (var p in payments)
                     yield return p;
             }
         }
 
-        private async Task<List<ProcessorPaymentRecord>> GetAll(DateTimeOffsetRange range, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
+        private async Task<List<ProcessorPaymentRecord>> GetAll(DateTimeOffsetRange range, CancellationToken cancellationToken, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
             int errors = 0;
             int page = 1;
@@ -76,6 +73,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             {
                 while (errors < 10)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var list = await client.Client.TransactionsReadController.ListTransactionsAsync(
                                 new Page() { Number = page, Size = size },
                                 null,
@@ -120,7 +119,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
 
                 if (triesLeft > 0)
-                    return await GetAll(range, amount, contactId, triesLeft - 1, state);
+                    return await GetAll(range, cancellationToken, amount, contactId, triesLeft - 1, state);
                 else
                     throw;
             }
@@ -128,16 +127,18 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return ret.Select(p => p.ToProcessorPaymentRecord()).ToList();
         }
 
-        public async Task<GenericPaymentRecord?> Get(string tranId)
+        public async Task<GenericPaymentRecord?> Get(string tranId, CancellationToken cancellationToken)
         {
             try
             {
-                var res = await client.Client.TransactionsReadController.GetTransactionAsync(tranId);
+                var res = await client.Client.TransactionsReadController.GetTransactionAsync(tranId, null, cancellationToken);
 
                 return res.Data.ToGenericPaymentRecord();
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 

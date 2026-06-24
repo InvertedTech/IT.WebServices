@@ -23,11 +23,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<BulkHelper>();
             services.AddSingleton<ReconcileHelper>();
 
-            services.AddSingleton<LookForNewPaymentsOneDay>();
-            services.AddSingleton<LookForNewPaymentsOneMonth>();
-            services.AddSingleton<LookForNewPaymentsOneWeek>();
-            services.AddSingleton<ReconcileAll>();
-            services.AddSingleton<ReconcileStripeTaxRates>();
+            services.AddTransient<LookForNewPaymentsOneDay>();
+            services.AddTransient<LookForNewPaymentsOneMonth>();
+            services.AddTransient<LookForNewPaymentsOneWeek>();
+            services.AddTransient<ReconcileAll>();
+            services.AddTransient<ReconcileStripeTaxRates>();
 
             return services;
         }

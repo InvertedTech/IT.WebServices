@@ -40,7 +40,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Stripe.Enabled;
 
-        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken)
+        public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
             var res = await genericSubProvider.GetById(record.UserID.ToGuid(), record.InternalSubscriptionID.ToGuid());
             if (res == null)
@@ -48,7 +48,7 @@ namespace IT.WebServices.Authorization.Payment.Stripe
 
             if (res.Status == SubscriptionStatus.SubscriptionActive)
             {
-                var cancelRes = await stripeClient.CancelSubscription(record.ProcessorSubscriptionID, "");
+                var cancelRes = await stripeClient.CancelSubscription(record.ProcessorSubscriptionID, "", cancellationToken);
                 if (!cancelRes)
                     return new() { Error = "Unable to cancel subscription" };
             }
@@ -56,6 +56,8 @@ namespace IT.WebServices.Authorization.Payment.Stripe
             record.Status = SubscriptionStatus.SubscriptionStopped;
             record.CanceledBy = userToken.Id.ToString();
             record.CanceledOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await genericSubProvider.Save(record);
 
@@ -65,16 +67,16 @@ namespace IT.WebServices.Authorization.Payment.Stripe
             };
         }
 
-        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range) => stripeClient.GetAllPaymentsForDateRange(range);
+        public IAsyncEnumerable<ProcessorPaymentRecord> GetAllPaymentsForDateRange(DateTimeOffsetRange range, CancellationToken cancellationToken) => stripeClient.GetAllPaymentsForDateRange(range, cancellationToken);
 
-        public Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID) => stripeClient.GetAllPaymentsForSubscription(processorSubscriptionID);
+        public Task<List<GenericPaymentRecord>> GetAllPaymentsForSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => stripeClient.GetAllPaymentsForSubscription(processorSubscriptionID, cancellationToken);
 
-        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions() => stripeClient.GetAllSubscriptions();
+        public Task<List<GenericSubscriptionRecord>> GetAllSubscriptions(CancellationToken cancellationToken) => stripeClient.GetAllSubscriptions(cancellationToken);
 
-        public Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription) => stripeClient.GetMissingUserIdForSubscription(processorSubscription);
+        public Task<Guid> GetMissingUserIdForSubscription(GenericSubscriptionRecord processorSubscription, CancellationToken cancellationToken) => stripeClient.GetMissingUserIdForSubscription(processorSubscription, cancellationToken);
 
-        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID) => stripeClient.GetSubscription(processorSubscriptionID);
+        public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => stripeClient.GetSubscription(processorSubscriptionID, cancellationToken);
 
-        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID) => stripeClient.GetSubscriptionFull(processorSubscriptionID);
+        public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => stripeClient.GetSubscriptionFull(processorSubscriptionID, cancellationToken);
     }
 }
