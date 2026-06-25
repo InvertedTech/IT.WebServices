@@ -185,6 +185,10 @@ namespace FortisAPI.Standard.Models
             this.RecurringTypeId = recurringTypeId;
         }
 
+
+        [JsonProperty("account_vault")]
+        public AccountVault AccountVault { get; set; }
+
         /// <summary>
         /// Token ID
         /// </summary>

@@ -26,6 +26,7 @@ enum PaymentBulkAction {
     LookForNewPaymentsOneMonth = 2;
     ReconcileAll = 3;
     ReconcileStripeTaxRates = 4;
+    LookForMissingSubscriptions = 5;
 }
 
 message PaymentBulkActionProgress {
