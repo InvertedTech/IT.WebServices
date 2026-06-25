@@ -1,5 +1,6 @@
 ﻿using IT.WebServices.Clients;
 using IT.WebServices.Clients.CMS;
+using IT.WebServices.Clients.Merch;
 using IT.WebServices.Clients.Payment;
 using IT.WebServices.Clients.Settings;
 using IT.WebServices.Fragments.Authentication;
@@ -60,6 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<PaymentClient>();
             services.AddScoped<AssetClient>();
             services.AddScoped<ContentClient>();
+            services.AddScoped<MerchClient>();
 
             return services;
         }
