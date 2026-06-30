@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.13.0
+
+### Minor Changes
+
+- Add PaymentInfo Fields In SubscriptionRecord
+
 ## 0.12.9
 
 ### Patch Changes
