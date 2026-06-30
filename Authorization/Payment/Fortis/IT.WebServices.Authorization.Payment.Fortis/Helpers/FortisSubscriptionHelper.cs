@@ -30,7 +30,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
             try
             {
-                var res = await client.Client.RecurringController.CreateANewRecurringRecordAsync(new V1RecurringsRequest()
+                var res = await client.Client.RecurringController.CreateANewRecurringRecordAsync(
+                        new V1RecurringsRequest()
                         {
                             Active = ActiveEnum.Enum1,
                             AccountVaultId = tokenId,
@@ -46,7 +47,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                return res?.ToSubscriptionRecord();
+                if (res is null)
+                    return null;
+
+                var res2 = await Get(res.Data.Id, cancellationToken);
+
+                return res2;
             }
             catch (Exception ex)
             {
@@ -154,7 +160,12 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                return res?.ToSubscriptionRecord();
+                if (res is null)
+                    return null;
+
+                var res2 = await Get(res.Data.Id, cancellationToken);
+
+                return res2;
             }
             catch (Exception ex)
             {
@@ -182,7 +193,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                             ProductTransactionId = settingsHelper.Owner.Subscription.Fortis.ProductID,
                             Id = subscriptionId,
                         },
-                        new List<string>(),
+                        new() { "account_vault" },
                         cancellationToken
                     );
 
@@ -213,6 +224,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
                 var expand = new List<string>();
                 expand.Add("transactions");
+                expand.Add("account_vault");
 
                 var list = await client.Client.RecurringController.ListAllRecurringRecordAsync(
                         new Page() { Number = 1, Size = 1 },
@@ -270,7 +282,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                                 LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
                                 ProductTransactionId = settingsHelper.Owner.Subscription.Fortis.ProductID,
                             },
-                            null,
+                            new() { "account_vault" },
                             cancellationToken
                         );
 
@@ -324,7 +336,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                         {
                             AccountVaultId = contactId
                         },
-                        null,
+                        new() { "account_vault" },
                         cancellationToken
                     );
 

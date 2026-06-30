@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<BulkHelper>();
             services.AddSingleton<ReconcileHelper>();
 
+            services.AddTransient<LookForMissingSubscriptions>();
             services.AddTransient<LookForNewPaymentsOneDay>();
             services.AddTransient<LookForNewPaymentsOneMonth>();
             services.AddTransient<LookForNewPaymentsOneWeek>();

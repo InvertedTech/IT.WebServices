@@ -19,6 +19,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                 TaxCents = 0,
                 TaxRateThousandPercents = 0,
                 TotalCents = (uint)fRec.TransactionAmount,
+                CardExpYear = fRec.AccountVault?.CardExpYear ?? 0,
+                CardExpMonth = fRec.AccountVault?.CardExpMonth ?? 0,
+                CardLast4 = fRec.AccountVault?.CardLast4 ?? "",
             };
         }
 
@@ -35,6 +38,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                 TaxCents = 0,
                 TaxRateThousandPercents = 0,
                 TotalCents = (uint)fRec.TransactionAmount,
+                CardExpYear = fRec.AccountVault?.CardExpYear ?? 0,
+                CardExpMonth = fRec.AccountVault?.CardExpMonth ?? 0,
+                CardLast4 = fRec.AccountVault?.CardLast4 ?? "",
             };
         }
 

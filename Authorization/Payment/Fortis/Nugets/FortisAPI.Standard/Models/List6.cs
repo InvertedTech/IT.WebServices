@@ -488,6 +488,9 @@ namespace FortisAPI.Standard.Models
         [JsonProperty("transactions")]
         public Data14[] Transactions { get; set; }
 
+        [JsonProperty("account_vault")]
+        public AccountVault AccountVault { get; set; }
+
         /// <inheritdoc/>
         public override string ToString()
         {

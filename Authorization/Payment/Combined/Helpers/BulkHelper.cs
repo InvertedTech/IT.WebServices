@@ -68,6 +68,8 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
         {
             switch (action)
             {
+                case PaymentBulkAction.LookForMissingSubscriptions:
+                    return serviceProvider.GetService<LookForMissingSubscriptions>();
                 case PaymentBulkAction.LookForNewPaymentsOneDay:
                     return serviceProvider.GetService<LookForNewPaymentsOneDay>();
                 case PaymentBulkAction.LookForNewPaymentsOneMonth:

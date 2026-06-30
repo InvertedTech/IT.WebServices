@@ -62,6 +62,24 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             }
         }
 
+        public async Task ReconcileNewOnly(ONUser user, PaymentBulkActionProgress progress, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await ReconcileNew(user, progress, cancellationToken);
+
+                progress.StatusMessage = "Completed Successfully";
+                progress.CompletedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                progress.Progress = 1;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in ReconcileAll");
+                progress.StatusMessage = ex.Message;
+                progress.CompletedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+            }
+        }
+
         private async Task ReconcileExisting(ONUser user, PaymentBulkActionProgress progress, CancellationToken cancellationToken)
         {
             var localSubs = await subProvider.GetAll().ToList();
