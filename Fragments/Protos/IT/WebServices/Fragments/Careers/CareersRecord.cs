@@ -18,7 +18,7 @@ namespace IT.WebServices.Fragments.Careers
                 Title = this.Title,
                 Company = this.Company,
                 Location = this.Location,
-                About = this.About,
+                Department = this.Department,
                 CreatedOnUTC = this.CreatedOnUTC,
             };
             if (this.DeletedOnUTC != null)
@@ -26,8 +26,6 @@ namespace IT.WebServices.Fragments.Careers
 
             if (this.ModifiedOnUTC != null)
                 rec.ModifiedOnUTC = this.ModifiedOnUTC;
-
-            rec.Responsibilities.AddRange(this.Responsibilities);
 
             return rec;
         }

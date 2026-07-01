@@ -61,16 +61,11 @@ namespace IT.WebServices.Careers
                     Title = request.Title,
                     Company = request.Company,
                     Location = request.Location,
-                    ReportsTo = request.ReportsTo,
+                    Department = request.Department,
                     Contact = request.Contact,
-                    About = request.About,
-                    RoleOverview = request.RoleOverview,
+                    BodyMarkdown = request.BodyMarkdown,
                     CreatedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow)
                 };
-
-                newCareer.Responsibilities.AddRange(request.Responsibilities);
-                newCareer.Qualifications.AddRange(request.Qualifications);
-                newCareer.WeeklyDeliverables.AddRange(request.WeeklyDeliverables);
 
                 var saved = await dataProvider.Save(newCareer);
                 return new CreateCareerResponse

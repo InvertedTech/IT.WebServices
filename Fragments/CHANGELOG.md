@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.14.0
+
+### Minor Changes
+
+- Restructure Careers
+
 ## 0.13.0
 
 ### Minor Changes

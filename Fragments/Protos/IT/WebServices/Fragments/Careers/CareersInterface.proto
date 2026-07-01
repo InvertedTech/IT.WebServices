@@ -50,13 +50,9 @@ message CreateCareerRequest {
 	string Title = 1 [(buf.validate.field).string.min_len = 3];
 	string Company = 2 [(buf.validate.field).string.min_len = 3];
 	ListingLocation Location = 3 [(buf.validate.field).required = true];
-	string ReportsTo = 4[(buf.validate.field).required = true];
-	string Contact = 5[(buf.validate.field).required = true];
-	string About = 6 [(buf.validate.field).string.min_len = 10];
-	string RoleOverview = 7 [(buf.validate.field).string.min_len = 10];
-	repeated string Responsibilities = 8 [(buf.validate.field).repeated.min_items = 1];
-	repeated string Qualifications = 9 [(buf.validate.field).repeated.min_items = 1];
-	repeated WeeklyDeliverable WeeklyDeliverables = 10;
+	string Department = 4 [(buf.validate.field).string.min_len = 2];
+	string Contact = 5 [(buf.validate.field).required = true];
+	string BodyMarkdown = 6 [(buf.validate.field).string.min_len = 20];
 }
 
 message CreateCareerResponse {

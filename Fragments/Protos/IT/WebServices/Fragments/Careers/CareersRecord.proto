@@ -5,11 +5,11 @@ import "google/protobuf/timestamp.proto";
 import "buf/validate/validate.proto";
 
 enum JobType {
-	FULL_TIME=0;
-	PART_TIME=1;
-	HYBRID=3;
-	REMOTE=4;
-	CONTRACT=5;
+	FULL_TIME = 0;
+	PART_TIME = 1;
+	HYBRID = 3;
+	REMOTE = 4;
+	CONTRACT = 5;
 }
 
 message ListingLocation {
@@ -18,23 +18,19 @@ message ListingLocation {
 	JobType EmploymentType = 3 [(buf.validate.field).enum.defined_only = true];
 }
 
-message WeeklyDeliverable {
-	string DeliverableName = 1 [(buf.validate.field).string.min_len = 3];
-	string DeliverableDetails = 2 [(buf.validate.field).string.min_len = 10];
-}
-
 message CareerRecord {
 	string CareerId = 1;
 	string Title = 2;
 	string Company = 3;
 	ListingLocation Location = 4;
-	string ReportsTo = 5;
+	string Department = 5;
 	string Contact = 6;
-	string About = 7;
-	string RoleOverview = 8;
-	repeated string Responsibilities = 9;
-	repeated string Qualifications = 10;
-	repeated WeeklyDeliverable WeeklyDeliverables = 11;
+
+	// Everything else — About, RoleOverview, Responsibilities,
+	// Qualifications, ReportsTo, WeeklyDeliverables, future sections —
+	// lives here as markdown with conventional headers.
+	string BodyMarkdown = 7;
+
 	google.protobuf.Timestamp CreatedOnUTC = 12;
 	google.protobuf.Timestamp ModifiedOnUTC = 13;
 	google.protobuf.Timestamp DeletedOnUTC = 14;
@@ -45,8 +41,8 @@ message CareerListRecord {
 	string Title = 2;
 	string Company = 3;
 	ListingLocation Location = 4;
-	string About = 5;
-	repeated string Responsibilities = 6;
+	string Department = 5;
+	string Summary = 6;
 	google.protobuf.Timestamp CreatedOnUTC = 7;
 	google.protobuf.Timestamp ModifiedOnUTC = 8;
 	google.protobuf.Timestamp DeletedOnUTC = 9;
