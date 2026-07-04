@@ -11,7 +11,8 @@
         "SERVICE__COMBINED__GRPC__PORT": "7001",
         "API_BASE_URL": "http://localhost:8001",
         "QR_CODE_ADMIN_REDIRECT": "http://localhost:3001/users/verify-qr",
-        "QR_CODE_MINIMUM_SUB_LEVEL": "2500"
+        "QR_CODE_MINIMUM_SUB_LEVEL": "2500",
+        "RESET_PASSWORD_REDIRECT": "http://localhost:3000/reset-password"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:8001/swagger"

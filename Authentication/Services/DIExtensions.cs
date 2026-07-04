@@ -3,6 +3,8 @@ using IT.WebServices.Authentication.Services;
 using IT.WebServices.Authentication.Services.Data;
 using IT.WebServices.Authentication.Services.Helpers;
 using IT.WebServices.AuditLog;
+using IT.WebServices.Clients;
+using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Builder;
@@ -18,15 +20,19 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddSingleton<IProfilePicDataProvider, FileSystemProfilePicDataProvider>();
             services.AddSingleton<IUserDataProvider, SqlUserDataProvider>();
+            services.AddSingleton<IResetTokenDataProvider, SqlResetTokenDataProvider>();
 
             services.AddSingleton<UserServiceInternal>();
             services.AddSingleton<IUserService, UserServiceInternal>();
-
             services.AddSingleton<ClaimsClient>();
             services.AddSingleton<MySQLHelper>();
             services.AddSingleton<OfflineHelper>();
             services.AddSingleton<TokenHelper>();
             services.AddSingleton<SignedQRHelper>();
+            services.AddSingleton<ResetTokenHelper>();
+
+            services.AddSingleton<ClientGrpcHelper>();
+            services.AddGrpcClient<NotificationInterface.NotificationInterfaceClient>();
 
             return services;
         }

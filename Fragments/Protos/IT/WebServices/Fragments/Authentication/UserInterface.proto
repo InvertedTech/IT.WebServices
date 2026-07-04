@@ -46,6 +46,24 @@ service UserInterface {
     };
   }
 
+  // Start the forgot password process by sending an email to the user with a reset link.
+  rpc StartForgotPassword (StartForgotPasswordRequest) returns (StartForgotPasswordResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/auth/password/forgot"
+      body: "*"
+    };
+  }
+
+  // Reset the password using the token from the email link.
+  rpc CompleteForgotPassword (CompleteForgotPasswordRequest) returns (CompleteForgotPasswordResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/auth/password/reset"
+      body: "*"
+    };
+  }
+
   // Change user's own Profile Image.  Can take in multipe image type and will convert to PNG.
   rpc ChangeOwnProfileImage (ChangeOwnProfileImageRequest) returns (ChangeOwnProfileImageResponse)
   {
@@ -288,6 +306,23 @@ message ChangeOwnPasswordRequest {
   
 message ChangeOwnPasswordResponse {
   APIError Error = 1;
+}
+
+message StartForgotPasswordRequest {
+    string Email = 1 [(buf.validate.field).string.email = true];
+}
+
+message StartForgotPasswordResponse {
+  APIError Error = 1;
+}
+
+message CompleteForgotPasswordRequest {
+  string Token = 1 [(buf.validate.field).required = true];
+  string NewPassword = 2 [(buf.validate.field).string.min_len = 6];
+}
+
+message CompleteForgotPasswordResponse {
+    APIError Error = 1;
 }
 
 message ChangeOwnProfileImageRequest {

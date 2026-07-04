@@ -9,6 +9,7 @@ using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Generic;
+using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Helpers;
 using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace IT.WebServices.Authentication.Services
 {
@@ -39,8 +41,11 @@ namespace IT.WebServices.Authentication.Services
         private readonly IAuditLogService auditLogHelper;
         private static readonly HashAlgorithm hasher = SHA256.Create();
         private static readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
+        private readonly NotificationInterface.NotificationInterfaceClient notificationClient;
+        private readonly IResetTokenDataProvider resetTokenDataProvider;
+        private readonly ResetTokenHelper resetTokenHelper;
 
-        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, IAuditLogService auditLogHelper)
+        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, IAuditLogService auditLogHelper, NotificationInterface.NotificationInterfaceClient notificationClient, IResetTokenDataProvider resetTokenDataProvider, ResetTokenHelper resetTokenHelper)
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
@@ -51,6 +56,9 @@ namespace IT.WebServices.Authentication.Services
             this.tokenHelper = tokenHelper;
             this.userServiceInternal = userServiceInternal;
             this.auditLogHelper = auditLogHelper;
+            this.notificationClient = notificationClient;
+            this.resetTokenDataProvider = resetTokenDataProvider;
+            this.resetTokenHelper = resetTokenHelper;
 
             //if (Program.IsDevelopment)
             //{
@@ -291,6 +299,100 @@ namespace IT.WebServices.Authentication.Services
                 return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while changing password") };
             }
         }
+
+        public override async Task<StartForgotPasswordResponse> StartForgotPassword(StartForgotPasswordRequest request, ServerCallContext context)
+        {
+            if (offlineHelper.IsOffline)
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
+
+            try
+            {
+                var record = await dataProvider.GetByEmail(request.Email);
+                if (record != null)
+                {
+                    var token = resetTokenHelper.GenerateToken();
+                    var tokenHash = resetTokenHelper.ComputeHash(token);
+                    var expiresOnUTC = resetTokenHelper.GetExpiresOnUTC();
+
+                    await resetTokenDataProvider.SaveToken(record.UserIDGuid, tokenHash, expiresOnUTC);
+
+                    var resetLink = BuildResetPasswordLink(token);
+                    if (resetLink != null)
+                    {
+                        var req = new SendEmailRequest
+                        {
+                            SendToAddress = request.Email,
+                            Subject = "Password Reset Request",
+                            BodyPlain = $"Please visit the link below to reset your password.\n\n{resetLink}",
+                            BodyHtml = $"<p>Please click the link below to reset your password.</p><a href='{resetLink}'>Reset Password</a>"
+                        };
+
+                        await notificationClient.SendEmailAsync(req);
+                    }
+                    else
+                    {
+                        logger.LogError("RESET_PASSWORD_REDIRECT is not configured; unable to send password reset email");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in StartForgotPassword");
+            }
+
+            return new() { Error = GenericErrorExtensions.CreateNoError() };
+        }
+
+        public override async Task<CompleteForgotPasswordResponse> CompleteForgotPassword(CompleteForgotPasswordRequest request, ServerCallContext context)
+        {
+            if (offlineHelper.IsOffline)
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
+
+            try
+            {
+                var tokenHash = resetTokenHelper.ComputeHash(request.Token);
+
+                var tokenRecord = await resetTokenDataProvider.GetByTokenHash(tokenHash);
+                if (tokenRecord == null || tokenRecord.ExpiresOnUTC < DateTime.UtcNow)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "Reset link is invalid or has expired") };
+
+                var record = await dataProvider.GetById(tokenRecord.UserID);
+                if (record == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonNotFound, "User record not found") };
+
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                record.Server.PasswordSalt = ByteString.CopyFrom(salt);
+                record.Server.PasswordHash = ByteString.CopyFrom(ComputeSaltedHash(request.NewPassword, salt));
+
+                record.Normal.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                record.Normal.Private.ModifiedBy = tokenRecord.UserID.ToString();
+
+                await dataProvider.Save(record);
+                await resetTokenDataProvider.DeleteToken(tokenRecord.UserID);
+
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CompleteForgotPassword");
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "An unexpected error occurred while resetting the password") };
+            }
+        }
+
+        private string? BuildResetPasswordLink(string token)
+        {
+            var redirectBase = Environment.GetEnvironmentVariable("RESET_PASSWORD_REDIRECT", EnvironmentVariableTarget.Process);
+            if (string.IsNullOrEmpty(redirectBase))
+                return null;
+
+            var uriBuilder = new UriBuilder(redirectBase);
+            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["token"] = token;
+            uriBuilder.Query = query.ToString();
+
+            return uriBuilder.Uri.ToString();
+        }
+
 
         public override async Task<ChangeOwnProfileImageResponse> ChangeOwnProfileImage(ChangeOwnProfileImageRequest request, ServerCallContext context)
         {
