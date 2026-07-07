@@ -6,7 +6,7 @@ USE tmpdata;
 
 CREATE TABLE IF NOT EXISTS `Auth_PasswordReset` (
   `UserID` varchar(40) NOT NULL,
-  `TokenHash` binary(32) NOT NULL,
+  `TokenHash` varchar(64) NOT NULL,
   `ExpiresOnUTC` datetime NOT NULL,
   `CreatedOnUTC` datetime NOT NULL,
   PRIMARY KEY (`UserID`),

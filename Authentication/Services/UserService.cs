@@ -11,6 +11,7 @@ using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Generic;
 using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Helpers;
+using IT.WebServices.Notification;
 using IT.WebServices.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
@@ -41,11 +42,11 @@ namespace IT.WebServices.Authentication.Services
         private readonly IAuditLogService auditLogHelper;
         private static readonly HashAlgorithm hasher = SHA256.Create();
         private static readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
-        private readonly NotificationInterface.NotificationInterfaceClient notificationClient;
+        private readonly INotificationServiceInternal notificationService;
         private readonly IResetTokenDataProvider resetTokenDataProvider;
         private readonly ResetTokenHelper resetTokenHelper;
 
-        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, IAuditLogService auditLogHelper, NotificationInterface.NotificationInterfaceClient notificationClient, IResetTokenDataProvider resetTokenDataProvider, ResetTokenHelper resetTokenHelper)
+        public UserService(OfflineHelper offlineHelper, ILogger<UserService> logger, IProfilePicDataProvider picProvider, IUserDataProvider dataProvider, ClaimsClient claimsClient, ISettingsService settingsService, TokenHelper tokenHelper, UserServiceInternal userServiceInternal, IAuditLogService auditLogHelper, INotificationServiceInternal notificationService, IResetTokenDataProvider resetTokenDataProvider, ResetTokenHelper resetTokenHelper)
         {
             this.offlineHelper = offlineHelper;
             this.logger = logger;
@@ -56,7 +57,7 @@ namespace IT.WebServices.Authentication.Services
             this.tokenHelper = tokenHelper;
             this.userServiceInternal = userServiceInternal;
             this.auditLogHelper = auditLogHelper;
-            this.notificationClient = notificationClient;
+            this.notificationService = notificationService;
             this.resetTokenDataProvider = resetTokenDataProvider;
             this.resetTokenHelper = resetTokenHelper;
 
@@ -300,6 +301,7 @@ namespace IT.WebServices.Authentication.Services
             }
         }
 
+        [AllowAnonymous]
         public override async Task<StartForgotPasswordResponse> StartForgotPassword(StartForgotPasswordRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
@@ -311,10 +313,9 @@ namespace IT.WebServices.Authentication.Services
                 if (record != null)
                 {
                     var token = resetTokenHelper.GenerateToken();
-                    var tokenHash = resetTokenHelper.ComputeHash(token);
                     var expiresOnUTC = resetTokenHelper.GetExpiresOnUTC();
 
-                    await resetTokenDataProvider.SaveToken(record.UserIDGuid, tokenHash, expiresOnUTC);
+                    await resetTokenDataProvider.SaveToken(record.UserIDGuid, token, expiresOnUTC);
 
                     var resetLink = BuildResetPasswordLink(token);
                     if (resetLink != null)
@@ -327,7 +328,7 @@ namespace IT.WebServices.Authentication.Services
                             BodyHtml = $"<p>Please click the link below to reset your password.</p><a href='{resetLink}'>Reset Password</a>"
                         };
 
-                        await notificationClient.SendEmailAsync(req);
+                        await notificationService.SendEmail(req);
                     }
                     else
                     {
@@ -343,6 +344,7 @@ namespace IT.WebServices.Authentication.Services
             return new() { Error = GenericErrorExtensions.CreateNoError() };
         }
 
+        [AllowAnonymous]
         public override async Task<CompleteForgotPasswordResponse> CompleteForgotPassword(CompleteForgotPasswordRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
@@ -350,9 +352,7 @@ namespace IT.WebServices.Authentication.Services
 
             try
             {
-                var tokenHash = resetTokenHelper.ComputeHash(request.Token);
-
-                var tokenRecord = await resetTokenDataProvider.GetByTokenHash(tokenHash);
+                var tokenRecord = await resetTokenDataProvider.GetByTokenHash(request.Token);
                 if (tokenRecord == null || tokenRecord.ExpiresOnUTC < DateTime.UtcNow)
                     return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "Reset link is invalid or has expired") };
 

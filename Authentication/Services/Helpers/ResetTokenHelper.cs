@@ -1,6 +1,5 @@
 using System;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace IT.WebServices.Authentication.Services.Helpers
 {
@@ -16,11 +15,6 @@ namespace IT.WebServices.Authentication.Services.Helpers
                 .Replace('+', '-')
                 .Replace('/', '_')
                 .TrimEnd('=');
-        }
-
-        public byte[] ComputeHash(string token)
-        {
-            return SHA256.HashData(Encoding.UTF8.GetBytes(token));
         }
 
         public DateTime GetExpiresOnUTC()

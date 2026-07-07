@@ -18,7 +18,7 @@ namespace IT.WebServices.Authentication.Services.Data
             this.log = log;
         }
 
-        public async Task SaveToken(Guid userId, byte[] tokenHash, DateTime expiresOnUTC)
+        public async Task SaveToken(Guid userId, string tokenHash, DateTime expiresOnUTC)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace IT.WebServices.Authentication.Services.Data
             }
         }
 
-        public async Task<ResetTokenRecord?> GetByTokenHash(byte[] tokenHash)
+        public async Task<ResetTokenRecord?> GetByTokenHash(string tokenHash)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace IT.WebServices.Authentication.Services.Data
                     return new ResetTokenRecord()
                     {
                         UserID = (rdr["UserID"] as string)?.ToGuid() ?? Guid.Empty,
-                        TokenHash = rdr["TokenHash"] as byte[] ?? Array.Empty<byte>(),
+                        TokenHash = rdr["TokenHash"] as string ?? string.Empty,
                         ExpiresOnUTC = DateTime.SpecifyKind((DateTime)rdr["ExpiresOnUTC"], DateTimeKind.Utc),
                         CreatedOnUTC = DateTime.SpecifyKind((DateTime)rdr["CreatedOnUTC"], DateTimeKind.Utc),
                     };

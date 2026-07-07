@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Notification.Services.Clients;
+﻿using IT.WebServices.Notification;
+using IT.WebServices.Notification.Services.Clients;
 using IT.WebServices.Notification.Services.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -9,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddNotificationClasses(this IServiceCollection services)
         {
-            services.AddSingleton<NotificationServiceInternal>();
+            services.AddSingleton<INotificationServiceInternal, NotificationServiceInternal>();
             services.AddSingleton<SendgridClient>();
 
             return services;

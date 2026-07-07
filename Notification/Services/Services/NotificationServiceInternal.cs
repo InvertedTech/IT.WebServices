@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace IT.WebServices.Notification.Services.Services
 {
-    public class NotificationServiceInternal
+    public class NotificationServiceInternal : INotificationServiceInternal
     {
         private readonly ILogger log;
         private readonly SendgridClient sendgridClient;
