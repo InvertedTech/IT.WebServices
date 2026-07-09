@@ -55,6 +55,14 @@ service UserInterface {
     };
   }
 
+  rpc ValidatePasswordResetToken (ValidatePasswordResetTokenRequest) returns (ValidatePasswordResetTokenResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/auth/password/reset/{Token}",
+      body: "*"
+    };
+  }
+
   // Reset the password using the token from the email link.
   rpc CompleteForgotPassword (CompleteForgotPasswordRequest) returns (CompleteForgotPasswordResponse)
   {
@@ -313,6 +321,14 @@ message StartForgotPasswordRequest {
 }
 
 message StartForgotPasswordResponse {
+  APIError Error = 1;
+}
+
+message ValidatePasswordResetTokenRequest {
+  string Token = 1 [(buf.validate.field).required = true];
+}
+
+message ValidatePasswordResetTokenResponse {
   APIError Error = 1;
 }
 

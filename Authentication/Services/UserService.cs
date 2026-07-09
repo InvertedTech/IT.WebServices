@@ -345,6 +345,38 @@ namespace IT.WebServices.Authentication.Services
         }
 
         [AllowAnonymous]
+        public override async Task<ValidatePasswordResetTokenResponse> ValidatePasswordResetToken(ValidatePasswordResetTokenRequest request, ServerCallContext context)
+        {
+            if (offlineHelper.IsOffline)
+                return new() { Error = GenericErrorExtensions.CreateOfflineError() };
+
+
+            try
+            {
+                var tokenRecord = await resetTokenDataProvider.GetByTokenHash(request.Token);
+                if (tokenRecord == null)
+                {
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "Reset link is invalid or has expired") };
+                }
+
+                if (tokenRecord.ExpiresOnUTC < DateTime.UtcNow)
+                {
+                    await resetTokenDataProvider.DeleteToken(tokenRecord.UserID);
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidCode, "Reset link is invalid or has expired") };
+                }
+
+                return new() { Error = GenericErrorExtensions.CreateNoError() };
+            }
+            catch (Exception ex)
+            {
+                return new()
+                {
+                    Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message)
+                };
+            }
+        }
+
+        [AllowAnonymous]
         public override async Task<CompleteForgotPasswordResponse> CompleteForgotPassword(CompleteForgotPasswordRequest request, ServerCallContext context)
         {
             if (offlineHelper.IsOffline)
