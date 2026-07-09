@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.15.0
+
+### Minor Changes
+
+- Add Reset/Forgot Password
+
 ## 0.14.0
 
 ### Minor Changes
