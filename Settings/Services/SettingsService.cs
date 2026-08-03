@@ -1044,5 +1044,146 @@ namespace IT.WebServices.Settings.Services
                 };
             }
         }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyEventPublicSettingsResponse> ModifyEventPublicSettings(ModifyEventPublicSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request Body Must Be Provided") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Public.Events = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Public Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    });
+
+                return new ModifyEventPublicSettingsResponse
+                {
+                    Error = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ModifyEventPublicSettingsResponse()
+                {
+                    Error = new APIError()
+                    {
+                        Reason = APIErrorReason.ErrorReasonUnknown,
+                        Message = ex.Message,
+                    }
+                };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyEventPrivateSettingsResponse> ModifyEventPrivateSettings(ModifyEventPrivateSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request Body Must Be Provided") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Private.Events = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Private Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    });
+
+                return new ModifyEventPrivateSettingsResponse
+                {
+                    Error = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ModifyEventPrivateSettingsResponse()
+                {
+                    Error = new APIError()
+                    {
+                        Reason = APIErrorReason.ErrorReasonUnknown,
+                        Message = ex.Message,
+                    }
+                };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyEventOwnerSettingsResponse> ModifyEventOwnerSettings(ModifyEventOwnerSettingsRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonInvalidContent, "Request Body Must Be Provided") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                var record = await dataProvider.Get();
+                record.Owner.Events = request.Data;
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"Event Owner Settings Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    });
+
+                return new ModifyEventOwnerSettingsResponse
+                {
+                    Error = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ModifyEventOwnerSettingsResponse()
+                {
+                    Error = new APIError()
+                    {
+                        Reason = APIErrorReason.ErrorReasonUnknown,
+                        Message = ex.Message,
+                    }
+                };
+            }
+        }
     }
 }
