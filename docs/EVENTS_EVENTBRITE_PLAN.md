@@ -275,9 +275,29 @@ flat `EventOwnerSettings.IsEnabled` bool).
 
 1. **Auth**: OAuth or a static Private Token — determines the exact shape
    of `EventbriteOwnerSettings` from Phase 2.
-2. **ID mapping**: local `EventRecord`/`EventTicketRecord` need an
-   external-ID field (Eventbrite event ID, order ID, attendee ID) to
-   reconcile against.
+2. **ID mapping**: mirror Payments' `ProcessorName`/`ProcessorCustomerID`
+   pattern (`GenericSubscriptionRecord`, `Fragments/Protos/.../
+   Authorization/Payment/DataRecords.proto:60-62`) rather than inventing a
+   provider enum. Payments has no `PaymentProviderType` enum — provider
+   identity is a plain `string ProcessorName` field matched against C#
+   constants (`PaymentConstants.PROCESSOR_NAME_STRIPE/FORTIS/PAYPAL`,
+   `Authorization/Payment/Base/.../PaymentConstants.cs:11-16`), resolved via
+   `GenericPaymentProcessorProvider.cs:27`
+   (`AllProviders.FirstOrDefault(p => p.ProcessorName == record.ProcessorName)`).
+   Add the same shape to Events:
+   - `EventRecord`/`EventTicketRecord` get a `string ProcessorName` field
+     (e.g. `EVENT_PROCESSOR_NAME_EVENTBRITE = "eventbrite"`,
+     `EVENT_PROCESSOR_NAME_FILESYSTEM = "filesystem"`, defined as constants
+     analogous to `PaymentConstants`), resolved through
+     `GenericEventProviderProvider.GetProcessor(record)` the same way
+     Payments does.
+   - `EventTicketRecord` gets a `ProcessorTicketID` field (Eventbrite order/
+     attendee ID) — same role as `ProcessorSubscriptionID`/
+     `ProcessorPaymentID` — for reconciling inbound webhook/sync data
+     against the local record.
+   - `EventRecord` gets a `ProcessorEventID` field for the Eventbrite event
+     ID, same role as `ProcessorCustomerID` scoped to the parent record
+     instead of the ticket.
 3. **Rate limiting**: no existing pattern to reuse (Payments has none of
    its own — only the vendor Fortis SDK gets Polly for free). Add a simple
    token-bucket or `System.Threading.RateLimiting` wrapper in
@@ -380,7 +400,11 @@ back-office reconciliation.
    (buyer must be logged in and email pre-filled into the Eventbrite
    checkout URL, or a post-purchase claim/link flow) so the inbound webhook
    can associate the order with the right local user for gating
-   verification and QR issuance.
+   verification and QR issuance. Once matched, the local `UserId` plus the
+   new `ProcessorName`/`ProcessorTicketID` fields (see Phase 3 §2) are what
+   get stored on `EventTicketRecord` — the matching problem is about
+   finding the right `UserId` to write into the existing/new record, not a
+   separate identity system.
 2. **Gate enforcement without Eventbrite cooperation**: confirm whether
    Eventbrite's API supports discount codes/private ticket types your
    backend can programmatically issue per eligible user — this determines
