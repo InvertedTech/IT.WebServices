@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events.Manual;
+
+message ManualEventPublicSettings {
+	bool Enabled = 1;
+}
+
+message ManualEventPrivateSettings {}
+
+message ManualEventOwnerSettings {}

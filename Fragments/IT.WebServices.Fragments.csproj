@@ -13,6 +13,11 @@
     <None Remove="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Manual\ManualEventSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\AdminPaymentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\BitcoinInterface.proto" />
@@ -89,6 +94,11 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogEntry.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Manual\ManualEventSettings.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\CryptoRecords.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\CryptoSettings.proto" GrpcServices="None" />

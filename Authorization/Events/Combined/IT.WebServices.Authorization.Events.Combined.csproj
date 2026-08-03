@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net10.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Manual\IT.WebServices.Authorization.Events.Manual.csproj" />
+    <ProjectReference Include="..\Eventbrite\IT.WebServices.Authorization.Events.Eventbrite.csproj" />
+  </ItemGroup>
+
+</Project>

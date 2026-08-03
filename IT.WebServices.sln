@@ -63,6 +63,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Merch.Shopif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Merch.Combined", "Merch\Combined\IT.WebServices.Merch.Combined.csproj", "{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events.Base", "Authorization\Events\Base\IT.WebServices.Authorization.Events.Base.csproj", "{2C62D549-4E29-4DBE-AD0D-77A80EA8A966}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events.Manual", "Authorization\Events\Manual\IT.WebServices.Authorization.Events.Manual.csproj", "{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events.Eventbrite", "Authorization\Events\Eventbrite\IT.WebServices.Authorization.Events.Eventbrite.csproj", "{19F143CF-26E8-4AB3-9DB9-49A2B064896A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events.Combined", "Authorization\Events\Combined\IT.WebServices.Authorization.Events.Combined.csproj", "{97F7A456-1994-4A0C-AB5A-B2AA2410F509}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Events", "Events", "{A1D75720-31DC-4F63-AC6C-801ACA5FA377}"
 EndProject
 Global
@@ -183,6 +191,22 @@ Global
 		{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C62D549-4E29-4DBE-AD0D-77A80EA8A966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C62D549-4E29-4DBE-AD0D-77A80EA8A966}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C62D549-4E29-4DBE-AD0D-77A80EA8A966}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C62D549-4E29-4DBE-AD0D-77A80EA8A966}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19F143CF-26E8-4AB3-9DB9-49A2B064896A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F143CF-26E8-4AB3-9DB9-49A2B064896A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19F143CF-26E8-4AB3-9DB9-49A2B064896A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19F143CF-26E8-4AB3-9DB9-49A2B064896A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97F7A456-1994-4A0C-AB5A-B2AA2410F509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97F7A456-1994-4A0C-AB5A-B2AA2410F509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97F7A456-1994-4A0C-AB5A-B2AA2410F509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97F7A456-1994-4A0C-AB5A-B2AA2410F509}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,6 +223,10 @@ Global
 		{D8B8A805-C852-B0F1-B648-C6BBCBCA7F36} = {F40F6AA6-4899-4977-91EB-DEAC35922719}
 		{2A409AC2-4BC5-580E-033A-99666647EF91} = {F40F6AA6-4899-4977-91EB-DEAC35922719}
 		{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F} = {F40F6AA6-4899-4977-91EB-DEAC35922719}
+		{2C62D549-4E29-4DBE-AD0D-77A80EA8A966} = {A1D75720-31DC-4F63-AC6C-801ACA5FA377}
+		{81BE4C6B-F5CE-4FF6-BDD1-BB66F8F5BA01} = {A1D75720-31DC-4F63-AC6C-801ACA5FA377}
+		{19F143CF-26E8-4AB3-9DB9-49A2B064896A} = {A1D75720-31DC-4F63-AC6C-801ACA5FA377}
+		{97F7A456-1994-4A0C-AB5A-B2AA2410F509} = {A1D75720-31DC-4F63-AC6C-801ACA5FA377}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F6A9A1C2-965B-46B4-829F-34719F799E83}

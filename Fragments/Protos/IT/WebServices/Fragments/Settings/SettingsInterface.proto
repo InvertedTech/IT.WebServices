@@ -8,6 +8,8 @@ import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
 import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
 
+// TODO: Add Methods for Events Settings
+
 // Service for Settings service fragment interface
 service SettingsInterface {
   // Get public settings data

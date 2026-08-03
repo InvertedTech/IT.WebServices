@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events;
+
+import "google/protobuf/timestamp.proto";
+import "Protos/IT/WebServices/Fragments/CommonTypes.proto";
+
+enum GenericEventTicketClassType {
+  TICKET_GENERAL_ACCESS = 0;
+  TICKET_ALL_MEMBER_ACCESS = 1;
+  TICKET_MEMBER_LEVEL_ACCESS = 2;
+}
+
+enum GenericEventTicketStatus {
+  TICKET_STATUS_AVAILABLE = 0;
+  TICKET_STATUS_USED = 1;
+  TICKET_STATUS_EXPIRED = 2;
+  TICKET_STATUS_CANCELED = 3;
+}
+
+enum GenericEventRecurrenceFrequency {
+  REPEAT_NONE = 0;
+  REPEAT_DAILY = 1;
+  REPEAT_WEEKLY = 2;
+  REPEAT_MONTHLY = 3;
+  REPEAT_YEARLY = 4;
+}
+
+message GenericPhysicalEventVenue {
+  string Name = 1;
+  string Address = 2;
+  string City = 3;
+  string StateOrProvince = 4;
+  string PostalCode = 5;
+  string Country = 6;
+  string PhoneNumber = 7;
+  string EmailAddress = 8;
+}
+
+message GenericVirtualEventVenue {
+  string Name = 1;
+  string Url = 2;
+  string AccessInstructions = 3;
+  string ContactEmailAddress = 4;
+}
+
+message GenericEventVenueRecord {
+  string VenueID = 1; // Guid for the Venue
+
+  oneof VenueOneOf {
+    GenericPhysicalEventVenue Physical = 3;
+    GenericVirtualEventVenue Virtual = 4;
+  }
+}
+
+message GenericEventRecurrenceRule {
+  GenericEventRecurrenceFrequency Frequency = 1;
+  uint32 Interval = 2;
+  repeated WeekdayEnum ByWeekday = 3;
+
+  oneof EndCondition {
+    uint32 Count = 4;
+    google.protobuf.Timestamp RepeatUntilUTC = 5;
+  }
+
+  repeated google.protobuf.Timestamp ExcludeDatesUTC = 6;
+}
+
+message GenericTicketClassRecord {
+  string TicketClassID = 1; // Guid for the TicketClass
+  string EventID = 2; // Guid for the parent Event
+  GenericEventTicketClassType Type = 3;
+  string Name = 4;
+  uint32 AmountAvailable = 5;
+  bool CountTowardEventMax = 6;
+  uint32 MaxTicketsPerUser = 7;
+  bool IsTransferrable = 8;
+  uint32 PricePerTicketCents = 9;
+  google.protobuf.Timestamp SaleStartOnUTC = 21;
+  google.protobuf.Timestamp SaleEndOnUTC = 22;
+}
+
+message GenericEventRecord {
+  string EventID = 1; // Guid for the Event
+  string ProcessorName = 2; // Processor Name, ex: "manual", "eventbrite"
+  string ProcessorEventID = 3; // Id for the Event with Processor
+
+  string Title = 11;
+  string Description = 12;
+  string Location = 13;
+  string VenueID = 14; // Guid for the Venue, see EventPrivateSettings.Venues
+  repeated string Tags = 15;
+  repeated GenericTicketClassRecord TicketClasses = 16;
+  uint32 MaxTickets = 17;
+
+  google.protobuf.Timestamp StartOnUTC = 21; // Template start for recurring events
+  google.protobuf.Timestamp EndOnUTC = 22; // Template end for recurring events
+  GenericEventRecurrenceRule Recurrence = 23; // Unset/default means a single (non-recurring) event
+  string RecurrenceHash = 24;
+
+  bool IsCanceled = 31;
+  string CanceledForReason = 32;
+
+  google.protobuf.Timestamp CreatedOnUTC = 41;
+  google.protobuf.Timestamp ModifiedOnUTC = 42;
+  google.protobuf.Timestamp CanceledOnUTC = 43;
+  string CreatedByID = 51; // Guid for the User
+  string ModifiedByID = 52; // Guid for the User
+  string CanceledByID = 53; // Guid for the User
+
+  string InternalNotes = 61;
+  map<string, string> ExtraMetadata = 62;
+}
+
+message GenericEventTicketRecord {
+  string TicketID = 1; // Guid for the Ticket
+  string EventID = 2; // Guid for the parent Event
+  string TicketClassID = 3; // Guid for the TicketClass
+  string ProcessorName = 4; // Processor Name, denormalized from the parent Event
+  string ProcessorTicketID = 5; // Id for the Ticket/Order/Attendee with Processor
+
+  string UserID = 6; // Guid for the User who holds the ticket
+  string Title = 7;
+  GenericEventTicketStatus Status = 8;
+
+  google.protobuf.Timestamp CreatedOnUTC = 21;
+  google.protobuf.Timestamp ModifiedOnUTC = 22;
+  google.protobuf.Timestamp UsedOnUTC = 23;
+  google.protobuf.Timestamp ExpiredOnUTC = 24;
+  google.protobuf.Timestamp CanceledOnUTC = 25;
+
+  string CreatedByID = 31; // Guid for the User
+  string ModifiedByID = 32; // Guid for the User
+  string UsedByID = 33; // Guid for the User
+  string CanceledByID = 34; // Guid for the User
+  string CanceledForReason = 35;
+}

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events;
+
+import "google/protobuf/timestamp.proto";
+
+enum EventBulkAction {
+	LookForNewEventsOneDay = 0;
+	LookForNewEventsOneWeek = 1;
+	LookForNewEventsOneMonth = 2;
+	LookForNewTicketsOneDay = 3;
+	LookForNewTicketsOneWeek = 4;
+	LookForNewTicketsOneMonth = 5;
+	ReconcileAll = 6;
+}
+
+message EventBulkActionProgress {
+	EventBulkAction Action = 1;
+	float Progress = 2;
+	string StatusMessage = 3;
+	google.protobuf.Timestamp CreatedOnUTC = 21;
+	google.protobuf.Timestamp CanceledOnUTC = 22;
+	google.protobuf.Timestamp CompletedOnUTC = 23;
+	string CreatedBy = 31;
+	string CanceledBy = 32;
+}

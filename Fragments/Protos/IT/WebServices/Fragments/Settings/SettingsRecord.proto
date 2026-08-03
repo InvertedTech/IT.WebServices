@@ -14,6 +14,7 @@ import "Protos/IT/WebServices/Fragments/Content/SharedTypes.proto";
 import "Protos/IT/WebServices/Fragments/Comment/SharedTypes.proto";
 import "Protos/IT/WebServices/Fragments/Notification/NotificationSettings.proto";
 import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/EventSettings.proto";
 
 // User authentication data
 message SettingsRecord {
@@ -31,6 +32,7 @@ message SettingsPublicData {
   CMSPublicRecord CMS = 13;
   NotificationPublicRecord Notification = 14;
   IT.WebServices.Fragments.Merch.MerchPublicSettings Merch = 16;
+  IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Events = 17;
 }
 
 message SettingsPrivateData {
@@ -41,6 +43,7 @@ message SettingsPrivateData {
   CMSPrivateRecord CMS = 13;
   NotificationPrivateRecord Notification = 14;
   IT.WebServices.Fragments.Merch.MerchPrivateSettings Merch = 16;
+  IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Events = 17;
 }
 
 message SettingsOwnerData {
@@ -50,6 +53,7 @@ message SettingsOwnerData {
   CMSOwnerRecord CMS = 13;
   NotificationOwnerRecord Notification = 14;
   IT.WebServices.Fragments.Merch.MerchOwnerSettings Merch = 16;
+  IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Events = 17;
 }
 
 message PersonalizationPublicRecord {

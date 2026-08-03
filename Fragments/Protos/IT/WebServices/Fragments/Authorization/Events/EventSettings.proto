@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events;
+import "Protos/IT/WebServices/Fragments/Authorization/Events/DataRecords.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/Eventbrite/EventbriteEventSettings.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/Manual/ManualEventSettings.proto";
+
+message EventPublicSettings {
+	bool Enabled = 1;
+
+	IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventPublicSettings Eventbrite = 10;
+	IT.WebServices.Fragments.Authorization.Events.Manual.ManualEventPublicSettings Manual = 11;
+}
+
+message EventPrivateSettings {
+	repeated GenericEventVenueRecord Venues = 1;
+
+	IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventPrivateSettings Eventbrite = 10;
+	IT.WebServices.Fragments.Authorization.Events.Manual.ManualEventPrivateSettings Manual = 11;
+}
+
+message EventOwnerSettings {
+	IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventOwnerSettings Eventbrite = 10;
+	IT.WebServices.Fragments.Authorization.Events.Manual.ManualEventOwnerSettings Manual = 11;
+}
