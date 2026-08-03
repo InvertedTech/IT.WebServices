@@ -16,7 +16,6 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" />
-    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Manual\ManualEventSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\AdminPaymentInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
@@ -97,7 +96,6 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" GrpcServices="None" />
-    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Manual\ManualEventSettings.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\Crypto\CryptoRecords.proto" GrpcServices="None" />

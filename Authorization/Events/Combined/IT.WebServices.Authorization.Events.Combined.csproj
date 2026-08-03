@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Manual\IT.WebServices.Authorization.Events.Manual.csproj" />
+    <ProjectReference Include="..\Base\IT.WebServices.Authorization.Events.Base.csproj" />
     <ProjectReference Include="..\Eventbrite\IT.WebServices.Authorization.Events.Eventbrite.csproj" />
   </ItemGroup>
 

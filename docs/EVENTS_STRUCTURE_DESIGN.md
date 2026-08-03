@@ -2,24 +2,33 @@
 
 Companion to [EVENTS_EVENTBRITE_PLAN.md](./EVENTS_EVENTBRITE_PLAN.md) (why/phasing)
 and [EVENTS_CURRENT_STATE_ARCHIVE.md](./EVENTS_CURRENT_STATE_ARCHIVE.md) (what
-existed before it was deleted on this branch). This document hammers out the
-*shape* of the rebuild: solution/project layout, proto layout, the
-provider-abstraction contract, and the settings structure — mirroring
-`Authorization/Payment`'s existing multi-provider pattern as closely as makes
-sense for Events. No implementation yet; this is the structural agreement to
-build against.
+existed before it was deleted on this branch). This document tracks the
+*current, actual* shape of the rebuild as it's being scaffolded — solution/
+project layout, proto layout, and the settings structure. Updated as
+decisions land; it is not a snapshot of an initial plan.
 
-## Naming note up front
+## Why there's no `Events.Manual` project
 
 Payments' `Manual` project means "an admin manually records that a payment
-happened out-of-band" (cash, check, comp) — it is not a payment *processor* in
-the sense of actually handling checkout. `Events.Manual` means something
-larger: the actual self-hosted ticketing engine (today's filesystem-backed
-event/ticket CRUD), i.e. what happens when there's no third-party platform
-involved at all. Same directory role (the always-available, no-external-
-dependency provider) but a bigger scope than its Payments namesake. Worth
-being aware of so the analogy isn't taken too literally when porting code —
-the *pattern* mirrors Payments, not the specific responsibilities of `Manual`.
+happened out-of-band" (cash, check, comp) — a narrow, additive operation the
+generic `PaymentInterface` has no equivalent for, which is why it needs its
+own project and its own interface proto (`ManualPaymentInterface.proto`).
+
+Events has no equivalent need. What would have been `Events.Manual` is the
+app's own built-in, self-hosted ticketing engine — not a swappable backend
+alongside Eventbrite, but the default/reference implementation that *is* the
+generic surface. Rather than force it through the same
+`IGenericEventProvider` abstraction Eventbrite needs (which would mean
+implementing that interface twice for something that's really just "no
+external processor involved"), **`Events.Combined` implements
+`EventInterface`/`AdminEventInterface` directly**, using `Events.Base`'s data
+providers. `IGenericEventProvider` exists for genuinely pluggable external
+integrations — today just Eventbrite, potentially more later — and Combined
+dispatches to it only when an event's `ProcessorName` names one.
+
+This also means there's no `ManualEventInterface.proto` and no
+`ManualEventSettings.proto` — nothing Manual-specific exists at the proto
+level, because "Manual" isn't a provider, it's the default path.
 
 ---
 
@@ -29,70 +38,42 @@ the *pattern* mirrors Payments, not the specific responsibilities of `Manual`.
 Authorization/Events/
 ├── Base/
 │   └── IT.WebServices.Authorization.Events.Base.csproj
-├── Manual/
-│   └── IT.WebServices.Authorization.Events.Manual.csproj
 ├── Eventbrite/
 │   └── IT.WebServices.Authorization.Events.Eventbrite.csproj
 └── Combined/
     └── IT.WebServices.Authorization.Events.Combined.csproj
 ```
 
-Reference graph (mirrors Payment exactly): `Manual` → `Base`, `Eventbrite` →
-`Base`, `Combined` → `Base` + `Manual` + `Eventbrite`. `Services/Combined`
-(the top-level app host) references only `Events.Combined`, same as it
-references only `Authorization.Payment.Combined` today — nothing outside the
-Events module ever needs to see `Base`/`Manual`/`Eventbrite` directly.
+Reference graph: `Eventbrite` → `Base`, `Combined` → `Base` + `Eventbrite`.
+`Services/Combined` (the top-level app host) references only
+`Events.Combined`, same as it references only
+`Authorization.Payment.Combined` today.
 
 ### `Events.Base`
 
-Namespace `IT.WebServices.Authorization.Events` (top-level, no `.Base` suffix
-in the namespace — matches how Payment's Base project uses
-`IT.WebServices.Authorization.Payment.Generic` for the interface, not a
-`.Base` namespace segment).
+Namespace `IT.WebServices.Authorization.Events`.
 
 ```
 Base/
 ├── Generic/
-│   ├── IGenericEventProvider.cs          — the provider contract (§2)
+│   ├── IGenericEventProvider.cs          — the pluggable-external-provider contract (§2)
 │   ├── GenericEventProviderProvider.cs   — registry over IEnumerable<IGenericEventProvider>
 │   ├── Data/
-│   │   ├── IEventDataProvider.cs         — local-cache/storage contract, provider-agnostic
+│   │   ├── IEventDataProvider.cs         — local persistence contract
 │   │   └── ITicketDataProvider.cs
-├── EventConstants.cs                     — PROCESSOR_NAME_MANUAL / PROCESSOR_NAME_EVENTBRITE
 ├── Helpers/
-│   └── RecurrenceHelper.cs               — pure date-math, no provider dependency, stays here
-├── DIExtensions.cs                       — no-op-ish; mostly exists so Manual/Eventbrite/Combined
-│                                            have a common place to hang shared registrations if needed
+│   ├── RecurrenceHelper.cs               — pure date-math, no provider dependency
+│   ├── EventTicketClassHelper.cs         — reads settings-configured venues (§4)
+│   └── EventVenueHelper.cs
+├── DIExtensions.cs
 ```
 
-`EventTicketClassHelper`/`EventVenueHelper` (today's settings-reading
-helpers) move here too, since both public/private Events settings are
-provider-agnostic (see §4) and every provider needs to read ticket-class and
-venue config the same way.
-
-Whether `IEventDataProvider`/`ITicketDataProvider` belong in `Base` at all is
-an open question — see §5. They're today's *local persistence* contract
-(filesystem-backed), which is Manual-specific in a pure provider-split world,
-but Eventbrite still needs *some* local record of tickets it has synced (for
-QR issuance, per the Eventbrite plan's Phase 5) so there may be a shared
-local-cache contract both providers use underneath their respective
-`IGenericEventProvider` implementations, distinct from Manual's storage being
-the *entire* source of truth vs. Eventbrite's being a cache of Eventbrite's
-own source of truth.
-
-### `Events.Manual`
-
-Namespace `IT.WebServices.Authorization.Events.Manual`.
-
-```
-Manual/
-├── Data/
-│   ├── FileSystemEventDataProvider.cs    — today's code, rehomed unchanged
-│   └── FileSystemTicketDataProvider.cs
-├── ManualGenericEventProvider.cs         — implements IGenericEventProvider,
-│                                            ProcessorName = EventConstants.PROCESSOR_NAME_MANUAL
-├── DIExtensions.cs                       — AddManualEventClasses()
-```
+`IEventDataProvider`/`ITicketDataProvider` live here (not per-provider) —
+the built-in path in `Combined` uses them as its actual source of truth;
+Eventbrite uses them as a synced local cache (needed for QR issuance
+latency, per the Eventbrite plan's Phase 5). Both are "store a record
+locally, look it up by ticket/event ID" at the interface level, so one
+shared contract avoids duplicating that shape.
 
 ### `Events.Eventbrite`
 
@@ -104,17 +85,11 @@ Eventbrite/
 │   └── EventbriteClient.cs               — HTTP wrapper over the Eventbrite REST API,
 │                                            rate limiting + Polly retry (plan Phase 3 §3)
 ├── EventbriteGenericEventProvider.cs     — implements IGenericEventProvider,
-│                                            ProcessorName = EventConstants.PROCESSOR_NAME_EVENTBRITE
+│                                            ProcessorName = "eventbrite"
 ├── Helpers/
-│   └── EventbriteSettingsHelper.cs       — reads EventbritePublicSettings/OwnerSettings (§4)
+│   └── EventbriteSettingsHelper.cs       — reads EventbriteEventPublicSettings/OwnerSettings (§4)
 ├── DIExtensions.cs                       — AddEventbriteClasses()
 ```
-
-Webhook receiver and reconciliation job (plan Phase 6) live in `Combined`,
-not here — mirroring Payment, where sync/reconciliation is cross-cutting
-(`Combined/Helpers/BulkHelper.cs`, `Combined/Helpers/BulkJobs/*`) rather than
-owned by a single provider project. `Eventbrite` owns *talking to* Eventbrite;
-`Combined` owns *when* to talk to it and what to do with the result.
 
 ### `Events.Combined`
 
@@ -123,35 +98,35 @@ Namespace `IT.WebServices.Authorization.Events.Combined`.
 ```
 Combined/
 ├── DIExtensions.cs                       — AddEventsClasses() / MapEventsGrpcServices()
-│                                            composes AddManualEventClasses() + AddEventbriteClasses(),
-│                                            registers GenericEventProviderProvider
+│                                            composes AddEventbriteClasses(), registers
+│                                            GenericEventProviderProvider
 ├── Services/
-│   ├── EventService.cs                   — public gRPC surface (today's, rehomed)
-│   ├── AdminEventService.cs              — admin gRPC surface (today's, rehomed)
-│   └── ClaimsService.cs                  — ClaimsInterface impl (today's, rehomed + bug fixed)
+│   ├── EventService.cs                   — implements EventInterface directly (built-in path),
+│   │                                        dispatches to IGenericEventProvider when an event's
+│   │                                        ProcessorName names an external provider
+│   ├── AdminEventService.cs              — implements AdminEventInterface directly, same dispatch rule
+│   └── ClaimsService.cs                  — ClaimsInterface impl
 ├── Helpers/
 │   ├── SyncHelper.cs                     — mirrors Payment's BulkHelper: dispatch to whichever
 │   │                                        provider(s) need reconciliation
 │   └── BulkJobs/
 │       └── ReconcileEventbriteOrders.cs  — mirrors LookForNewPaymentsOneDay-style jobs
-├── Controllers/ (if webhook receiver needs a plain HTTP endpoint rather than gRPC)
+├── Controllers/ (if the webhook receiver needs a plain HTTP endpoint rather than gRPC — see §5.3)
 │   └── EventbriteWebhookController.cs
 ```
 
 `Services/Combined/Startup.cs` calls `services.AddEventsClasses()` and
-`endpoints.MapEventsGrpcServices()` exactly as it did before — the app host's
-integration point doesn't change shape, only what's behind it.
+`endpoints.MapEventsGrpcServices()` — the app host's integration point
+doesn't change shape, only what's behind it.
 
 ---
 
 ## 2. `IGenericEventProvider` contract
 
-Mirrors `IGenericPaymentProcessor`'s shape: a `ProcessorName`/`IsEnabled`
-pair, operations paired with a `*Supported` bool wherever a provider might
-legitimately not support something (Manual supports everything since it's
-the reference implementation; Eventbrite may not support all of it, e.g. no
-server-side "reserve a ticket" call if Eventbrite checkout must be a
-redirect).
+Scoped to genuinely pluggable external integrations — today, only
+Eventbrite implements it. The built-in path in `Combined` does not
+implement this interface; it works directly against `Base`'s data
+providers.
 
 ```csharp
 public interface IGenericEventProvider
@@ -160,38 +135,34 @@ public interface IGenericEventProvider
     bool IsEnabled { get; }
 
     // Reads — used to render your own event pages regardless of provider
-    IAsyncEnumerable<EventRecord> GetEvents(CancellationToken cancellationToken);
-    Task<EventRecord?> GetEvent(string processorEventId, CancellationToken cancellationToken);
-    Task<List<EventTicketClass>> GetTicketClasses(string processorEventId, CancellationToken cancellationToken);
+    IAsyncEnumerable<GenericEventRecord> GetEvents(CancellationToken cancellationToken);
+    Task<GenericEventRecord?> GetEvent(string processorEventId, CancellationToken cancellationToken);
+    Task<List<GenericTicketClassRecord>> GetTicketClasses(string processorEventId, CancellationToken cancellationToken);
 
-    // Gate + handoff — for Eventbrite this returns a checkout URL rather than
-    // reserving a ticket server-side (see §5.4); Manual reserves for real.
-    Task<ReserveTicketResult> ReserveTicket(EventRecord evt, EventTicketClass ticketClass, ONUser user, int quantity, CancellationToken cancellationToken);
-    bool ReserveTicketSupported { get; }           // true for both today, but "supported" means
-                                                    // different things — see §5.4
+    // Gate + handoff — Eventbrite returns a checkout URL rather than
+    // reserving a ticket server-side (see §5.4)
+    Task<ReserveTicketResult> ReserveTicket(GenericEventRecord evt, GenericTicketClassRecord ticketClass, ONUser user, uint quantity, CancellationToken cancellationToken);
 
-    Task<bool> CancelTicket(EventTicketRecord ticket, ONUser actor, string reason, CancellationToken cancellationToken);
+    Task<bool> CancelTicket(GenericEventTicketRecord ticket, ONUser actor, string reason, CancellationToken cancellationToken);
 
     // Inbound sync — order/attendee/cancellation updates from the provider's system of record
     Task<SyncResult> SyncTicket(string processorTicketId, CancellationToken cancellationToken);
-    bool SyncSupported { get; }                   // false for Manual — nothing external to sync from
 }
 ```
 
-`GenericEventProviderProvider` mirrors `GenericPaymentProcessorProvider`
-exactly: `AllProviders`, `AllEnabledProviders` (filtered by `IsEnabled`),
-`GetProcessor(EventRecord record)` doing
-`AllProviders.FirstOrDefault(p => p.ProcessorName == record.ProcessorName)`,
-throwing `NotImplementedException` if not found — same failure mode as
-Payments today.
+`GenericEventProviderProvider` mirrors `GenericPaymentProcessorProvider`:
+`AllProviders`, `AllEnabledProviders` (filtered by `IsEnabled`),
+`GetProcessor(GenericEventRecord record)` doing
+`AllProviders.FirstOrDefault(p => p.ProcessorName == record.ProcessorName)`.
+`Combined`'s services call this only when `record.ProcessorName` is
+non-empty; an empty `ProcessorName` means the built-in path handles it
+directly.
 
-`ReserveTicketResult`/`SyncResult` are new small result types (not in
-Payments' vocabulary, since Payments doesn't have Events' "must exist
-locally fast for QR issuance" latency requirement). Per §5.4,
-`ReserveTicketResult` carries a `CheckoutUrl` (populated by Eventbrite, null/
-unused for Manual) plus success/error info; `SyncResult` needs at least the
-created/updated `EventTicketRecord` (or enough to build one) and an error
-reason mappable to `APIError`.
+`ReserveTicketResult`/`SyncResult` are small result types: per §5.4,
+`ReserveTicketResult` carries a `CheckoutUrl` (Eventbrite-only) plus
+success/error info; `SyncResult` carries the created/updated
+`GenericEventTicketRecord` (or enough to build one) and an error reason
+mappable to `APIError`.
 
 ---
 
@@ -199,150 +170,144 @@ reason mappable to `APIError`.
 
 ```
 Fragments/Protos/IT/WebServices/Fragments/Authorization/Events/
-├── EventRecord.proto              — shared: EventRecord, EventVenue, EventRecurrenceRule, enums
-├── TicketClassRecord.proto        — shared: TicketClassRecord, EventTicketClass
-├── EventTicketRecord.proto        — shared: EventTicketRecord, EventTicketStatus
-├── EventsSettings.proto           — shared envelope + per-provider sub-messages (§4)
-├── EventInterface.proto           — shared public gRPC surface
-├── AdminEventInterface.proto      — shared admin gRPC surface
+├── DataRecords.proto              — shared, Generic-prefixed records + enums (§3.1)
+├── EventSettings.proto            — settings envelope + Eventbrite sub-message (§4)
+├── EventInterface.proto           — public gRPC surface, implemented directly by Combined
+├── AdminEventInterface.proto      — admin gRPC surface, implemented directly by Combined
+├── SharedTypes.proto              — EventBulkAction enum + progress record (reconciliation jobs)
 └── Eventbrite/
-    └── EventbriteSettings.proto   — Eventbrite-only: EventbritePublicSettings, EventbriteOwnerSettings
+    └── EventbriteEventSettings.proto   — Eventbrite-only: EventbriteEventPublicSettings,
+                                           EventbriteEventPrivateSettings, EventbriteEventOwnerSettings
 ```
 
-Rule of thumb, same one Payment already follows (`Authorization/Payment/`
-top-level = shared, `Authorization/Payment/Stripe|Paypal|Fortis|Manual/` =
-provider-specific): anything a frontend needs regardless of which provider
-served a given event lives at the `Authorization/Events/` top level.
-Anything that only makes sense if Eventbrite specifically is involved
-(credentials shape, Eventbrite-specific webhook payload types if they need
-proto representation) goes in `Authorization/Events/Eventbrite/`. There is
-no `Authorization/Events/Manual/` proto folder — Manual has no
-provider-specific wire format of its own; it's fully described by the shared
-messages.
+No `Authorization/Events/Manual/` folder and no `ManualEventInterface.proto`
+— see the note at the top of this document.
 
-`Manual` doesn't need its own settings proto message the way
-Stripe/Paypal/Fortis each get one, because Manual has no credentials and (per
-plan Phase 2) is really just "the existing flat `IsEnabled`" — see §4 for
-where that lands.
+### 3.1 `DataRecords.proto` — shared records
 
-### Fields to add to shared records (from the Eventbrite plan's identity-matching discussion)
+All flat, `Generic`-prefixed, mirroring Payments' `DataRecords.proto` style
+(no public/private split at the storage-record level — that's handled by
+`EventInterface.proto`'s response messages instead):
+
+- **`GenericEventRecord`** — `ProcessorName`/`ProcessorEventID` (empty
+  `ProcessorName` = built-in/no external processor), title/description/
+  location, `VenueID` (references `EventPrivateSettings.Venues`, not
+  embedded — see below), tags, embedded `TicketClasses`, optional
+  `Recurrence` (unset = single event; replaces what was a Single/Recurring
+  oneof in the old proto), cancel/audit fields.
+- **`GenericTicketClassRecord`** — merges the old `TicketClassRecord` +
+  `EventTicketClass` into one flat record. Lives only embedded on
+  `GenericEventRecord.TicketClasses` — ticket classes are priced/capacity-
+  limited per event, so there is deliberately no global/reusable ticket-
+  class list in settings (removed after review — see git history on this
+  file for the reasoning).
+- **`GenericEventTicketRecord`** — merges old public/private ticket fields;
+  `ProcessorName` denormalized from its parent event at creation time (see
+  §5.2), `ProcessorTicketID` for the external order/attendee ID.
+- **`GenericEventVenueRecord`** — `oneof VenueOneOf { Physical, Virtual }`
+  with no separate `Type` discriminator field (the oneof case is the
+  discriminator — a parallel enum field would just be a second, driftable
+  source of truth, which is what the old proto's
+  `EventRecordOneOfType`/`EventVenueOneOfType` companion fields were).
+  Lives in `EventPrivateSettings.Venues` as the sole copy; events reference
+  it by `VenueID` rather than embedding it, since venues are genuinely
+  reusable across events (unlike ticket classes).
+- **`GenericEventRecurrenceRule`** — `oneof EndCondition { Count, RepeatUntilUTC }`,
+  a legitimate use of oneof (no parallel discriminator needed or present).
+- Enums: `GenericEventTicketClassType`, `GenericEventTicketStatus`,
+  `GenericEventRecurrenceFrequency`.
+
+### Fields carried over from the Eventbrite plan's identity-matching discussion
 
 Mirroring Payments' `ProcessorName`/`ProcessorCustomerID` pattern (plain
 `string`, not an enum — see `EVENTS_EVENTBRITE_PLAN.md` Phase 3 §2):
-
-- `EventRecord` gains `string ProcessorName` + `string ProcessorEventID`
-- `EventTicketRecord` gains `string ProcessorName` (denormalized from its
-  parent event at creation time — see §5.2) + `string ProcessorTicketID`
+`GenericEventRecord.ProcessorName`/`ProcessorEventID`,
+`GenericEventTicketRecord.ProcessorName`/`ProcessorTicketID`.
 
 ---
 
 ## 4. Settings structure
 
-Today's flat `EventOwnerSettings { bool IsEnabled }` becomes a per-provider
-structure, mirroring exactly how `SubscriptionPublicRecord`/
-`SubscriptionOwnerRecord` give Stripe/Paypal/Fortis/Manual each their own
-numbered sub-field:
+`EventSettings.proto` (as it exists now):
 
 ```proto
-// Authorization/Events/EventsSettings.proto
+import "Protos/IT/WebServices/Fragments/Authorization/Events/DataRecords.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/Eventbrite/EventbriteEventSettings.proto";
+
 message EventPublicSettings {
-  repeated TicketClassRecord TicketClasses = 1;
-  ManualEventPublicSettings Manual = 11;
-  IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbritePublicSettings Eventbrite = 12;
+  bool Enabled = 1;             // built-in/module-wide switch — no separate "Manual.Enabled"
+  IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventPublicSettings Eventbrite = 10;
 }
 
 message EventPrivateSettings {
-  repeated EventVenue Venues = 1;              // shared — venues aren't provider-specific
+  repeated GenericEventVenueRecord Venues = 1;   // shared — sole source of truth for venues, see §3.1
+  IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventPrivateSettings Eventbrite = 10;
 }
 
 message EventOwnerSettings {
-  ManualEventOwnerSettings Manual = 11;
-  IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteOwnerSettings Eventbrite = 12;
-}
-
-message ManualEventPublicSettings {
-  bool Enabled = 1;                            // preserves today's EventOwnerSettings.IsEnabled semantics
-}
-
-message ManualEventOwnerSettings {
+  IT.WebServices.Fragments.Authorization.Events.Eventbrite.EventbriteEventOwnerSettings Eventbrite = 10;
 }
 ```
 
-```proto
-// Authorization/Events/Eventbrite/EventbriteSettings.proto
-message EventbritePublicSettings {
-  bool Enabled = 1;
-  string Url = 2;
-}
+Notably **no `TicketClasses` here** (removed — see §3.1) and **no `Manual`
+sub-message** (removed — see the note at the top of this document; the
+top-level `Enabled` already covers "is the Events module on at all," and
+there's no scenario where the built-in path is independently disabled
+while Eventbrite keeps running, unlike Eventbrite's own `Enabled`, which is
+genuinely independent).
 
-message EventbriteOwnerSettings {
-  string ClientID = 1;      // or a single PrivateToken field — depends on Phase 3's auth-model decision
-  string ClientSecret = 2;
-}
-```
-
-Numbering starting at 11 leaves room below for any other fields that might
-belong on the shared public/owner messages themselves (matching how
-Payments' `SubscriptionPublicRecord` reserves 1-10 for cross-cutting fields
-like `Tiers`/`AllowOther` before providers start at 11).
-
-This slots into `Settings/SettingsRecord.proto` exactly where the old flat
-version did — `SettingsPublicData.Events = 15`,
-`SettingsPrivateData.Events = 15`, `SettingsOwnerData.Events = 15` — no
-change needed at that level, since the per-provider nesting is internal to
-`EventPublicSettings`/`EventOwnerSettings`.
+This slots into `Settings/SettingsRecord.proto` as `SettingsPublicData.Events = 17`,
+`SettingsPrivateData.Events = 17`, `SettingsOwnerData.Events = 17`.
 
 `SettingsInterface.proto`'s three RPCs (`ModifyEventPublicSettings`/
-`ModifyEventPrivateSettings`/`ModifyEventOwnerSettings`) also stay
-structurally the same — they already operate on the whole
-`EventPublicSettings`/`EventOwnerSettings` message, so they don't need
-per-provider RPC variants the way nothing in Payments has
-`ModifyStripeSettings` as a separate top-level RPC either (Payments' provider
-settings ride inside `SubscriptionPublicRecord`/`SubscriptionOwnerRecord` via
-the same generic `ModifySubscriptionPublicData`-style RPCs).
+`ModifyEventPrivateSettings`/`ModifyEventOwnerSettings`) are implemented in
+`Settings/Services/SettingsService.cs`, following the same
+read-modify-write + `VersionNum++` + audit-log pattern as every other
+settings section (e.g. Merch).
 
 **Cache-invalidation note carried over from the Eventbrite plan (Phase 2 §4)
 still applies unchanged**: `Enabled` flags read on the hot path of ticket
-purchase need to not be stale across replicas — this settings restructuring
+purchase need to not be stale across replicas — this settings structure
 doesn't fix that on its own.
 
 ---
 
 ## 5. Decisions
 
-1. **`ITicketDataProvider`/`IEventDataProvider` live in `Base`.** Both
-   `Manual` and `Eventbrite` implement/consume the same shared local-storage
-   contract — Manual's storage is its full source of truth, Eventbrite's is
-   a synced cache, but both are "store a record locally, look it up by
-   ticket/event ID" at the interface level. If Eventbrite's caching needs
-   grow a field Manual doesn't use (e.g. `LastSyncedAtUTC`), add it as an
-   optional/nullable field on the shared record rather than forking the
-   interface.
+1. **`ITicketDataProvider`/`IEventDataProvider` live in `Base`.** The
+   built-in path in `Combined` uses them as the actual source of truth;
+   Eventbrite uses them as a synced local cache. If Eventbrite's caching
+   needs grow a field the built-in path doesn't use (e.g.
+   `LastSyncedAtUTC`), add it as an optional field on the shared record
+   rather than forking the interface.
 
-2. **`ProcessorName` is denormalized onto `EventTicketRecord`, set from the
-   parent event at ticket-creation time and never re-derived.** Ticket-only
-   operations (`CancelTicket`, `SyncTicket`) need to dispatch to the right
-   `IGenericEventProvider` without necessarily having the parent `EventRecord`
-   loaded, so requiring a join back to the event on every ticket operation is
-   worse than a small redundant field — consistent with how
-   `EventTicketPublicRecord.EventId` already duplicates onto the ticket today
-   without issue. No code path should ever write a ticket's `ProcessorName`
-   independently of its event's.
+2. **`ProcessorName` is denormalized onto `GenericEventTicketRecord`, set
+   from the parent event at ticket-creation time and never re-derived.**
+   Ticket-only operations (`CancelTicket`, `SyncTicket`) need to know
+   whether to dispatch to `IGenericEventProvider` (and which one) without
+   necessarily having the parent event loaded — consistent with how
+   `EventTicketPublicRecord.EventId` already duplicated onto the ticket in
+   the old proto without issue. No code path should ever write a ticket's
+   `ProcessorName` independently of its event's.
 
-3. **Webhook endpoint placement is deferred** — decide when Phase 3/6
+3. **There is no `Events.Manual` project, no `ManualEventInterface.proto`,
+   and no `ManualEventSettings.proto`.** `Events.Combined` implements
+   `EventInterface`/`AdminEventInterface` directly against `Events.Base`'s
+   data providers for the built-in path; `IGenericEventProvider` is
+   reserved for genuinely pluggable external processors (Eventbrite today).
+
+4. **Webhook endpoint placement is deferred** — decide when Phase 3/6
    implementation starts, once the Eventbrite auth model and webhook
    signature-verification approach are chosen. Not blocking the structural
    scaffolding in §1-§4.
 
-4. **`ReserveTicket` returns a backend-issued checkout URL for now, not a
-   real server-side reservation.** `ReserveTicketResult` carries (at
+5. **`ReserveTicket` returns a backend-issued checkout URL for Eventbrite,
+   not a real server-side reservation.** `ReserveTicketResult` carries (at
    minimum) a `CheckoutUrl` string plus success/error info — no ticket is
-   created locally at this step; Eventbrite remains the system of record for
-   the purchase until Phase 6's inbound sync creates/updates the local
-   `EventTicketRecord` (and, per Phase 5, triggers QR issuance). This means
-   `ReserveTicketSupported` is effectively "supported but soft" for
-   Eventbrite (returns a URL, doesn't gate/reserve) versus Manual, which can
-   do a real server-side reservation directly. Revisit if Eventbrite turns
-   out to support backend-issuable discount codes/private ticket types
-   (plan's open item #2) — that would upgrade this from a redirect to a hard
-   server-side gate.
+   created locally at this step; Eventbrite remains the system of record
+   for the purchase until Phase 6's inbound sync creates/updates the local
+   `GenericEventTicketRecord` (and, per Phase 5, triggers QR issuance). The
+   built-in path, by contrast, reserves for real synchronously. Revisit if
+   Eventbrite turns out to support backend-issuable discount codes/private
+   ticket types (plan's open item #2) — that would upgrade this from a
+   redirect to a hard server-side gate.
