@@ -41,8 +41,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorizatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Payment.Combined", "Authorization\Payment\Combined\IT.WebServices.Authorization.Payment.Combined.csproj", "{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IT.WebServices.Authorization.Events", "Authorization\Events\IT.WebServices.Authorization.Events.csproj", "{8BCBE890-85AD-C2B8-5127-5459C75469FF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Authorization.Payment.Base", "Authorization\Payment\Base\IT.WebServices.Authorization.Payment.Base\IT.WebServices.Authorization.Payment.Base.csproj", "{50630621-6BB9-4198-AD40-B7D4366F5544}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.OIP", "OIP\IT.WebServices.OIP\IT.WebServices.OIP.csproj", "{D56D34A1-5CB0-7A89-ED7A-D325A368ED69}"
@@ -64,6 +62,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Merch.Shopify", "Merch\Shopify\IT.WebServices.Merch.Shopify.csproj", "{2A409AC2-4BC5-580E-033A-99666647EF91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Merch.Combined", "Merch\Combined\IT.WebServices.Merch.Combined.csproj", "{D6D6FDEF-78FA-A2BD-4C56-B04C3EB15C1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Events", "Events", "{A1D75720-31DC-4F63-AC6C-801ACA5FA377}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -143,10 +143,6 @@ Global
 		{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16FF5FB6-787A-4EA4-A5E3-6761BDE9851D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8BCBE890-85AD-C2B8-5127-5459C75469FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8BCBE890-85AD-C2B8-5127-5459C75469FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8BCBE890-85AD-C2B8-5127-5459C75469FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8BCBE890-85AD-C2B8-5127-5459C75469FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{50630621-6BB9-4198-AD40-B7D4366F5544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{50630621-6BB9-4198-AD40-B7D4366F5544}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50630621-6BB9-4198-AD40-B7D4366F5544}.Release|Any CPU.ActiveCfg = Release|Any CPU

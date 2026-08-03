@@ -13,7 +13,6 @@ import "Protos/IT/WebServices/Fragments/Authorization/Payment/Paypal/PaypalSetti
 import "Protos/IT/WebServices/Fragments/Content/SharedTypes.proto";
 import "Protos/IT/WebServices/Fragments/Comment/SharedTypes.proto";
 import "Protos/IT/WebServices/Fragments/Notification/NotificationSettings.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
 import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
 
 // User authentication data
@@ -31,7 +30,6 @@ message SettingsPublicData {
   CommentsPublicRecord Comments = 12;
   CMSPublicRecord CMS = 13;
   NotificationPublicRecord Notification = 14;
-  IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Events = 15; // Public settings for events
   IT.WebServices.Fragments.Merch.MerchPublicSettings Merch = 16;
 }
 
@@ -42,7 +40,6 @@ message SettingsPrivateData {
   CommentsPrivateRecord Comments = 12;
   CMSPrivateRecord CMS = 13;
   NotificationPrivateRecord Notification = 14;
-  IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Events = 15; // Private settings for events
   IT.WebServices.Fragments.Merch.MerchPrivateSettings Merch = 16;
 }
 
@@ -52,7 +49,6 @@ message SettingsOwnerData {
   CommentsOwnerRecord Comments = 12;
   CMSOwnerRecord CMS = 13;
   NotificationOwnerRecord Notification = 14;
-  IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Events = 15; // Owner settings for events
   IT.WebServices.Fragments.Merch.MerchOwnerSettings Merch = 16;
 }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using IT.WebServices.Authentication;
-using IT.WebServices.Authorization.Events.Extensions;
 using IT.WebServices.Models;
 using IT.WebServices.Services.Combined.Models;
 using IT.WebServices.Settings;
@@ -101,7 +100,6 @@ namespace IT.WebServices.Services.Combined
             services.AddCommentClasses();
             services.AddSettingsClasses();
             services.AddStatsClasses();
-            services.AddEventsClasses();
             services.AddPaymentClasses();
             services.AddDashboardClasses();
             services.AddCareersClasses();
@@ -145,7 +143,6 @@ namespace IT.WebServices.Services.Combined
                 endpoints.MapCommentGrpcServices();
                 endpoints.MapSettingsGrpcServices();
                 endpoints.MapStatsGrpcServices();
-                endpoints.MapEventsGrpcServices();
 
                 endpoints.MapPaymentGrpcServices();
                 endpoints.MapDashboardGrpcServices();

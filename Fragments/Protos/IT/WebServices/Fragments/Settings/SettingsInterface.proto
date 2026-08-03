@@ -6,7 +6,6 @@ import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 import "Protos/IT/WebServices/Fragments/Settings/SettingsRecord.proto";
 import "Protos/IT/WebServices/Fragments/Errors.proto";
-import "Protos/IT/WebServices/Fragments/Authorization/Events/EventsSettings.proto";
 import "Protos/IT/WebServices/Fragments/Merch/MerchSettings.proto";
 
 // Service for Settings service fragment interface
@@ -190,30 +189,6 @@ service SettingsInterface {
   {
     option (google.api.http) = {
       post: "/api/settings/notification/owner"
-      body: "*"
-    };
-  }
-
-  rpc ModifyEventPublicSettings (ModifyEventPublicSettingsRequest) returns (ModifyEventPublicSettingsResponse)
-  {
-    option (google.api.http) = {
-      post: "/api/settings/events/public"
-      body: "*"
-    };
-  }
-
-  rpc ModifyEventPrivateSettings (ModifyEventPrivateSettingsRequest) returns (ModifyEventPrivateSettingsResponse)
-  {
-    option (google.api.http) = {
-      post: "/api/settings/events/private"
-      body: "*"
-    };
-  }
-
-  rpc ModifyEventOwnerSettings (ModifyEventOwnerSettingsRequest) returns (ModifyEventOwnerSettingsResponse)
-  {
-    option (google.api.http) = {
-      post: "/api/settings/events/owner"
       body: "*"
     };
   }
@@ -404,30 +379,6 @@ message ModifyNotificationOwnerDataRequest {
 }
 
 message ModifyNotificationOwnerDataResponse {
-  APIError Error = 1;
-}
-
-message ModifyEventPublicSettingsRequest {
-  IT.WebServices.Fragments.Authorization.Events.EventPublicSettings Data = 1 [(buf.validate.field).required = true];
-}
-
-message ModifyEventPublicSettingsResponse {
-  APIError Error = 1;
-}
-
-message ModifyEventPrivateSettingsRequest {
-  IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Data = 1 [(buf.validate.field).required = true];
-}
-
-message ModifyEventPrivateSettingsResponse {
-  APIError Error = 1;
-}
-
-message ModifyEventOwnerSettingsRequest {
-  IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Data = 1 [(buf.validate.field).required = true];
-}
-
-message ModifyEventOwnerSettingsResponse {
   APIError Error = 1;
 }
 
