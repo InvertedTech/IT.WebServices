@@ -24,6 +24,13 @@ service EventInterface {
 			get: "/api/events/user/tickets"
 		};
 	}
+
+	rpc ReserveTicket (ReserveTicketRequest) returns (ReserveTicketResponse) {
+		option (google.api.http) = {
+			post: "/api/events/{EventID}/tickets/reserve"
+			body: "*"
+		};
+	}
 }
 
 message GetEventsRequest {
@@ -59,4 +66,16 @@ message GetOwnTicketsResponse {
 	uint32 PageOffsetEnd = 11;
 	uint32 PageTotalItems = 12;
 	APIError Error = 13;
+}
+
+message ReserveTicketRequest {
+	string EventID = 1;
+	string TicketClassID = 2;
+	uint32 Quantity = 3;
+}
+
+message ReserveTicketResponse {
+	repeated GenericEventTicketRecord Tickets = 1;
+	string CheckoutUrl = 2;
+	APIError Error = 3;
 }

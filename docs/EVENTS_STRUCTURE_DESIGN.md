@@ -172,9 +172,18 @@ messages): per §5.5, `ReserveTicketResult` carries a `CheckoutUrl`
 created/updated `GenericEventTicketRecord` (or enough to build one) and an
 error reason mappable to `APIError`.
 
-As of this writing, `BuiltInGenericEventProvider`'s three methods are
-`NotImplementedException` stubs — the shape is scaffolded and registered in
-DI, but reservation logic is deliberately deferred (see §5.5).
+As of this writing, `BuiltInGenericEventProvider.ReserveTicket` is
+implemented (capacity/per-user/sale-window checks against
+`IGenericEventTicketRecordProvider`, real synchronous reservation — see
+below); `CancelTicket`/`SyncTicket` are still `NotImplementedException`
+stubs, deliberately deferred.
+
+`EventInterface.proto` gained a `ReserveTicket` RPC
+(`POST /api/events/{EventID}/tickets/reserve`) — `EventService.ReserveTicket`
+looks up the ticket class on the event, calls
+`genericEventProviderProvider.GetProcessor(evt).ReserveTicket(...)`, and
+returns either the created `GenericEventTicketRecord`s or a `CheckoutUrl`
+depending on what the resolved provider returns.
 
 ---
 
