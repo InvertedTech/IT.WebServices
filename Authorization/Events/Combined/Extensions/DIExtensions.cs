@@ -1,4 +1,6 @@
-﻿using IT.WebServices.Authorization.Events.Combined.Services;
+﻿using IT.WebServices.Authorization.Events.Combined;
+using IT.WebServices.Authorization.Events.Combined.Services;
+using IT.WebServices.Authorization.Events.Generic;
 using IT.WebServices.Authorization.Events.Generic.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -14,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddSingleton<IGenericEventRecordProvider, FileSystemEventRecordProvider>();
             services.AddSingleton<IGenericEventTicketRecordProvider, FileSystemEventTicketRecordProvider>();
+
+            services.AddSingleton<IGenericEventProvider, BuiltInGenericEventProvider>();
+            services.AddSingleton<GenericEventProviderProvider>();
 
             return services;
         }

@@ -123,10 +123,21 @@ doesn't change shape, only what's behind it.
 
 ## 2. `IGenericEventProvider` contract
 
-Scoped to genuinely pluggable external integrations — today, only
-Eventbrite implements it. The built-in path in `Combined` does not
-implement this interface; it works directly against `Base`'s data
-providers.
+Mirrors Payments' actual pattern, not a set of parallel gRPC "service"
+classes: **one** `EventService`/`AdminEventService` stays the only
+gRPC-facing surface, and provider-specific behavior is reached by looking
+up an `IGenericEventProvider` implementation and calling it polymorphically
+— the same shape as `PaymentService.cs` doing
+`genericProcessorProvider.GetProcessor(record).CancelSubscription(...)`
+rather than branching to a `ManualPaymentService`/`StripePaymentService`.
+
+**Reads stay off this interface entirely.** `GetEvents`/`GetEvent`/
+`GetOwnTickets` in `EventService` go straight against `Base`'s
+`IGenericEventRecordProvider`/`IGenericEventTicketRecordProvider` regardless
+of which provider an event belongs to — local storage is the single source
+of truth for both the built-in path and Eventbrite-synced events (synced in
+via Phase 6), so there's nothing to dispatch for a read. `IGenericEventProvider`
+only covers operations where behavior genuinely diverges by provider:
 
 ```csharp
 public interface IGenericEventProvider
@@ -134,13 +145,8 @@ public interface IGenericEventProvider
     string ProcessorName { get; }
     bool IsEnabled { get; }
 
-    // Reads — used to render your own event pages regardless of provider
-    IAsyncEnumerable<GenericEventRecord> GetEvents(CancellationToken cancellationToken);
-    Task<GenericEventRecord?> GetEvent(string processorEventId, CancellationToken cancellationToken);
-    Task<List<GenericTicketClassRecord>> GetTicketClasses(string processorEventId, CancellationToken cancellationToken);
-
-    // Gate + handoff — Eventbrite returns a checkout URL rather than
-    // reserving a ticket server-side (see §5.4)
+    // Eventbrite returns a CheckoutUrl instead of reserving for real; the
+    // built-in provider reserves synchronously. See §5.5.
     Task<ReserveTicketResult> ReserveTicket(GenericEventRecord evt, GenericTicketClassRecord ticketClass, ONUser user, uint quantity, CancellationToken cancellationToken);
 
     Task<bool> CancelTicket(GenericEventTicketRecord ticket, ONUser actor, string reason, CancellationToken cancellationToken);
@@ -150,19 +156,25 @@ public interface IGenericEventProvider
 }
 ```
 
-`GenericEventProviderProvider` mirrors `GenericPaymentProcessorProvider`:
-`AllProviders`, `AllEnabledProviders` (filtered by `IsEnabled`),
-`GetProcessor(GenericEventRecord record)` doing
-`AllProviders.FirstOrDefault(p => p.ProcessorName == record.ProcessorName)`.
-`Combined`'s services call this only when `record.ProcessorName` is
-non-empty; an empty `ProcessorName` means the built-in path handles it
-directly.
+**The built-in path is itself a registered `IGenericEventProvider`**
+(`BuiltInGenericEventProvider`, `ProcessorName = ""`), not a special case
+callers branch around. `GenericEventProviderProvider.GetProcessor(record)`
+does the same `AllProviders.FirstOrDefault(p => p.ProcessorName == record.ProcessorName)`
+lookup `GenericPaymentProcessorProvider` does — since built-in records
+already carry `ProcessorName == ""`, that lookup resolves them to
+`BuiltInGenericEventProvider` the same way it resolves an Eventbrite record
+to `EventbriteGenericEventProvider`, with zero `if (string.IsNullOrEmpty(...))`
+branching anywhere in `EventService`/`AdminEventService`.
 
-`ReserveTicketResult`/`SyncResult` are small result types: per §5.4,
-`ReserveTicketResult` carries a `CheckoutUrl` (Eventbrite-only) plus
-success/error info; `SyncResult` carries the created/updated
-`GenericEventTicketRecord` (or enough to build one) and an error reason
-mappable to `APIError`.
+`ReserveTicketResult`/`SyncResult` are small plain result types (not proto
+messages): per §5.5, `ReserveTicketResult` carries a `CheckoutUrl`
+(Eventbrite-only) plus success/error info; `SyncResult` carries the
+created/updated `GenericEventTicketRecord` (or enough to build one) and an
+error reason mappable to `APIError`.
+
+As of this writing, `BuiltInGenericEventProvider`'s three methods are
+`NotImplementedException` stubs — the shape is scaffolded and registered in
+DI, but reservation logic is deliberately deferred (see §5.5).
 
 ---
 
@@ -293,8 +305,15 @@ doesn't fix that on its own.
 3. **There is no `Events.Manual` project, no `ManualEventInterface.proto`,
    and no `ManualEventSettings.proto`.** `Events.Combined` implements
    `EventInterface`/`AdminEventInterface` directly against `Events.Base`'s
-   data providers for the built-in path; `IGenericEventProvider` is
-   reserved for genuinely pluggable external processors (Eventbrite today).
+   data providers for reads and for admin create/edit/cancel — those never
+   go through `IGenericEventProvider` at all, for either the built-in path
+   or Eventbrite, since you can't administratively create/edit an event
+   that lives on Eventbrite through your own backend (you'd do that on
+   Eventbrite and let it flow back in via sync). `IGenericEventProvider` is
+   used only where behavior genuinely diverges by provider — currently just
+   ticket reservation/cancellation/sync — and the built-in path implements
+   it too (`BuiltInGenericEventProvider`, see §2), rather than being a
+   special case the caller branches around.
 
 4. **Webhook endpoint placement is deferred** — decide when Phase 3/6
    implementation starts, once the Eventbrite auth model and webhook
