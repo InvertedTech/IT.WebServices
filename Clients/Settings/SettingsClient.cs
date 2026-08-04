@@ -94,6 +94,33 @@ namespace IT.WebServices.Clients.Settings
             return res.Error;
         }
 
+        public async Task<Fragments.APIError> ModifyEventOwnerSettings(ModifyEventOwnerSettingsRequest req)
+        {
+            var res = await client.ModifyEventOwnerSettingsAsync(req, userHelper.GetGrpcCallOptions());
+
+            InvalidateCache();
+
+            return res.Error;
+        }
+
+        public async Task<Fragments.APIError> ModifyEventPrivateSettings(ModifyEventPrivateSettingsRequest req)
+        {
+            var res = await client.ModifyEventPrivateSettingsAsync(req, userHelper.GetGrpcCallOptions());
+
+            InvalidateCache();
+
+            return res.Error;
+        }
+
+        public async Task<Fragments.APIError> ModifyEventPublicSettings(ModifyEventPublicSettingsRequest req)
+        {
+            var res = await client.ModifyEventPublicSettingsAsync(req, userHelper.GetGrpcCallOptions());
+
+            InvalidateCache();
+
+            return res.Error;
+        }
+
         public async Task<Fragments.APIError> ModifyMerchOwnerSettings(ModifyMerchOwnerSettingsRequest req)
         {
             var res = await client.ModifyMerchOwnerSettingsAsync(req, userHelper.GetGrpcCallOptions());
