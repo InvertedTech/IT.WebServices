@@ -2,6 +2,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using IT.WebServices.Authentication;
 using IT.WebServices.AuditLog;
+using IT.WebServices.Authorization.Events.Generic;
 using IT.WebServices.Authorization.Events.Generic.Data;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.AuditLog;
@@ -10,6 +11,7 @@ using IT.WebServices.Fragments.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace IT.WebServices.Authorization.Events.Combined.Services
@@ -20,12 +22,14 @@ namespace IT.WebServices.Authorization.Events.Combined.Services
         public readonly ILogger Log;
         private readonly IGenericEventRecordProvider eventProvider;
         private readonly IAuditLogService auditLogHelper;
+        private readonly GenericEventProviderProvider genericEventProviderProvider;
 
-        public AdminEventService(ILogger<AdminEventService> log, IGenericEventRecordProvider eventProvider, IAuditLogService auditLogHelper)
+        public AdminEventService(ILogger<AdminEventService> log, IGenericEventRecordProvider eventProvider, IAuditLogService auditLogHelper, GenericEventProviderProvider genericEventProviderProvider)
         {
             Log = log;
             this.eventProvider = eventProvider;
             this.auditLogHelper = auditLogHelper;
+            this.genericEventProviderProvider = genericEventProviderProvider;
         }
 
         public override async Task<AdminCreateEventResponse> AdminCreateEvent(AdminCreateEventRequest request, ServerCallContext context)
@@ -64,6 +68,25 @@ namespace IT.WebServices.Authorization.Events.Combined.Services
             record.Tags.AddRange(request.Data.Tags);
             record.TicketClasses.AddRange(request.Data.TicketClasses);
             record.ExtraMetadata.Add(request.Data.ExtraMetadata);
+
+            if (request.Data.SyncToEventbrite)
+            {
+                var eventbriteProvider = genericEventProviderProvider.AllProviders.FirstOrDefault(p => p.ProcessorName == "eventbrite");
+                if (eventbriteProvider == null || !eventbriteProvider.IsEnabled)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderUnavailable, "Eventbrite Is Not Enabled") };
+
+                try
+                {
+                    var processorEventId = await eventbriteProvider.CreateEvent(record, context.CancellationToken);
+                    record.ProcessorName = eventbriteProvider.ProcessorName;
+                    record.ProcessorEventID = processorEventId;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError(ex, "Failed to sync new event to Eventbrite");
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonProviderError, $"Failed To Sync To Eventbrite: {ex.Message}") };
+                }
+            }
 
             await eventProvider.Save(record);
 

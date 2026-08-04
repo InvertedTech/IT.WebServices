@@ -24,6 +24,11 @@ namespace IT.WebServices.Authorization.Events.Combined
         public string ProcessorName => "";
         public bool IsEnabled => true;
 
+        public Task<string> CreateEvent(GenericEventRecord evt, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("The built-in provider has no external platform to push events to.");
+        }
+
         public async Task<ReserveTicketResult> ReserveTicket(GenericEventRecord evt, GenericTicketClassRecord ticketClass, ONUser user, uint quantity, CancellationToken cancellationToken)
         {
             if (quantity == 0)

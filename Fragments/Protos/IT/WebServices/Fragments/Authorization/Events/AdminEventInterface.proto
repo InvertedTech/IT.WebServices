@@ -39,6 +39,11 @@ message EventData {
 	GenericEventRecurrenceRule Recurrence = 10;
 	string InternalNotes = 11;
 	map<string, string> ExtraMetadata = 12;
+
+	// When true, AdminCreateEvent also pushes the new event to Eventbrite
+	// (setting ProcessorName/ProcessorEventID on success) instead of leaving
+	// it as a built-in-only event. Ignored by AdminEditEvent.
+	bool SyncToEventbrite = 13;
 }
 
 message AdminCreateEventRequest {

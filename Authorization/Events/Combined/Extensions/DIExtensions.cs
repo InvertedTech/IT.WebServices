@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IGenericEventTicketRecordProvider, FileSystemEventTicketRecordProvider>();
 
             services.AddSingleton<IGenericEventProvider, BuiltInGenericEventProvider>();
+            services.AddEventbriteClasses();
             services.AddSingleton<GenericEventProviderProvider>();
 
             return services;

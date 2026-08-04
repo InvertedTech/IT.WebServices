@@ -314,15 +314,18 @@ doesn't fix that on its own.
 3. **There is no `Events.Manual` project, no `ManualEventInterface.proto`,
    and no `ManualEventSettings.proto`.** `Events.Combined` implements
    `EventInterface`/`AdminEventInterface` directly against `Events.Base`'s
-   data providers for reads and for admin create/edit/cancel — those never
-   go through `IGenericEventProvider` at all, for either the built-in path
-   or Eventbrite, since you can't administratively create/edit an event
-   that lives on Eventbrite through your own backend (you'd do that on
-   Eventbrite and let it flow back in via sync). `IGenericEventProvider` is
-   used only where behavior genuinely diverges by provider — currently just
-   ticket reservation/cancellation/sync — and the built-in path implements
-   it too (`BuiltInGenericEventProvider`, see §2), rather than being a
-   special case the caller branches around.
+   data providers for reads and for admin edit/cancel — those never go
+   through `IGenericEventProvider` at all, for either the built-in path or
+   Eventbrite, since you can't administratively edit/cancel an event that
+   lives on Eventbrite through your own backend (you'd do that on Eventbrite
+   and let it flow back in via sync). The one exception is `AdminCreateEvent`
+   with `SyncToEventbrite = true` — see §6, that's a deliberate one-way push
+   at creation time, not ongoing dispatch. `IGenericEventProvider` otherwise
+   covers only operations where behavior genuinely diverges by provider —
+   ticket reservation/cancellation/sync, plus the new outbound `CreateEvent`
+   — and the built-in path implements the interface too
+   (`BuiltInGenericEventProvider`, see §2), rather than being a special case
+   the caller branches around.
 
 4. **Webhook endpoint placement is deferred** — decide when Phase 3/6
    implementation starts, once the Eventbrite auth model and webhook
@@ -339,3 +342,28 @@ doesn't fix that on its own.
    Eventbrite turns out to support backend-issuable discount codes/private
    ticket types (plan's open item #2) — that would upgrade this from a
    redirect to a hard server-side gate.
+
+6. **`AdminCreateEvent` has a per-event `EventData.SyncToEventbrite` flag**
+   (proto only — chosen over a global settings toggle so an admin decides
+   per event, not module-wide). When set, `AdminEventService` looks up the
+   `IGenericEventProvider` with `ProcessorName == "eventbrite"` directly
+   (via `AllProviders`, not `GetProcessor(record)` — the record's
+   `ProcessorName` isn't set yet, since deciding it *is* the point of this
+   call) and calls a new interface method, `CreateEvent(evt, ct) -> string`
+   (the provider's assigned event ID), before saving the local record. This
+   required adding `CreateEvent` to `IGenericEventProvider` — an outbound
+   push, distinct from `ReserveTicket`/`CancelTicket`/`SyncTicket` which are
+   all ticket-level. `BuiltInGenericEventProvider.CreateEvent` throws
+   `NotSupportedException` (nothing to push to); it's never called for a
+   built-in event.
+
+   **`Events.Eventbrite` has no real HTTP client yet** (Phase 3 of the
+   Eventbrite plan is still open), so `EventbriteGenericEventProvider`
+   exists only as a stub: `IsEnabled => false` hardcoded, every method
+   throws `NotImplementedException`. `AdminCreateEvent` checks
+   `eventbriteProvider.IsEnabled` before attempting the push and fails the
+   whole create with `ERROR_REASON_PROVIDER_UNAVAILABLE` if it's off, or
+   `ERROR_REASON_PROVIDER_ERROR` if `CreateEvent` throws — deliberately
+   failing the entire creation rather than saving a local event with a
+   silently-ignored sync flag, since there's no retry/reconciliation
+   mechanism yet (that's Phase 6) to catch a half-completed sync.

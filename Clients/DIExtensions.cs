@@ -1,5 +1,6 @@
 ﻿using IT.WebServices.Clients;
 using IT.WebServices.Clients.CMS;
+using IT.WebServices.Fragments.Authorization.Events;
 using IT.WebServices.Clients.Merch;
 using IT.WebServices.Clients.Notifications;
 using IT.WebServices.Clients.Payment;
@@ -37,6 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ChannelHelper>();
             services.AddSingleton<SubscriptionTierHelper>();
 
+            services.AddGrpcClient<AdminEventInterface.AdminEventInterfaceClient>();
+            services.AddGrpcClient<EventInterface.EventInterfaceClient>();
             services.AddGrpcClient<AdminMerchInterface.AdminMerchInterfaceClient>();
             services.AddGrpcClient<AssetInterface.AssetInterfaceClient>();
             services.AddGrpcClient<AuditLogInterface.AuditLogInterfaceClient>();
