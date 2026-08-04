@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events;
+
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/DataRecords.proto";
+
+service EventInterface {
+	rpc GetEvents (GetEventsRequest) returns (GetEventsResponse) {
+		option (google.api.http) = {
+			get: "/api/events"
+		};
+	}
+
+	rpc GetEvent (GetEventRequest) returns (GetEventResponse) {
+		option (google.api.http) = {
+			get: "/api/events/{EventID}"
+		};
+	}
+
+	rpc GetOwnTickets (GetOwnTicketsRequest) returns (GetOwnTicketsResponse) {
+		option (google.api.http) = {
+			get: "/api/events/user/tickets"
+		};
+	}
+}
+
+message GetEventsRequest {
+	uint32 PageSize = 10;
+	uint32 PageOffset = 11;
+}
+
+message GetEventsResponse {
+	repeated GenericEventRecord Records = 1;
+	uint32 PageOffsetStart = 10;
+	uint32 PageOffsetEnd = 11;
+	uint32 PageTotalItems = 12;
+	APIError Error = 13;
+}
+
+message GetEventRequest {
+	string EventID = 1;
+}
+
+message GetEventResponse {
+	GenericEventRecord Record = 1;
+	APIError Error = 2;
+}
+
+message GetOwnTicketsRequest {
+	uint32 PageSize = 10;
+	uint32 PageOffset = 11;
+}
+
+message GetOwnTicketsResponse {
+	repeated GenericEventTicketRecord Records = 1;
+	uint32 PageOffsetStart = 10;
+	uint32 PageOffsetEnd = 11;
+	uint32 PageTotalItems = 12;
+	APIError Error = 13;
+}

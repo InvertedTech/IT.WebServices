@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Eventbrite\IT.WebServices.Authorization.Events.Eventbrite.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Async" Version="7.0.0" />
+  </ItemGroup>
+
 </Project>

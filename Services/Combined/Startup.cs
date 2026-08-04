@@ -105,7 +105,7 @@ namespace IT.WebServices.Services.Combined
             services.AddCareersClasses();
             services.AddNotificationClasses();
             services.AddMerchClasses();
-
+            services.AddEventClasses();
             CryptoProviderFactory.DefaultCacheSignatureProviders = false;
 
             Console.WriteLine("*** Loading pubkey: (" + JwtExtensions.GetPublicKey() + ")  ***");
@@ -149,6 +149,7 @@ namespace IT.WebServices.Services.Combined
                 endpoints.MapCareersGrpcServices();
                 endpoints.MapNotificationGrpcServices();
                 endpoints.MapMerchGrpcServices();
+                endpoints.MapEventGrpcServices();
                 //endpoints.MapGrpcReflectionService();
 
                 endpoints.MapControllerRoute(

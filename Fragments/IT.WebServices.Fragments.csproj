@@ -13,8 +13,10 @@
     <None Remove="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Payment\AdminPaymentInterface.proto" />
@@ -93,8 +95,10 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogEntry.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\AuditLog\AuditLogInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\SharedTypes.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Payment\BackupInterface.proto" />

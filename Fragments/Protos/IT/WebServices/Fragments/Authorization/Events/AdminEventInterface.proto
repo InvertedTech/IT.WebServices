@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events;
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/DataRecords.proto";
+
+service AdminEventInterface {
+	rpc AdminCreateEvent (AdminCreateEventRequest) returns (AdminCreateEventResponse) {
+		option (google.api.http) = {
+			post: "/api/admin/events"
+		};
+	}
+
+	rpc AdminCancelEvent (AdminCancelEventRequest) returns (AdminCancelEventResponse) {
+		option (google.api.http) = {
+			post: "/api/admin/events/{EventID}/cancel"
+		};
+	}
+
+	rpc AdminEditEvent (AdminEditEventRequest) returns (AdminEditEventResponse) {
+		option (google.api.http) = {
+			post: "/api/admin/events/{EventID}"
+		};
+	}
+}
+
+message EventData {
+	string Title = 1;
+	string Description = 2;
+	string Location = 3;
+	string VenueID = 4;
+	repeated string Tags = 5;
+	repeated GenericTicketClassRecord TicketClasses = 6;
+	uint32 MaxTickets = 7;
+	google.protobuf.Timestamp StartOnUTC = 8;
+	google.protobuf.Timestamp EndOnUTC = 9;
+	GenericEventRecurrenceRule Recurrence = 10;
+	string InternalNotes = 11;
+	map<string, string> ExtraMetadata = 12;
+}
+
+message AdminCreateEventRequest {
+	EventData Data = 1;
+}
+
+message AdminCreateEventResponse {
+	GenericEventRecord Record = 1;
+	APIError Error = 2;
+}
+
+message AdminCancelEventRequest {
+	string EventID = 1;
+	string CancellationReason = 2;
+}
+
+message AdminCancelEventResponse {
+	APIError Error = 1;
+}
+
+message AdminEditEventRequest {
+	string EventID = 1;
+	EventData Data = 2;
+}
+
+message AdminEditEventResponse {
+	GenericEventRecord Record = 1;
+	APIError Error = 2;
+}
