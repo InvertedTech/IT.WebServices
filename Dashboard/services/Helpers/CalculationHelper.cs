@@ -11,5 +11,11 @@ namespace IT.WebServices.Dashboard.Services.Helpers
             if (previous == 0) return current > 0 ? 100 : 0;
             return (double)(current - previous) / previous * 100;
         }
+
+        public static double CalcPercentageChange(double current, double previous)
+        {
+            if (previous == 0) return current > 0 ? 100 : 0;
+            return (current - previous) / previous * 100;
+        }
     }
 }

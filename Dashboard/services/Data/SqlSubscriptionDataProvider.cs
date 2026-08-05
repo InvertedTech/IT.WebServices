@@ -26,19 +26,19 @@ namespace IT.WebServices.Dashboard.Services.Data
         {
             try
             {
-                // ==================== 1. Current vs Previous month KPIs (your original query) ====================
+                // ==================== 1. Current vs Previous month KPIs ====================
                 const string query = @"
                     SELECT
-                        SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END) AS active_subs_current,
-                        SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(NOW(), '%Y-%m-01') THEN 1 ELSE 0 END) AS new_subs_current,
-                        SUM(CASE WHEN CanceledOnUTC IS NOT NULL AND CanceledOnUTC >= DATE_FORMAT(NOW(), '%Y-%m-01') THEN 1 ELSE 0 END) AS canceled_subs_current,
-                        SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(NOW(), '%Y-%m-01') THEN TotalCents ELSE 0 END) AS new_revenue_current,
-                        SUM(CASE WHEN Status = 2 THEN TotalCents ELSE 0 END) AS total_revenue_current,
-                        SUM(CASE WHEN Status = 2 AND CreatedOnUTC < DATE_FORMAT(NOW(), '%Y-%m-01') THEN 1 ELSE 0 END) AS active_subs_previous,
-                        SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m-01') AND CreatedOnUTC < DATE_FORMAT(NOW(), '%Y-%m-01') THEN 1 ELSE 0 END) AS new_subs_previous,
-                        SUM(CASE WHEN CanceledOnUTC IS NOT NULL AND CanceledOnUTC >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m-01') AND CanceledOnUTC < DATE_FORMAT(NOW(), '%Y-%m-01') THEN 1 ELSE 0 END) AS canceled_subs_previous,
-                        SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m-01') AND CreatedOnUTC < DATE_FORMAT(NOW(), '%Y-%m-01') THEN TotalCents ELSE 0 END) AS new_revenue_previous,
-                        SUM(CASE WHEN Status = 2 AND CreatedOnUTC < DATE_FORMAT(NOW(), '%Y-%m-01') THEN TotalCents ELSE 0 END) AS total_revenue_previous
+                        CAST(COALESCE(SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END), 0) AS SIGNED) AS active_subs_current,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01') THEN 1 ELSE 0 END), 0) AS SIGNED) AS new_subs_current,
+                        CAST(COALESCE(SUM(CASE WHEN CanceledOnUTC IS NOT NULL AND CanceledOnUTC >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01') THEN 1 ELSE 0 END), 0) AS SIGNED) AS canceled_subs_current,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01') THEN AmountCents ELSE 0 END), 0) AS SIGNED) AS new_revenue_current,
+                        CAST(COALESCE(SUM(CASE WHEN Status = 2 THEN AmountCents ELSE 0 END), 0) AS SIGNED) AS total_revenue_current,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC < DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01') AND (Status = 2 OR CanceledOnUTC >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01')) THEN 1 ELSE 0 END), 0) AS SIGNED) AS active_subs_previous,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH), '%Y-%m-01') AND CreatedOnUTC < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) AS SIGNED) AS new_subs_previous,
+                        CAST(COALESCE(SUM(CASE WHEN CanceledOnUTC >= DATE_FORMAT(DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH), '%Y-%m-01') AND CanceledOnUTC < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) AS SIGNED) AS canceled_subs_previous,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC >= DATE_FORMAT(DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH), '%Y-%m-01') AND CreatedOnUTC < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MONTH) THEN AmountCents ELSE 0 END), 0) AS SIGNED) AS new_revenue_previous,
+                        CAST(COALESCE(SUM(CASE WHEN CreatedOnUTC < DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01') AND (Status = 2 OR CanceledOnUTC >= DATE_FORMAT(UTC_TIMESTAMP(), '%Y-%m-01')) THEN AmountCents ELSE 0 END), 0) AS SIGNED) AS total_revenue_previous
                     FROM Payment_Generic_Subscription
                 ";
 
@@ -96,18 +96,22 @@ namespace IT.WebServices.Dashboard.Services.Data
                 }
 
                 // ==================== 2. Month-over-month New + Canceled + Total Revenue Series ====================
-                // (Exactly the code you asked me to insert – now cleanly placed after the KPIs)
+                // Joins each month bucket to every subscription active at any point during that month
+                // (created before bucket end, not canceled before bucket start), so revenue_value is the
+                // month's recurring revenue, while new/canceled count the events inside the bucket.
+                // PERF: a long-lived subscription joins to up to 13 buckets (~13x fan-out, unindexed).
+                // If GetKpis gets slow, replace with per-bucket aggregates or a monthly rollup table.
                 const string seriesQuery = @"
-                    SELECT 
+                    SELECT
                         ds.bucket_start,
                         COUNT(CASE WHEN DATE_FORMAT(s.CreatedOnUTC, '%Y-%m-01') = ds.bucket_start THEN 1 END) AS new_value,
                         COUNT(CASE WHEN DATE_FORMAT(s.CanceledOnUTC, '%Y-%m-01') = ds.bucket_start THEN 1 END) AS canceled_value,
-                        SUM(CASE WHEN DATE_FORMAT(s.CreatedOnUTC, '%Y-%m-01') = ds.bucket_start THEN COALESCE(s.AmountCents, 0) ELSE 0 END) AS revenue_value
+                        CAST(COALESCE(SUM(COALESCE(s.AmountCents, 0)), 0) AS SIGNED) AS revenue_value
                     FROM (
-                        SELECT 
+                        SELECT
                             DATE_FORMAT(
                                 DATE_ADD(
-                                    DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 12 MONTH), '%Y-%m-01'),
+                                    DATE_FORMAT(DATE_SUB(UTC_TIMESTAMP(), INTERVAL 12 MONTH), '%Y-%m-01'),
                                     INTERVAL t.n MONTH
                                 ),
                                 '%Y-%m-01'
@@ -119,9 +123,9 @@ namespace IT.WebServices.Dashboard.Services.Data
                             UNION ALL SELECT 11 UNION ALL SELECT 12
                         ) t
                     ) ds
-                    LEFT JOIN Payment_Generic_Subscription s 
-                        ON DATE_FORMAT(s.CreatedOnUTC, '%Y-%m-01') = ds.bucket_start 
-                        OR (DATE_FORMAT(s.CanceledOnUTC, '%Y-%m-01') = ds.bucket_start AND s.CanceledOnUTC IS NOT NULL)
+                    LEFT JOIN Payment_Generic_Subscription s
+                        ON s.CreatedOnUTC < DATE_ADD(ds.bucket_start, INTERVAL 1 MONTH)
+                        AND (s.CanceledOnUTC IS NULL OR s.CanceledOnUTC >= ds.bucket_start)
                     GROUP BY ds.bucket_start
                     ORDER BY ds.bucket_start ASC
                 ";
