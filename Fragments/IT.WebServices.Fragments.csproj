@@ -15,6 +15,7 @@
     <None Remove="Protos\IT\WebServices\Fragments\Authentication\UserInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" />
+    <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <None Remove="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" />
@@ -97,6 +98,7 @@
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authentication\ServiceInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\AdminEventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\DataRecords.proto" GrpcServices="None" />
+    <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\Eventbrite\EventbriteEventSettings.proto" GrpcServices="None" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventInterface.proto" />
     <Protobuf Include="Protos\IT\WebServices\Fragments\Authorization\Events\EventSettings.proto" GrpcServices="None" />

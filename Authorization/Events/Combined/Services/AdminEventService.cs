@@ -77,9 +77,9 @@ namespace IT.WebServices.Authorization.Events.Combined.Services
 
                 try
                 {
-                    var processorEventId = await eventbriteProvider.CreateEvent(record, context.CancellationToken);
+                    var res = await eventbriteProvider.CreateEvent(record, context.CancellationToken);
                     record.ProcessorName = eventbriteProvider.ProcessorName;
-                    record.ProcessorEventID = processorEventId;
+                    record.ProcessorEventID = res.ProcessorEventID;
                 }
                 catch (Exception ex)
                 {

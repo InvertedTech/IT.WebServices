@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package IT.WebServices.Fragments.Authorization.Events.Eventbrite;
+
+import "google/api/annotations.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/DataRecords.proto";
+import "Protos/IT/WebServices/Fragments/Authorization/Events/SharedTypes.proto";
+import "Protos/IT/WebServices/Fragments/Errors.proto";
+
+service EventbriteEventInterface {
+	rpc EventbriteGetEvents (EventbriteGetEventsRequest) returns (EventbriteGetEventsResponse) {
+		option (google.api.http) = {
+			get: "/api/events/eventbrite"
+		};
+	}
+	rpc EventbriteGetEvent (EventbriteGetEventRequest) returns (EventbriteGetEventResponse) {
+		option (google.api.http) = {
+			get: "/api/events/eventbrite/{EventID}"
+		};
+	}
+	rpc EventbriteGetOwnTickets (EventbriteGetOwnTicketsRequest) returns (EventbriteGetOwnTicketsResponse) {
+		option (google.api.http) = {
+			get: "/api/events/eventbrite/own-tickets"
+		};
+	}
+	rpc EventbriteReserveTicket (EventbriteReserveTicketRequest) returns (EventbriteReserveTicketResponse) {
+		option (google.api.http) = {
+			post: "/api/events/eventbrite/tickets"
+			body: "*"
+		};
+	}
+}
+
+message EventbriteGetEventsRequest {
+	uint32 PageSize = 10;
+	uint32 PageOffset = 11;
+}
+
+message EventbriteGetEventsResponse {
+}
+
+message EventbriteGetEventRequest {
+	string EventID = 1;
+}
+
+message EventbriteGetEventResponse {
+
+}
+
+message EventbriteGetOwnTicketsRequest {
+}
+
+message EventbriteGetOwnTicketsResponse {
+
+}
+
+message EventbriteReserveTicketRequest {
+}
+
+message EventbriteReserveTicketResponse {
+}

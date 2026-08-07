@@ -4,11 +4,16 @@ package IT.WebServices.Fragments.Authorization.Events.Eventbrite;
 
 message EventbriteEventPublicSettings {
 	bool Enabled = 1;
+	string Currency = 2;
 }
 
-message EventbriteEventPrivateSettings {}
+message EventbriteEventPrivateSettings {
+	string OrganizationID = 1;
+	string OrganizerID = 2;
+	map<string, string> VenueIDToProcessorVenueID = 3;
+}
 
 message EventbriteEventOwnerSettings {
-	string ApiKey = 1;
-	string ApiSecret = 2;
+	string PrivateToken = 1;
+	string WebhookVerificationToken = 2;
 }

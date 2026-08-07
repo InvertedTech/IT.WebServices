@@ -34,5 +34,25 @@ namespace IT.WebServices.Authorization.Events.Eventbrite
         {
             throw new NotImplementedException("Eventbrite integration is not implemented yet.");
         }
+
+        Task<CreateEventResult> IGenericEventProvider.CreateEvent(GenericEventRecord evt, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<CancelTicketResult> IGenericEventProvider.CancelTicket(GenericEventTicketRecord ticket, ONUser actor, string reason, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SyncResult> SyncTicket(string processorEventID, string processorTicketID, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<EventSyncResult> SyncEvents(DateTime changedSince, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

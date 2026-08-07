@@ -26,6 +26,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static void MapEventGrpcServices(this IEndpointRouteBuilder endpoints)
         {
+            endpoints.MapEventbriteGrpcService();
+
             endpoints.MapGrpcService<EventService>();
             endpoints.MapGrpcService<AdminEventService>();
         }

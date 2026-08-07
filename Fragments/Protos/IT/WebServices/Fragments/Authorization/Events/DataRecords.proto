@@ -68,14 +68,16 @@ message GenericEventRecurrenceRule {
 
 message GenericTicketClassRecord {
   string TicketClassID = 1; // Guid for the TicketClass
-  string EventID = 2; // Guid for the parent Event
-  GenericEventTicketClassType Type = 3;
-  string Name = 4;
-  uint32 AmountAvailable = 5;
-  bool CountTowardEventMax = 6;
-  uint32 MaxTicketsPerUser = 7;
-  bool IsTransferrable = 8;
-  uint32 PricePerTicketCents = 9;
+  string ProcessorTicketClassID = 2; // Id for the TicketClass with Processor
+  string EventID = 3; // Guid for the parent Event
+  GenericEventTicketClassType Type = 4;
+  string Name = 5;
+  uint32 AmountAvailable = 6;
+  bool CountTowardEventMax = 7;
+  uint32 MaxTicketsPerUser = 8;
+  bool IsTransferrable = 9;
+  uint32 PricePerTicketCents = 10;
+  uint32 RequiredSubscriptionAmountCents = 11;
   google.protobuf.Timestamp SaleStartOnUTC = 21;
   google.protobuf.Timestamp SaleEndOnUTC = 22;
 }
@@ -84,7 +86,7 @@ message GenericEventRecord {
   string EventID = 1; // Guid for the Event
   string ProcessorName = 2; // Processor Name, ex: "manual", "eventbrite"
   string ProcessorEventID = 3; // Id for the Event with Processor
-
+  string ProcessorURL = 4; // URL for the Event with Processor
   string Title = 11;
   string Description = 12;
   string Location = 13;
