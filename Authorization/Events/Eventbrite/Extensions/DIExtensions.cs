@@ -10,7 +10,11 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddEventbriteClasses(this IServiceCollection services)
         {
-            services.AddSingleton<EventbriteClient>();
+            services.AddHttpClient<EventbriteClient>(c =>
+            {
+                c.BaseAddress = new Uri("https://www.eventbriteapi.com/v3/");
+                c.Timeout = TimeSpan.FromSeconds(30);
+            });
             services.AddSingleton<IGenericEventProvider, EventbriteGenericEventProvider>();
 
             return services;

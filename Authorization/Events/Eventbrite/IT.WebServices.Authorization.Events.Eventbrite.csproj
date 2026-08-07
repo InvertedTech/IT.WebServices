@@ -10,8 +10,4 @@
 	  <ProjectReference Include="..\Base\IT.WebServices.Authorization.Events.Base.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Models\" />
-	</ItemGroup>
-
 </Project>
