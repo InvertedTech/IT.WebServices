@@ -10,6 +10,7 @@ using IT.WebServices.Fragments.Authorization.Payment.Fortis;
 using IT.WebServices.Fragments.Authorization.Payment.Manual;
 using IT.WebServices.Fragments.Authorization.Payment.Paypal;
 using IT.WebServices.Fragments.Authorization.Payment.Stripe;
+using IT.WebServices.Fragments.AuditLog;
 using IT.WebServices.Fragments.Careers;
 using IT.WebServices.Fragments.Comment;
 using IT.WebServices.Fragments.Content;
@@ -36,7 +37,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ChannelHelper>();
             services.AddSingleton<SubscriptionTierHelper>();
 
+            services.AddGrpcClient<AdminMerchInterface.AdminMerchInterfaceClient>();
             services.AddGrpcClient<AssetInterface.AssetInterfaceClient>();
+            services.AddGrpcClient<AuditLogInterface.AuditLogInterfaceClient>();
             services.AddGrpcClient<CareersInterface.CareersInterfaceClient>();
             services.AddGrpcClient<CommentInterface.CommentInterfaceClient>();
             services.AddGrpcClient<ContentInterface.ContentInterfaceClient>();
