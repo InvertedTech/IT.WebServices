@@ -212,5 +212,23 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
             return null;
         }
+
+        public async Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var res = await client.Client.DeclinedRecurring.ReRunRecurringPaymentAsync(record.ProcessorPaymentID, cancellationToken);
+
+                return res.Data.Status == StatusId2Enum.Enum101;
+            }
+            catch (Exception ex)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+            }
+
+            return false;
+        }
     }
 }

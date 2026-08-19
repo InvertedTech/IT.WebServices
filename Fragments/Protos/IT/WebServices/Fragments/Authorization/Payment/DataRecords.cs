@@ -22,5 +22,7 @@ namespace IT.WebServices.Fragments.Authorization.Payment
             PaidThruUTC = last.PaidThruUTC;
             RenewsOnUTC = pb.WellKnownTypes.Timestamp.FromDateTimeOffset(last.PaidOnUTC.ToDateTimeOffset().AddMonths(1));
         }
+
+        public GenericPaymentRecord? MostRecentPayment => Payments.OrderByDescending(p => p.PaidOnUTC).FirstOrDefault();
     }
 }

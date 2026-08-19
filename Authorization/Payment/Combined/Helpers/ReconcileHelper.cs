@@ -160,6 +160,36 @@ namespace IT.WebServices.Authorization.Payment.Combined.Helpers
             }
         }
 
+        public async Task<ReRunFailedPaymentResponse> ReRunFailedPaymentForSubscription(GenericSubscriptionFullRecord fullLocalSub, ONUser user, CancellationToken cancellationToken)
+        {
+            var reconcileRes = await ReconcileSubscription(fullLocalSub, user, cancellationToken);
+
+            var updatedSub = reconcileRes.Record;
+
+            var mostRecent = updatedSub.MostRecentPayment;
+
+            if (mostRecent is null)
+                return new() { Record = updatedSub };
+
+            if (mostRecent.Status == PaymentStatus.PaymentComplete)
+                return new() { Record = updatedSub };
+
+            var processor = genericProcessorProvider.GetProcessor(updatedSub);
+            if (processor == null)
+                return new() { Error = $"Processor ({updatedSub.ProcessorName}) not found" };
+
+            if (!processor.RerunFailedPaymentSupported)
+                return new() { Record = updatedSub };
+
+            await processor.ReRunFailedPayment(mostRecent, cancellationToken);
+
+            reconcileRes = await ReconcileSubscription(fullLocalSub, user, cancellationToken);
+
+            updatedSub = reconcileRes.Record;
+
+            return new() { Record = updatedSub };
+        }
+
         private async Task EnsureSubscription(GenericSubscriptionRecord localSub, GenericSubscriptionRecord processorSub, ONUser user)
         {
             bool changed = false;

@@ -29,5 +29,8 @@ namespace IT.WebServices.Authorization.Payment.Generic
 
         Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken);
         Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken);
+
+        Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken);
+        bool RerunFailedPaymentSupported { get; }
     }
 }

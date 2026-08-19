@@ -40,6 +40,8 @@ namespace IT.WebServices.Authorization.Payment.Stripe
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Stripe.Enabled;
 
+        public bool RerunFailedPaymentSupported => false;
+
         public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
             var res = await genericSubProvider.GetById(record.UserID.ToGuid(), record.InternalSubscriptionID.ToGuid());
@@ -78,5 +80,10 @@ namespace IT.WebServices.Authorization.Payment.Stripe
         public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => stripeClient.GetSubscription(processorSubscriptionID, cancellationToken);
 
         public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => stripeClient.GetSubscriptionFull(processorSubscriptionID, cancellationToken);
+
+        public Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

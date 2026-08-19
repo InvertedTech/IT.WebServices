@@ -286,8 +286,36 @@ namespace IT.WebServices.Authorization.Payment.Combined.Services
                 if (record == null)
                     return new() { Error = "Record not found" };
 
-                var provider = genericProcessorProvider.GetProcessor(record);
                 return await reconcileHelper.ReconcileSubscription(record, userToken, context.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unknown Error");
+                return new() { Error = "Unknown error" };
+            }
+        }
+
+        public override async Task<ReRunFailedPaymentResponse> ReRunOtherFailedPayment(ReRunOtherFailedPaymentRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                var userId = request.UserID.ToGuid();
+                if (userId == Guid.Empty)
+                    return new() { Error = "No UserID specified" };
+
+                var intSubId = request.InternalSubscriptionID.ToGuid();
+                if (intSubId == Guid.Empty)
+                    return new() { Error = "No InternalSubscriptionID specified" };
+
+                var record = await genericFullProvider.GetBySubscriptionId(userId, intSubId);
+                if (record == null)
+                    return new() { Error = "Record not found" };
+
+                return await reconcileHelper.ReRunFailedPaymentForSubscription(record, userToken, context.CancellationToken);
             }
             catch (Exception ex)
             {

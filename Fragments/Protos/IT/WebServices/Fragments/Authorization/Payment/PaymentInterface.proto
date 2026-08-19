@@ -64,7 +64,14 @@ service PaymentInterface {
   rpc ReconcileOwnSubscription (ReconcileOwnSubscriptionRequest) returns (ReconcileSubscriptionResponse)
   {
     option (google.api.http) = {
-      get: "/api/payment/subscription/reconcile"
+      post: "/api/payment/subscription/reconcile"
+    };
+  }
+
+  rpc ReRunOwnFailedPayment (ReRunOwnFailedPaymentRequest) returns (ReRunFailedPaymentResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/subscription/{InternalSubscriptionID}/rerun"
     };
   }
 }
@@ -145,6 +152,15 @@ message ReconcileOwnSubscriptionRequest {
 }
   
 message ReconcileSubscriptionResponse {
+  GenericSubscriptionFullRecord Record = 1;
+  string Error = 2;
+}
+
+message ReRunOwnFailedPaymentRequest {
+  string InternalSubscriptionID = 1;
+}
+  
+message ReRunFailedPaymentResponse {
   GenericSubscriptionFullRecord Record = 1;
   string Error = 2;
 }

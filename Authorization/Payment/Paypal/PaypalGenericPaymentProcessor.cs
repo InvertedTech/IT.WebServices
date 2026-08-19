@@ -34,6 +34,8 @@ namespace IT.WebServices.Authorization.Payment.Paypal
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Paypal.Enabled;
 
+        public bool RerunFailedPaymentSupported => false;
+
         public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
             var res = await genericSubProvider.GetById(record.UserID.ToGuid(), record.InternalSubscriptionID.ToGuid());
@@ -70,5 +72,10 @@ namespace IT.WebServices.Authorization.Payment.Paypal
         public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => Task.FromResult<GenericSubscriptionRecord?>(null); // paypalClient.GetSubscription(processorSubscriptionID);
 
         public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => Task.FromResult<GenericSubscriptionFullRecord?>(null); // paypalClient.GetSubscriptionFull(processorSubscriptionID);
+
+        public Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

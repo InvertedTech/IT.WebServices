@@ -80,6 +80,13 @@ service AdminPaymentInterface {
       get: "/api/payment/admin/subscriptions"
     };
   }
+
+  rpc ReRunOtherFailedPayment (ReRunOtherFailedPaymentRequest) returns (ReRunFailedPaymentResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/admin/user/{UserID}/subscription/{InternalSubscriptionID}/rerun"
+    };
+  }
 }
 
 message BulkActionCancelRequest {
@@ -146,4 +153,10 @@ message ListSubscriptionsResponse {
     uint32 PageTotalItems = 3;
     uint32 PageOffsetStart = 4;
     uint32 PageOffsetEnd = 5;
+}
+
+
+message ReRunOtherFailedPaymentRequest {
+  string UserID = 1;
+  string InternalSubscriptionID = 2;
 }

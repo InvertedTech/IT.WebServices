@@ -38,6 +38,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis
 
         public bool IsEnabled => settingsHelper.Public.Subscription.Fortis.Enabled;
 
+        public bool RerunFailedPaymentSupported => true;
+
         public async Task<CancelSubscriptionResponse> CancelSubscription(GenericSubscriptionRecord record, ONUser userToken, CancellationToken cancellationToken)
         {
             var res = await fortisSubscriptionHelper.Get(record.ProcessorSubscriptionID, cancellationToken);
@@ -130,5 +132,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis
         public Task<GenericSubscriptionRecord?> GetSubscription(string processorSubscriptionID, CancellationToken cancellationToken) => fortisSubscriptionHelper.Get(processorSubscriptionID, cancellationToken);
 
         public Task<GenericSubscriptionFullRecord?> GetSubscriptionFull(string processorSubscriptionID, CancellationToken cancellationToken) => fortisSubscriptionHelper.GetWithTransactions(processorSubscriptionID, cancellationToken);
+
+        public Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken) => fortisTransactionHelper.ReRunFailedPayment(record, cancellationToken);
     }
 }

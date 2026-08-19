@@ -46,6 +46,7 @@ namespace FortisAPI.Standard
         private readonly Lazy<BatchesController> batches;
         private readonly Lazy<ContactsController> contacts;
         private readonly Lazy<DeviceTermsController> deviceTerms;
+        private readonly Lazy<DeclinedRecurringTransactionsController> declinedRecurring;
         private readonly Lazy<ElementsController> elements;
         private readonly Lazy<LocationsController> locations;
         private readonly Lazy<OnBoardingController> onBoarding;
@@ -87,6 +88,8 @@ namespace FortisAPI.Standard
                 () => new ContactsController(this, this.httpClient, this.authManagers, this.httpCallBack));
             this.deviceTerms = new Lazy<DeviceTermsController>(
                 () => new DeviceTermsController(this, this.httpClient, this.authManagers, this.httpCallBack));
+            this.declinedRecurring = new Lazy<DeclinedRecurringTransactionsController>(
+                () => new DeclinedRecurringTransactionsController(this, this.httpClient, this.authManagers, this.httpCallBack));
             this.elements = new Lazy<ElementsController>(
                 () => new ElementsController(this, this.httpClient, this.authManagers, this.httpCallBack));
             this.locations = new Lazy<LocationsController>(
@@ -152,6 +155,11 @@ namespace FortisAPI.Standard
         /// Gets DeviceTermsController controller.
         /// </summary>
         public DeviceTermsController DeviceTermsController => this.deviceTerms.Value;
+
+        /// <summary>
+        /// Gets DeclinedRecurringTransactionsController controller.
+        /// </summary>
+        public DeclinedRecurringTransactionsController DeclinedRecurring => this.declinedRecurring.Value;
 
         /// <summary>
         /// Gets ElementsController controller.
