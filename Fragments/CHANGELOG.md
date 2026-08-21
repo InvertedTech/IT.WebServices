@@ -1,5 +1,11 @@
 # @inverted-tech/fragments
 
+## 0.16.0
+
+### Minor Changes
+
+- Add Retry for failed payments
+
 ## 0.15.0
 
 ### Minor Changes
