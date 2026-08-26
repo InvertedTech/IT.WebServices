@@ -19,7 +19,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
         private readonly SettingsHelper settingsClient;
         private readonly TaxServiceInternal taxService;
 
-        public readonly FortisAPI.Standard.FortisAPIClient Client;
+        public readonly FortisAPI.Standard.FortisAPIClient? Client;
 
         public FortisClient(SettingsHelper settingsHelper, IOptions<AppSettings> appSettings, ILogger<FortisClient> logger, SettingsHelper settingsClient, TaxServiceInternal taxService)
         {
@@ -32,14 +32,20 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             Client = GetClient();
         }
 
-        public bool IsEnabled => settingsClient.Public?.Subscription?.Stripe?.Enabled ?? false && IsSettingsValid;
-        private bool IsSettingsValid => settingsClient.Owner?.Subscription?.Stripe?.IsValid() ?? false;
+        public bool IsEnabled => settingsClient.Public?.Subscription?.Fortis?.Enabled ?? false && IsSettingsValid;
+        private bool IsSettingsValid => settingsClient.Owner?.Subscription?.Fortis?.IsValid ?? false;
 
-        private FortisAPI.Standard.FortisAPIClient GetClient()
+        private FortisAPI.Standard.FortisAPIClient? GetClient()
         {
+            if (!IsEnabled) return null;
+
+            var userId = settingsHelper.Owner.Subscription.Fortis.UserID;
+            var apiKey = settingsHelper.Owner.Subscription.Fortis.UserApiKey;
+            var isTest = settingsHelper.Public.Subscription.Fortis.IsTest;
+
             FortisAPI.Standard.FortisAPIClient client = new FortisAPI.Standard.FortisAPIClient.Builder()
-                .CustomHeaderAuthenticationCredentials(settingsHelper.Owner.Subscription.Fortis.UserID, settingsHelper.Owner.Subscription.Fortis.UserApiKey, appSettings.FortisDeveloperId)
-                .Environment(settingsHelper.Public.Subscription.Fortis.IsTest ? FortisAPI.Standard.Environment.Sandbox : FortisAPI.Standard.Environment.Production)
+                .CustomHeaderAuthenticationCredentials(userId, apiKey, appSettings.FortisDeveloperId)
+                .Environment(isTest ? FortisAPI.Standard.Environment.Sandbox : FortisAPI.Standard.Environment.Production)
                 .HttpClientConfig(config => config.NumberOfRetries(0))
                 .Build();
 
@@ -48,8 +54,8 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
 
         public async Task<FortisNewDetails?> GetNewDetails(uint amountCents, string postalCode, ONUser userToken, string successUrl, string cancelUrl, CancellationToken cancellationToken)
         {
-            if (!IsEnabled)
-                return null;
+            if (!IsEnabled) return null;
+            if (Client == null) return null;
 
             var taxRecord = await taxService.Get("US", postalCode);
             var taxCents = taxRecord is null ? 0 : (int)taxRecord.CalculateTax(amountCents);

@@ -26,6 +26,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericPaymentRecord?> CreateFromAccountValut(string accountVaultId, int fixAmount)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 var res = await client.Client.TransactionsCreditCardController.CCSaleTokenizedAsync(new V1TransactionsCcSaleTokenRequest()
@@ -47,6 +50,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async IAsyncEnumerable<ProcessorPaymentRecord> GetAllForRange(DateTimeOffsetRange range, [EnumeratorCancellation] CancellationToken cancellationToken, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
+            if (!client.IsEnabled) yield break;
+            if (client.Client == null) yield break;
+
             var ranges = range.BreakIntoHours();
             foreach (var r in ranges)
             {
@@ -63,6 +69,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         private async Task<List<ProcessorPaymentRecord>> GetAll(DateTimeOffsetRange range, CancellationToken cancellationToken, int? amount = null, string? contactId = null, int triesLeft = 5, string? state = null)
         {
+            if (!client.IsEnabled) return [];
+            if (client.Client == null) return [];
+
             int errors = 0;
             int page = 1;
             int size = 100;
@@ -129,6 +138,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericPaymentRecord?> Get(string tranId, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 var res = await client.Client.TransactionsReadController.GetTransactionAsync(tranId, null, cancellationToken);
@@ -147,6 +159,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<List<GenericPaymentRecord>> GetByApiId(long tranId)
         {
+            if (!client.IsEnabled) return [];
+            if (client.Client == null) return [];
+
             try
             {
                 var res = await client.Client.TransactionsReadController.ListTransactionsAsync(new Page() { Number = 1, Size = 1 }, null, new Filter11()
@@ -166,6 +181,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<string> GetNewPaymentIntent(uint amount)
         {
+            if (!client.IsEnabled) return "";
+            if (client.Client == null) return "";
+
             ElementsController elementsController = client.Client.ElementsController;
             var body = new V1ElementsTransactionIntentionRequest()
             {
@@ -195,6 +213,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericPaymentRecord?> ProcessOneTimeSale(string ccTokenId, uint cents)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 var res = await client.Client.TransactionsCreditCardController.CCSaleTokenizedAsync(new V1TransactionsCcSaleTokenRequest()
@@ -215,6 +236,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<bool> ReRunFailedPayment(GenericPaymentRecord record, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return false;
+            if (client.Client == null) return false;
+
             try
             {
                 var res = await client.Client.DeclinedRecurring.ReRunRecurringPaymentAsync(record.ProcessorPaymentID, cancellationToken);

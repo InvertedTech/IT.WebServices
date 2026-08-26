@@ -18,6 +18,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<ResponseContact?> Create(UserModel user, CancellationToken cancellationToken = default)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 var contact = await GetByAccountNumber(user);
@@ -56,6 +59,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<ResponseContact?> Get(string contactId)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 return await client.Client.ContactsController.ViewSingleContactAsync(contactId);
@@ -70,6 +76,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<Dictionary<string, List1>?> GetAll(int triesLeft = 5)
         {
+            if (!client.IsEnabled) return [];
+            if (client.Client == null) return [];
+
             int errors = 0;
             int page = 1;
             int size = 1000;
@@ -128,6 +137,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<ResponseContact?> GetByAccountNumber(Guid userId)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 var list = await client.Client.ContactsController.ListAllContactsAsync(new Page() { Number = 1, Size = 1 }, null, new Filter1()

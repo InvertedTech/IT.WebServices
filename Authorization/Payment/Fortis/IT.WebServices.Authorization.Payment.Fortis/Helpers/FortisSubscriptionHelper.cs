@@ -26,6 +26,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericSubscriptionRecord?> Create(string tokenId, int amountCents, DateTime startDate, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -66,6 +69,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericSubscriptionRecord?> CreateFromTransaction(string tranId, UserModel user, uint monthsForFirst, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -134,6 +140,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task Cancel(string subscriptionId, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return;
+            if (client.Client == null) return;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -152,6 +161,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericSubscriptionRecord?> ChangeAmount(GenericSubscriptionRecord sub, int newAmount, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -179,6 +191,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericSubscriptionRecord?> Get(string subscriptionId, CancellationToken cancellationToken, bool? active = null, int triesLeft = 5)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -218,6 +233,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<GenericSubscriptionFullRecord?> GetWithTransactions(string subscriptionId, CancellationToken cancellationToken, int triesLeft = 10)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -260,6 +278,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<List<GenericSubscriptionRecord>> GetAll(CancellationToken cancellationToken, bool? active = null, int? amount = null, int triesLeft = 100)
         {
+            if (!client.IsEnabled) return [];
+            if (client.Client == null) return [];
+
             int errors = 0;
             int page = 1;
             int size = 1000;
@@ -325,6 +346,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<List<GenericSubscriptionRecord>> GetByContactId(string contactId, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return [];
+            if (client.Client == null) return [];
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -351,7 +375,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
             }
 
-            return new();
+            return [];
         }
     }
 }

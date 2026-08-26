@@ -17,6 +17,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<string?> GetExistingTransactionToken(string dbSubId, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -55,6 +58,9 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
         public async Task<string?> GetNewPreviousTransactionToken(string tranId, string dbSubId, ResponseContact contact, CancellationToken cancellationToken)
         {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
