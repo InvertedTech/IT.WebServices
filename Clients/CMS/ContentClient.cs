@@ -184,5 +184,19 @@ namespace IT.WebServices.Clients.CMS
                 return new();
             }
         }
+
+        public async Task<GetRelatedContentResponse> GetRelatedContent(GetRelatedContentRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.GetRelatedContentAsync(req, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in GetRelatedContent");
+                return new();
+            }
+        }
     }
 }

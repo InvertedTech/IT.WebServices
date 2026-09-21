@@ -51,5 +51,19 @@ namespace IT.WebServices.Clients.Merch
                 return null;
             }
         }
+
+        public async Task<SearchMerchResponse> Search(SearchMerchRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.SearchMerchAsync(request, userHelper.GetGrpcCallOptions(cancellationToken));
+                return res;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in Search");
+                return new SearchMerchResponse();
+            }
+        }
     }
 }
