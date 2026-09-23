@@ -21,6 +21,7 @@ using IT.WebServices.Fragments.Notification;
 using IT.WebServices.Fragments.Page;
 using IT.WebServices.Fragments.Settings;
 using System;
+using IT.WebServices.Clients.Users;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -67,6 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ContentClient>();
             services.AddScoped<MerchClient>();
             services.AddScoped<NotificationClient>();
+            services.AddScoped<AdminUserClient>();
 
             return services;
         }

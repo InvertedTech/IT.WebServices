@@ -95,7 +95,7 @@ namespace IT.WebServices.Clients.CMS
             catch (Exception ex)
             {
                 log.LogError(ex, "Error in ModifyContent");
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message) };
             }
         }
 
@@ -109,7 +109,7 @@ namespace IT.WebServices.Clients.CMS
             catch (Exception ex)
             {
                 log.LogError(ex, "Error in PublishContent");
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message) };
             }
         }
 
@@ -123,7 +123,7 @@ namespace IT.WebServices.Clients.CMS
             catch (Exception ex)
             {
                 log.LogError(ex, "Error in UnPublishContent");
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message) };
             }
         }
 
@@ -166,7 +166,7 @@ namespace IT.WebServices.Clients.CMS
             {
 
                 log.LogError(ex, "Error in DeleteContent");
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message) };
             }
         }
 
@@ -181,7 +181,7 @@ namespace IT.WebServices.Clients.CMS
             {
 
                 log.LogError(ex, "Error in DeleteContent");
-                return new();
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, ex.Message) };
             }
         }
 

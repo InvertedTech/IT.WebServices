@@ -40,6 +40,21 @@ namespace IT.WebServices.Clients.CMS
             }
         }
 
+        public async Task<AudioAssetRecord?> CreateAudio(CreateAssetRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await client.CreateAssetAsync(request, userHelper.GetGrpcCallOptions(cancellationToken));
+
+                return res.Record.Audio;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error in CreateAsset");
+                return null;
+            }
+        }
+
         public async Task<GetAssetResponse?> Get(GetAssetRequest request, CancellationToken cancellationToken = default)
         {
             try
