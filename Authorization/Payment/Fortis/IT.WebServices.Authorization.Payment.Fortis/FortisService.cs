@@ -21,16 +21,20 @@ namespace IT.WebServices.Authorization.Payment.Fortis
         private readonly IGenericSubscriptionFullRecordProvider fullProvider;
         private readonly IGenericPaymentRecordProvider paymentProvider;
         private readonly IGenericSubscriptionRecordProvider subscriptionProvider;
+        private readonly FortisClient fortisClient;
         private readonly FortisSubscriptionHelper fortisSubscriptionHelper;
+        private readonly FortisTokenHelper fortisTokenHelper;
         private readonly FortisTransactionHelper fortisTransactionHelper;
 
-        public FortisService(ILogger<FortisService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericPaymentRecordProvider paymentProvider, IGenericSubscriptionRecordProvider subscriptionProvider, FortisSubscriptionHelper fortisSubscriptionHelper, FortisTransactionHelper fortisTransactionHelper)
+        public FortisService(ILogger<FortisService> logger, IGenericSubscriptionFullRecordProvider fullProvider, IGenericPaymentRecordProvider paymentProvider, IGenericSubscriptionRecordProvider subscriptionProvider, FortisClient fortisClient, FortisSubscriptionHelper fortisSubscriptionHelper, FortisTokenHelper fortisTokenHelper, FortisTransactionHelper fortisTransactionHelper)
         {
             this.logger = logger;
             this.fullProvider = fullProvider;
             this.paymentProvider = paymentProvider;
             this.subscriptionProvider = subscriptionProvider;
+            this.fortisClient = fortisClient;
             this.fortisSubscriptionHelper = fortisSubscriptionHelper;
+            this.fortisTokenHelper = fortisTokenHelper;
             this.fortisTransactionHelper = fortisTransactionHelper;
         }
 
@@ -117,5 +121,138 @@ namespace IT.WebServices.Authorization.Payment.Fortis
                 return new() { Error = "Unknown error" };
             }
         }
+
+        public override async Task<FortisFinishUpdateOwnCardResponse> FortisFinishUpdateOwnCard(FortisFinishUpdateOwnCardRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var utcNow = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow);
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                if (request == null)
+                    return new() { Error = "Request not valid" };
+
+                if (string.IsNullOrWhiteSpace(request.TransactionID))
+                    return new() { Error = "TransactionID not valid" };
+
+                var transaction = await fortisTransactionHelper.Get(request.TransactionID, context.CancellationToken);
+                if (transaction == null)
+                    return new() { Error = "TransactionID not valid" };
+                if (transaction.Status != PaymentStatus.PaymentComplete)
+                    return new() { Error = "Transaction status not valid" };
+
+                if (string.IsNullOrWhiteSpace(request.InternalSubscriptionID))
+                    return new() { Error = "InternalSubscriptionID not valid" };
+
+                var fullRecord = await fullProvider.GetBySubscriptionId(userToken.Id, request.InternalSubscriptionID.ToGuid());
+                if (fullRecord == null)
+                    return new() { Error = "Could not find subscription" };
+
+                var sub = fullRecord.SubscriptionRecord;
+
+                var curPayRecord = await paymentProvider.GetByProcessorId(request.TransactionID);
+                if (curPayRecord != null)
+                    return new()
+                    {
+                        Record = sub,
+                    };
+
+                var success = await fortisSubscriptionHelper.UpdateCardFromTransaction(sub, request.TransactionID, UserModel.FromUserToken(userToken), context.CancellationToken);
+                if (!success)
+                    return new() { Error = "Error updating subscription" };
+
+                sub.ModifiedOnUTC = utcNow;
+                sub.ModifiedBy = userToken.Id.ToString();
+
+                transaction.UserID = userToken.Id.ToString();
+                transaction.InternalSubscriptionID = sub.InternalSubscriptionID;
+                transaction.InternalPaymentID = Guid.NewGuid().ToString();
+                transaction.CreatedOnUTC = utcNow;
+                transaction.ModifiedOnUTC = utcNow;
+                transaction.CreatedBy = userToken.Id.ToString();
+                transaction.ModifiedBy = userToken.Id.ToString();
+
+                fullRecord.Payments.Add(transaction);
+
+                await fullProvider.Save(fullRecord);
+
+                return new()
+                {
+                    Record = sub,
+                };
+            }
+            catch
+            {
+                return new() { Error = "Unknown error" };
+            }
+        }
+
+        public override async Task<FortisStartUpdateOwnCardResponse> FortisStartUpdateOwnCard(FortisStartUpdateOwnCardRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+                if (userToken == null)
+                    return new() { Error = "No user token specified" };
+
+                if (request == null)
+                    return new() { Error = "Request not valid" };
+
+                if (string.IsNullOrWhiteSpace(request.InternalSubscriptionID))
+                    return new() { Error = "InternalSubscriptionID not valid" };
+
+                var sub = await subscriptionProvider.GetById(userToken.Id, request.InternalSubscriptionID.ToGuid());
+                if (sub == null)
+                    return new() { Error = "Could not find subscription" };
+
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                var newDetails = await fortisClient.GetNewDetails(sub.AmountCents, sub.TaxCents, userToken, context.CancellationToken);
+                if (newDetails == null)
+                    return new() { Error = "Error creating token" };
+
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                return new() { ClientToken = newDetails.ClientToken };
+            }
+            catch
+            {
+                return new() { Error = "Unknown error" };
+            }
+        }
+
+        //public override async Task<FortisStartUpdateOwnCardResponse> FortisStartUpdateOwnCard(FortisStartUpdateOwnCardRequest request, ServerCallContext context)
+        //{
+        //    try
+        //    {
+        //        var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+        //        if (userToken == null)
+        //            return new() { Error = "No user token specified" };
+
+        //        if (request == null)
+        //            return new() { Error = "Request not valid" };
+
+        //        if (string.IsNullOrWhiteSpace(request.InternalSubscriptionID))
+        //            return new() { Error = "InternalSubscriptionID not valid" };
+
+        //        var sub = await subscriptionProvider.GetById(userToken.Id, request.InternalSubscriptionID.ToGuid());
+        //        if (sub == null)
+        //            return new() { Error = "Could not find subscription" };
+
+        //        context.CancellationToken.ThrowIfCancellationRequested();
+
+        //        var clientToken = await fortisTokenHelper.CreateUpdateCardTicket(sub, userToken, context.CancellationToken);
+
+        //        context.CancellationToken.ThrowIfCancellationRequested();
+
+        //        return new() { ClientToken = clientToken };
+        //    }
+        //    catch
+        //    {
+        //        return new() { Error = "Unknown error" };
+        //    }
+        //}
     }
 }

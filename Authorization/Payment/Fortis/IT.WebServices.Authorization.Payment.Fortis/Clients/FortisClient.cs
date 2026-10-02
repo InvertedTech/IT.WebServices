@@ -58,7 +58,16 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             if (Client == null) return null;
 
             var taxRecord = await taxService.Get("US", postalCode);
-            var taxCents = taxRecord is null ? 0 : (int)taxRecord.CalculateTax(amountCents);
+            var taxCents = taxRecord is null ? 0 : taxRecord.CalculateTax(amountCents);
+
+            return await GetNewDetails(amountCents, taxCents, userToken, cancellationToken);
+        }
+
+        public async Task<FortisNewDetails?> GetNewDetails(uint amountCents, uint taxCents, ONUser userToken, CancellationToken cancellationToken)
+        {
+            if (!IsEnabled) return null;
+            if (Client == null) return null;
+
             var totalCents = amountCents + taxCents;
 
             ElementsController elementsController = Client.ElementsController;
@@ -66,7 +75,7 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Clients
             {
                 Action = ActionEnum.Sale,
                 Amount = (int)totalCents,
-                TaxAmount = taxCents,
+                TaxAmount = taxCents < 1 ? null : (int)taxCents,
                 Methods = new(),
                 LocationId = settingsHelper.Owner.Subscription.Fortis.LocationID,
             };

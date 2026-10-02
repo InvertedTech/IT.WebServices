@@ -13,6 +13,22 @@ service FortisInterface {
       body: "*"
     };
   }
+
+  rpc FortisFinishUpdateOwnCard (FortisFinishUpdateOwnCardRequest) returns (FortisFinishUpdateOwnCardResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/fortis/subscription/updatecard/finish"
+      body: "*"
+    };
+  }
+
+  rpc FortisStartUpdateOwnCard (FortisStartUpdateOwnCardRequest) returns (FortisStartUpdateOwnCardResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/payment/fortis/subscription/updatecard"
+      body: "*"
+    };
+  }
 }
 
 message FortisFinishOwnSubscriptionRequest {
@@ -24,3 +40,21 @@ message FortisFinishOwnSubscriptionResponse {
   string Error = 2;
 }
 
+message FortisFinishUpdateOwnCardRequest {
+  string InternalSubscriptionID = 1;
+  string TransactionID = 2;
+}
+
+message FortisFinishUpdateOwnCardResponse {
+  GenericSubscriptionRecord Record = 1;
+  string Error = 2;
+}
+
+message FortisStartUpdateOwnCardRequest {
+  string InternalSubscriptionID = 1;
+}
+
+message FortisStartUpdateOwnCardResponse {
+  string ClientToken = 1;
+  string Error = 2;
+}

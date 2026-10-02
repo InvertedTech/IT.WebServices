@@ -377,5 +377,119 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
 
             return [];
         }
+
+        public async Task<bool> UpdateCardFromTransaction(GenericSubscriptionRecord sub, string tranId, UserModel user, CancellationToken cancellationToken)
+        {
+            if (!client.IsEnabled) return false;
+            if (client.Client == null) return false;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var trans = await tranHelper.Get(tranId, cancellationToken);
+                if (trans == null)
+                {
+                    Console.WriteLine($"Error in UpdateCardFromTransaction tranId={tranId}. GetTransaction returned null.");
+                    return false;
+                }
+
+                if (user == null)
+                {
+                    Console.WriteLine($"Error in UpdateCardFromTransaction tranId={tranId}. User is null.");
+                    return false;
+                }
+
+                try
+                {
+                    var startDate = trans.PaidOnUTC.ToDateTime();
+                    var recStartDate = startDate.AddMonths(1);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var contact = await contactHelper.Get(sub.ProcessorCustomerID, cancellationToken);
+                    if (contact == null)
+                        return false;
+
+                    var newTokenId = Guid.NewGuid();
+
+                    var token = await tokenHelper.GetNewPreviousTransactionToken(tranId, "s" + newTokenId.ToString().Replace("-", ""), contact, cancellationToken);
+                    if (token == null)
+                    {
+                        Console.WriteLine($"Error in UpdateCardFromTransaction tranId={tranId}. Token is null. Failed to create a token.");
+                        return false;
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var updatedSub = await UpdateToken(sub, token, recStartDate, cancellationToken);
+                    if (updatedSub == null)
+                    {
+                        Console.WriteLine($"Error in UpdateCardFromTransaction tranId={tranId}. updatedSub is null. Failed to update subscription.");
+                        return false;
+                    }
+
+                    sub.CardExpMonth = updatedSub.CardExpMonth;
+                    sub.CardExpYear = updatedSub.CardExpYear;
+                    sub.CardLast4 = updatedSub.CardLast4;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+                }
+            }
+            catch (Exception ex)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+            }
+
+            return false;
+        }
+
+        public async Task<GenericSubscriptionRecord?> UpdateToken(GenericSubscriptionRecord sub, string newTokenId, DateTime recStartDate, CancellationToken cancellationToken)
+        {
+            if (!client.IsEnabled) return null;
+            if (client.Client == null) return null;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var res = await client.Client.RecurringController.UpdateRecurringPaymentAsync(
+                        sub.ProcessorSubscriptionID,
+                        new()
+                        {
+                            AccountVaultId = newTokenId,
+                            StartDate = recStartDate.ToString("yyyy-MM-dd")
+                        },
+                        cancellationToken
+                    );
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (res is null)
+                    return null;
+
+                var res2 = await Get(res.Data.Id, cancellationToken);
+
+                return res2;
+            }
+            catch (Exception ex)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+            }
+
+            return null;
+        }
     }
 }

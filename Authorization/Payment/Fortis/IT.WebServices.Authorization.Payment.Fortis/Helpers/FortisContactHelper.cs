@@ -57,14 +57,14 @@ namespace IT.WebServices.Authorization.Payment.Fortis.Helpers
             return null;
         }
 
-        public async Task<ResponseContact?> Get(string contactId)
+        public async Task<ResponseContact?> Get(string contactId, CancellationToken cancellationToken = default)
         {
             if (!client.IsEnabled) return null;
             if (client.Client == null) return null;
 
             try
             {
-                return await client.Client.ContactsController.ViewSingleContactAsync(contactId);
+                return await client.Client.ContactsController.ViewSingleContactAsync(contactId, null, cancellationToken);
             }
             catch (Exception ex)
             {
