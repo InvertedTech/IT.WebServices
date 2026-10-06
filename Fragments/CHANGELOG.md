@@ -1,5 +1,17 @@
 # @inverted-tech/fragments
 
+## 0.17.1
+
+### Patch Changes
+
+- Automated patch bump
+
+## 0.17.0
+
+### Minor Changes
+
+- Add Fortis Update Classes
+
 ## 0.16.0
 
 ### Minor Changes
