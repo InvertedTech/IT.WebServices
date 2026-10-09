@@ -1,4 +1,7 @@
+using IT.WebServices.Clients.CMS;
+using IT.WebServices.Fragments.Content;
 using IT.WebServices.Mcp;
+using IT.WebServices.Mcp.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -11,9 +14,16 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddMcpClasses(this IServiceCollection services)
         {
             services.AddScoped<McpSettings>();
+
+            // Combined never calls AddGrpcClientClasses, so register just what the tools need.
+            // ClientGrpcHelper is already registered by AddAuthenticationClasses.
+            services.AddGrpcClient<ContentInterface.ContentInterfaceClient>();
+            services.AddScoped<ContentClient>();
+
             services
                 .AddMcpServer()
-                .WithHttpTransport();
+                .WithHttpTransport()
+                .WithTools<CMSTools>();
 
             return services;
         }
