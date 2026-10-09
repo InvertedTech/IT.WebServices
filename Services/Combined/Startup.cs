@@ -107,6 +107,7 @@ namespace IT.WebServices.Services.Combined
             services.AddCareersClasses();
             services.AddNotificationClasses();
             services.AddMerchClasses();
+            services.AddMcpClasses();
 
             CryptoProviderFactory.DefaultCacheSignatureProviders = false;
 
@@ -134,6 +135,7 @@ namespace IT.WebServices.Services.Combined
 
             app.UseRouting();
 
+            app.UseMcpGate();
             app.UseJwtApiAuthentication();
             app.LoadStatsSubscriptions();
 
@@ -152,6 +154,7 @@ namespace IT.WebServices.Services.Combined
                 endpoints.MapCareersGrpcServices();
                 endpoints.MapNotificationGrpcServices();
                 endpoints.MapMerchGrpcServices();
+                endpoints.MapMcpServices();
                 //endpoints.MapGrpcReflectionService();
 
                 endpoints.MapControllerRoute(

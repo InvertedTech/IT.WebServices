@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>IT.WebServices.Mcp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Official C# MCP SDK. Floating for the first restore: pin to the version it resolves to. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="*-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Base\IT.WebServices.Base.csproj" />
+    <ProjectReference Include="..\Clients\IT.WebServices.Clients.csproj" />
+  </ItemGroup>
+
+</Project>

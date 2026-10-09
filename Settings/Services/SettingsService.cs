@@ -384,6 +384,48 @@ namespace IT.WebServices.Settings.Services
         }
 
         [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
+        public override async Task<ModifyMCPPrivateDataResponse> ModifyMCPPrivateData(
+            ModifyMCPPrivateDataRequest request,
+            ServerCallContext context
+        )
+        {
+            try
+            {
+                if (request.Data == null)
+                    return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred") };
+
+                var userToken = ONUserHelper.ParseUser(context.GetHttpContext());
+
+                var record = await dataProvider.Get();
+                record.Private.MCP = request.Data;
+
+                record.Public.VersionNum++;
+                record.Public.ModifiedOnUTC = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(
+                    DateTime.UtcNow
+                );
+                record.Private.ModifiedBy = userToken.Id.ToString();
+
+                await dataProvider.Save(record);
+                await auditLogHelper.TryLogEvent(
+                    new AuditLogEntry()
+                    {
+                        Action = ActionType.ActionSettingsChanged,
+                        Summary = $"MCP Private Data Modified",
+                        Actor = userToken.ToAuditActor(),
+                        Metadata =
+                        {
+                            { "ModifiedData", request.Data.ToString() },
+                        },
+                    });
+                return new() { Error = null };
+            }
+            catch
+            {
+                return new() { Error = GenericErrorExtensions.CreateError(APIErrorReason.ErrorReasonUnknown, "Unknown error occurred") };
+            }
+        }
+
+        [Authorize(Roles = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)]
         public override async Task<ModifyCommentsPublicDataResponse> ModifyCommentsPublicData(
             ModifyCommentsPublicDataRequest request,
             ServerCallContext context
@@ -880,6 +922,7 @@ namespace IT.WebServices.Settings.Services
                     Private = new()
                     {
                         Comments = new() { },
+                        MCP = new() { },
                         Personalization = new() { },
                         Subscription = new() { },
                         Merch = new()

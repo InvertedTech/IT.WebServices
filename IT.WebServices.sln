@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Dashboard.Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Careers", "Careers\IT.WebServices.Careers.csproj", "{071A961C-AFAF-A789-2981-45C890A05A94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Mcp", "Mcp\IT.WebServices.Mcp.csproj", "{D7577E3F-7983-4FA6-BCA1-9AC686722C77}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IT.WebServices.Authorization.Payment.Tax", "Authorization\Payment\Tax\IT.WebServices.Authorization.Payment.Tax.csproj", "{3C913A40-1537-1227-58EF-94AC1635EBAB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Merch", "Merch", "{F40F6AA6-4899-4977-91EB-DEAC35922719}"
@@ -171,6 +173,10 @@ Global
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{071A961C-AFAF-A789-2981-45C890A05A94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7577E3F-7983-4FA6-BCA1-9AC686722C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7577E3F-7983-4FA6-BCA1-9AC686722C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7577E3F-7983-4FA6-BCA1-9AC686722C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7577E3F-7983-4FA6-BCA1-9AC686722C77}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C913A40-1537-1227-58EF-94AC1635EBAB}.Release|Any CPU.ActiveCfg = Release|Any CPU

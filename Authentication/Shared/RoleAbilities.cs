@@ -54,6 +54,9 @@ namespace IT.WebServices.Authentication
         // Can assis user with subscription issues: edit sub data, manually link subs, stop subs, change subs tiers, etc...
         public const string ROLE_SUBSCRIPTION_MANAGER = "sub_manager";
 
+        // Allows a user to perform site management actions
+        public const string ROLE_SITE_MANAGER = "site_manager";
+
         public const string ROLE_CAN_BACKUP = ROLE_OWNER + "," + ROLE_BACKUP;
         public const string ROLE_CAN_CREATE_CONTENT = ROLE_CAN_PUBLISH + "," + ROLE_CONTENT_WRITER;
         public const string ROLE_CAN_CREATE_CONTENT_OR_SERVICE = ROLE_CAN_CREATE_CONTENT + "," + ROLE_SERVICE;
@@ -74,6 +77,8 @@ namespace IT.WebServices.Authentication
         public const string ROLE_IS_MEMBER_MANAGER_OR_HIGHER = ROLE_MEMBER_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER;
         public const string ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER = ROLE_SUBSCRIPTION_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER;
         public const string ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER_OR_BOT = ROLE_SUBSCRIPTION_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER + "," + ROLE_BOT_VERIFICATION;
+        public const string ROLE_IS_SITE_MANAGER_OR_HIGHER = ROLE_SITE_MANAGER + "," + ROLE_IS_ADMIN_OR_OWNER;
+        public const string ROLE_CAN_MANAGE_SITE = ROLE_IS_SITE_MANAGER_OR_HIGHER;
 
         public bool IsOwner => IsInRole(ROLE_OWNER);
         public bool IsAdmin => IsInRole(ROLE_ADMIN);
@@ -107,6 +112,10 @@ namespace IT.WebServices.Authentication
         public bool CanManageEventTickets => IsEventTicketManagerOrHigher;
         public bool CanManageMembers => IsMemberManagerOrHigher;
         public bool CanManageSubscriptions => IsSubscriptionManagerOrHigher;
+
+        public bool IsSiteManager => IsInRole(ROLE_SITE_MANAGER);
+        public bool IsSiteManagerOrHigher => IsAdminOrHigher || IsSiteManager;
+        public bool CanManageSite => IsSiteManagerOrHigher;
 
         public bool IsInRole(string role) => Roles.Contains(role);
 

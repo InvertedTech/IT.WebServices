@@ -44,6 +44,7 @@ message SettingsPrivateData {
   NotificationPrivateRecord Notification = 14;
   IT.WebServices.Fragments.Authorization.Events.EventPrivateSettings Events = 15; // Private settings for events
   IT.WebServices.Fragments.Merch.MerchPrivateSettings Merch = 16;
+  McpPrivateRecord MCP = 17;
 }
 
 message SettingsOwnerData {
@@ -116,6 +117,14 @@ message CMSPrivateRecord {
 }
 
 message CMSOwnerRecord {
+}
+
+message McpPrivateRecord {
+  bool Enabled = 1;          // Master switch: off rejects every request to /mcp
+  bool ReadOnly = 2;         // On: write functions behave as off, whatever their own switches say
+  bool CmsEnabled = 3;       // CMS functions
+  bool CommentsEnabled = 4;  // Comment functions
+  bool PagesEnabled = 5;     // Page functions
 }
 
 message NotificationPublicRecord {
