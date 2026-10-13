@@ -1,4 +1,5 @@
 using IT.WebServices.Clients.CMS;
+using IT.WebServices.Fragments.Comment;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Mcp;
 using IT.WebServices.Mcp.Tools;
@@ -18,12 +19,15 @@ namespace Microsoft.Extensions.DependencyInjection
             // Combined never calls AddGrpcClientClasses, so register just what the tools need.
             // ClientGrpcHelper is already registered by AddAuthenticationClasses.
             services.AddGrpcClient<ContentInterface.ContentInterfaceClient>();
+            services.AddGrpcClient<CommentInterface.CommentInterfaceClient>();
             services.AddScoped<ContentClient>();
+            services.AddScoped<CommentClient>();
 
             services
                 .AddMcpServer()
                 .WithHttpTransport()
-                .WithTools<CMSTools>();
+                .WithTools<CMSTools>()
+                .WithTools<CommentTools>();
 
             return services;
         }

@@ -66,6 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<PaymentClient>();
             services.AddScoped<AssetClient>();
             services.AddScoped<ContentClient>();
+            services.AddScoped<CommentClient>();
             services.AddScoped<MerchClient>();
             services.AddScoped<NotificationClient>();
             services.AddScoped<AdminUserClient>();

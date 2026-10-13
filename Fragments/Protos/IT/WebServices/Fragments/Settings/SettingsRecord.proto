@@ -55,6 +55,7 @@ message SettingsOwnerData {
   NotificationOwnerRecord Notification = 14;
   IT.WebServices.Fragments.Authorization.Events.EventOwnerSettings Events = 15; // Owner settings for events
   IT.WebServices.Fragments.Merch.MerchOwnerSettings Merch = 16;
+  McpOwnerRecord MCP = 17;
 }
 
 message PersonalizationPublicRecord {
@@ -119,12 +120,61 @@ message CMSPrivateRecord {
 message CMSOwnerRecord {
 }
 
+message McpLimits {
+  uint32 ReadRequestsPerMinute = 1;
+  uint32 WriteRequestsPerMinute = 2;
+  uint32 WriteRequestsPerDay = 3;
+  uint32 MaxBodyBytes = 4;
+}
+
+message McpPagesAbilities {
+  bool Read = 1;
+  bool EditDrafts = 2;
+  bool Preview = 3;
+  bool Templates = 4;
+  bool Publish = 5;
+  bool Delete = 6;
+  bool EditSystemPages = 7;
+  uint32 MaxNodes = 8;
+  uint32 MaxDepth = 9;
+}
+
+message McpCmsAbilities {
+  bool Read = 1;
+  bool EditDrafts = 2;
+  bool AllowAudio = 3;
+  bool AllowPicture = 4;
+  bool AllowVideo = 5;
+  bool Publish = 6;
+  bool Delete = 7;
+  string DefaultByline = 8;
+}
+
+message McpCommentsAbilities {
+  bool Read = 1;
+  bool ShowUserNames = 2;
+  bool Moderate = 3;
+  bool AutonomousModeration = 4;
+  bool PostAsAgent = 5;
+}
+
 message McpPrivateRecord {
-  bool Enabled = 1;          // Master switch: off rejects every request to /mcp
-  bool ReadOnly = 2;         // On: write functions behave as off, whatever their own switches say
-  bool CmsEnabled = 3;       // CMS functions
-  bool CommentsEnabled = 4;  // Comment functions
-  bool PagesEnabled = 5;     // Page functions
+  bool Enabled = 1;
+  bool ReadOnly = 2;
+  bool CmsEnabled = 3;
+  bool CommentsEnabled = 4;
+  bool PagesEnabled = 5;
+  repeated string AllowedOrigins = 6;
+  McpLimits Limits = 7;
+  McpPagesAbilities Pages = 10;
+  McpCmsAbilities Cms = 11;
+  McpCommentsAbilities Comments = 12;
+}
+
+message McpOwnerRecord {
+  bool AllowAgentPublish = 1;
+  bool AllowAgentDelete = 2;
+  string TokenSigningKeyRef = 3;
 }
 
 message NotificationPublicRecord {

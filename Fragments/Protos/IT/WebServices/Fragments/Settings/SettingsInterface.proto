@@ -149,6 +149,15 @@ service SettingsInterface {
     };
   }
 
+  // Modify MCP owner data
+  rpc ModifyMCPOwnerData (ModifyMCPOwnerDataRequest) returns (ModifyMCPOwnerDataResponse)
+  {
+    option (google.api.http) = {
+      post: "/api/settings/mcp/owner"
+      body: "*"
+    };
+  }
+
   // Modify Comments public data
   rpc ModifyCommentsPublicData (ModifyCommentsPublicDataRequest) returns (ModifyCommentsPublicDataResponse)
   {
@@ -381,6 +390,14 @@ message ModifyMCPPrivateDataRequest {
 }
 
 message ModifyMCPPrivateDataResponse {
+  APIError Error = 1;
+}
+
+message ModifyMCPOwnerDataRequest {
+  McpOwnerRecord Data = 1 [(buf.validate.field).required = true];
+}
+
+message ModifyMCPOwnerDataResponse {
   APIError Error = 1;
 }
 
